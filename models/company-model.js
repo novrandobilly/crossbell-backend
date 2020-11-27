@@ -16,7 +16,6 @@ const companySchema = new Schema({
 	details: { type: String },
 	mission: { type: String },
 	isCompany: { type: Boolean, default: true },
-	isAdmin: { type: Boolean, default: false },
 	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ]
 });
 
