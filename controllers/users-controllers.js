@@ -1,6 +1,5 @@
 const { validationResult } = require('express-validator');
 const Applicant = require('../models/applicant-model');
-const { update } = require('../models/company-model');
 const Company = require('../models/company-model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -83,6 +82,7 @@ const signup = async (req, res, next) => {
 		existingCompany = await Company.findOne({ email: email });
 	} catch (err) {
 		const error = new HttpError('Signing up failed. Please try again.', 500);
+		return next(error);
 	}
 
 	if (existingApplicant || existingCompany) {
@@ -107,13 +107,12 @@ const signup = async (req, res, next) => {
 			logo: null,
 			details: null,
 			jobAds: [],
-			isCompany,
-			isAdmin: false
+			isCompany
 		});
 		try {
 			await newCompany.save();
 		} catch (err) {
-			const error = new HttpError('Could not create user. PLease input a valid value', 500);
+			const error = new HttpError('Could not create user. Please input a valid value', 500);
 			return next(error);
 		}
 
@@ -123,8 +122,7 @@ const signup = async (req, res, next) => {
 				{
 					userId: newCompany.id,
 					email: newCompany.email,
-					isCompany: newCompany.isCompany,
-					isAdmin: newCompany.isAdmin
+					isCompany: newCompany.isCompany
 				},
 				'one_batch_two_batch_penny_and_dime',
 				{
@@ -140,7 +138,6 @@ const signup = async (req, res, next) => {
 			userId: newCompany.id,
 			email: newCompany.email,
 			isCompany: newCompany.isCompany,
-			isAdmin: newCompany.isAdmin,
 			token
 		});
 	} else {
@@ -152,8 +149,7 @@ const signup = async (req, res, next) => {
 			password: hashedPassword,
 			resume: null,
 			jobsApplied: [],
-			isCompany,
-			isAdmin: false
+			isCompany
 		});
 
 		try {
@@ -169,8 +165,7 @@ const signup = async (req, res, next) => {
 				{
 					userId: newApplicant.id,
 					email: newApplicant.email,
-					isCompany: newApplicant.isCompany,
-					isAdmin: newApplicant.isAdmin
+					isCompany: newApplicant.isCompany
 				},
 				'one_batch_two_batch_penny_and_dime',
 				{
@@ -186,7 +181,6 @@ const signup = async (req, res, next) => {
 			userId: newApplicant.id,
 			email: newApplicant.email,
 			isCompany: newApplicant.isCompany,
-			isAdmin: newApplicant.isAdmin,
 			token
 		});
 	}
@@ -228,8 +222,7 @@ const login = async (req, res, next) => {
 			{
 				userId: foundUser.id,
 				email: foundUser.email,
-				isCompany: foundUser.isCompany,
-				isAdmin: foundUser.isAdmin
+				isCompany: foundUser.isCompany
 			},
 			'one_batch_two_batch_penny_and_dime',
 			{ expiresIn: '3h' }
@@ -243,7 +236,6 @@ const login = async (req, res, next) => {
 		userId: foundUser.id,
 		email: foundUser.email,
 		isCompany: foundUser.isCompany,
-		isAdmin: foundUser.isAdmin,
 		token
 	});
 };

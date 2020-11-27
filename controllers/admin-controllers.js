@@ -2,6 +2,10 @@ const HttpError = require('../models/http-error');
 const Job = require('../models/job-model');
 const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
+const Admin = require('../models/admin-model');
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const getWholeJobs = async (req, res, next) => {
 	let wholeJobs;
@@ -85,8 +89,85 @@ const getJobsFromApplicant = async (req, res, next) => {
 	res.status(200).json({ applicantsApplied: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })) });
 };
 
+const admReg = async (req, res, next) => {
+	const errors = validationResult(req);
+	const { verificationKey } = req.body;
+	if (!errors.isEmpty() || verificationKey !== process.env.ADMVERIFICATIONKEY) {
+		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
+		return next(error);
+	}
+
+	const { NIK, firstName, lastName, email, password, gender, dateOfBirth, address, phoneNumber, jobTitle } = req.body;
+	let existingAdmin;
+	try {
+		existingAdmin = await Admin.findOne({ email: email });
+	} catch (err) {
+		const error = new HttpError('Signing up failed. Please try again.', 500);
+		return next(error);
+	}
+
+	if (existingAdmin) {
+		const error = new HttpError('Could not create user. Email already exists.', 422);
+		return next(error);
+	}
+
+	let hashedPassword;
+	try {
+		hashedPassword = await bcrypt.hash(password, 12);
+	} catch (err) {
+		const error = new HttpError('Could not create user, please try again', 500);
+		return next(error);
+	}
+
+	const newAdmin = new Admin({
+		NIK,
+		firstName,
+		lastName,
+		email,
+		password: hashedPassword,
+		gender,
+		dateOfBirth,
+		address,
+		phoneNumber,
+		jobTitle,
+		isAdmin: true
+	});
+	try {
+		await newAdmin.save();
+	} catch (err) {
+		const error = new HttpError('Could not create admin user. Please input a valid value', 500);
+		return next(error);
+	}
+
+	let token;
+	try {
+		token = jwt.sign(
+			{
+				userId: newAdmin.id,
+				email: newAdmin.email,
+				isAdmin: newAdmin.isAdmin
+			},
+			'one_batch_two_batch_penny_and_dime',
+			{
+				expiresIn: '3h'
+			}
+		);
+	} catch (err) {
+		const error = new HttpError('Could not create admin.', 500);
+		return next(error);
+	}
+
+	return res.status(201).json({
+		userId: newAdmin._id,
+		email: newAdmin.email,
+		isAdmin: newAdmin.isAdmin,
+		token
+	});
+};
+
 exports.getWholeJobs = getWholeJobs;
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
 exports.getJobsFromApplicant = getJobsFromApplicant;
+exports.admReg = admReg;
