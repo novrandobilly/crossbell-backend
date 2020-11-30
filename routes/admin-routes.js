@@ -1,3 +1,4 @@
+
 const express = require('express');
 const { check } = require('express-validator');
 const adminControllers = require('../controllers/admin-controllers');
@@ -26,4 +27,6 @@ router.get('/companies', adminControllers.getWholeCompanies);
 router.get('/:jobid/applicants', adminControllers.getApplicantsFromJob);
 router.get('/:applicantid/jobs', adminControllers.getJobsFromApplicant);
 
+
+router.delete("/feedback", adminControllers.deleteFeed);
 module.exports = router;
