@@ -98,15 +98,17 @@ const admReg = async (req, res, next) => {
 	}
 
 	const { NIK, firstName, lastName, email, password, gender, dateOfBirth, address, phoneNumber, jobTitle } = req.body;
-	let existingAdmin;
+	let existingAdmin, existingApplicant, existingCompany;
 	try {
 		existingAdmin = await Admin.findOne({ email: email });
+		existingApplicant = await Applicant.findOne({ email: email });
+		existingCompany = await Company.findOne({ email: email });
 	} catch (err) {
 		const error = new HttpError('Signing up failed. Please try again.', 500);
 		return next(error);
 	}
 
-	if (existingAdmin) {
+	if (existingAdmin || existingApplicant || existingCompany) {
 		const error = new HttpError('Could not create user. Email already exists.', 422);
 		return next(error);
 	}
@@ -165,9 +167,61 @@ const admReg = async (req, res, next) => {
 	});
 };
 
+const admSign = async (req, res, next) => {
+	const { email, password } = req.body;
+
+	let foundAdmin = null;
+	try {
+		foundAdmin = await Admin.findOne({ email });
+	} catch (err) {
+		return next(new HttpError('Could not logged you in. Please try again later', 500));
+	}
+
+	if (!foundAdmin) {
+		return next(new HttpError('Could not identify admin. Authentication Failed', 401));
+	}
+
+	let isValidPassword = false;
+	try {
+		isValidPassword = await bcrypt.compare(password, foundAdmin.password);
+	} catch (err) {
+		const error = new HttpError('Could not identified user, please try again', 500);
+		return next(error);
+	}
+
+	if (!isValidPassword) {
+		const error = new HttpError('Invalid credential, please try again', 401);
+		return next(error);
+	}
+
+	let token;
+	try {
+		token = jwt.sign(
+			{
+				userId: foundAdmin.id,
+				email: foundAdmin.email,
+				isAdmin: foundAdmin.isAdmin
+			},
+			'one_batch_two_batch_penny_and_dime',
+			{ expiresIn: '3h' }
+		);
+	} catch (err) {
+		const error = new HttpError('Could not generate token, please try again', 500);
+		return next(error);
+	}
+
+	res.status(200).json({
+		userId: foundAdmin.id,
+		email: foundAdmin.email,
+		isAdmin: foundAdmin.isAdmin,
+		token
+	});
+};
+
 exports.getWholeJobs = getWholeJobs;
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
 exports.getJobsFromApplicant = getJobsFromApplicant;
 exports.admReg = admReg;
+exports.admSign = admSign;

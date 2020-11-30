@@ -19,6 +19,7 @@ const regAdminChecker = [
 // router.get('/admlog', adminControllers.admlog);
 
 router.post('/admreg', regAdminChecker, adminControllers.admReg);
+router.post('/admsign', adminControllers.admSign);
 router.get('/jobs', adminControllers.getWholeJobs);
 router.get('/applicants', adminControllers.getWholeApplicants);
 router.get('/companies', adminControllers.getWholeCompanies);
