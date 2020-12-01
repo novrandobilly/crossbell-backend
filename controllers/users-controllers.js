@@ -173,6 +173,7 @@ const signup = async (req, res, next) => {
       email,
       password: hashedPassword,
       logo: null,
+      emailRecipient: null,
       details: null,
       jobAds: [],
       isCompany,
