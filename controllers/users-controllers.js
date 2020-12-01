@@ -135,6 +135,7 @@ const getCompanyDetails = async (req, res, next) => {
 
 const signup = async (req, res, next) => {
 
+
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
@@ -250,6 +251,7 @@ const signup = async (req, res, next) => {
 			token
 		});
 	}
+
 };
 
 const login = async (req, res, next) => {
