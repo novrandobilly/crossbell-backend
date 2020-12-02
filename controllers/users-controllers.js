@@ -1,4 +1,3 @@
-
 const { validationResult } = require("express-validator");
 const Applicant = require("../models/applicant-model");
 const { update } = require("../models/company-model");
@@ -25,7 +24,6 @@ const getFeedback = async (req, res, next) => {
 
   res.status(200).json({ Feedback: foundFeedback });
 };
-
 
 const createFeedback = async (req, res, next) => {
   const errors = validationResult(req);
@@ -134,179 +132,194 @@ const getCompanyDetails = async (req, res, next) => {
 };
 
 const signup = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new HttpError(
+      "Invalid inputs properties. Please check your data",
+      422
+    );
+    return next(error);
+  }
 
+  const { email, password, isCompany } = req.body;
+  let existingApplicant, existingCompany;
+  try {
+    existingApplicant = await Applicant.findOne({ email: email });
+    existingCompany = await Company.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError("Signing up failed. Please try again.", 500);
+    return next(error);
+  }
 
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
-		return next(error);
-	}
+  if (existingApplicant || existingCompany) {
+    const error = new HttpError(
+      "Could not create user. Email already exists.",
+      422
+    );
+    return next(error);
+  }
 
-	const { email, password, isCompany } = req.body;
-	let existingApplicant, existingCompany;
-	try {
-		existingApplicant = await Applicant.findOne({ email: email });
-		existingCompany = await Company.findOne({ email: email });
-	} catch (err) {
-		const error = new HttpError('Signing up failed. Please try again.', 500);
-		return next(error);
-	}
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError("Could not create user, please try again", 500);
+    return next(error);
+  }
 
-	if (existingApplicant || existingCompany) {
-		const error = new HttpError('Could not create user. Email already exists.', 422);
-		return next(error);
-	}
+  if (isCompany) {
+    const { companyName } = req.body;
+    const newCompany = new Company({
+      companyName,
+      email,
+      password: hashedPassword,
+      logo: null,
+      details: null,
+      jobAds: [],
+      isCompany,
+    });
+    try {
+      await newCompany.save();
+    } catch (err) {
+      const error = new HttpError(
+        "Could not create user. Please input a valid value",
+        500
+      );
+      return next(error);
+    }
 
-	let hashedPassword;
-	try {
-		hashedPassword = await bcrypt.hash(password, 12);
-	} catch (err) {
-		const error = new HttpError('Could not create user, please try again', 500);
-		return next(error);
-	}
+    let token;
+    try {
+      token = jwt.sign(
+        {
+          userId: newCompany.id,
+          email: newCompany.email,
+          isCompany: newCompany.isCompany,
+        },
+        "one_batch_two_batch_penny_and_dime",
+        {
+          expiresIn: "3h",
+        }
+      );
+    } catch (err) {
+      const error = new HttpError("Could not create user.", 500);
+      return next(error);
+    }
 
-	if (isCompany) {
-		const { companyName } = req.body;
-		const newCompany = new Company({
-			companyName,
-			email,
-			password: hashedPassword,
-			logo: null,
-			details: null,
-			jobAds: [],
-			isCompany
-		});
-		try {
-			await newCompany.save();
-		} catch (err) {
-			const error = new HttpError('Could not create user. Please input a valid value', 500);
-			return next(error);
-		}
+    return res.status(201).json({
+      userId: newCompany.id,
+      email: newCompany.email,
+      isCompany: newCompany.isCompany,
+      token,
+    });
+  } else {
+    const { firstName, lastName } = req.body;
+    const newApplicant = new Applicant({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      resume: null,
+      jobsApplied: [],
+      isCompany,
+    });
 
-		let token;
-		try {
-			token = jwt.sign(
-				{
-					userId: newCompany.id,
-					email: newCompany.email,
-					isCompany: newCompany.isCompany
-				},
-				'one_batch_two_batch_penny_and_dime',
-				{
-					expiresIn: '3h'
-				}
-			);
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
+    try {
+      await newApplicant.save();
+    } catch (err) {
+      const error = new HttpError("Could not create user.", 500);
+      return next(error);
+    }
 
-		return res.status(201).json({
-			userId: newCompany.id,
-			email: newCompany.email,
-			isCompany: newCompany.isCompany,
-			token
-		});
-	} else {
-		const { firstName, lastName } = req.body;
-		const newApplicant = new Applicant({
-			firstName,
-			lastName,
-			email,
-			password: hashedPassword,
-			resume: null,
-			jobsApplied: [],
-			isCompany
-		});
+    let token;
+    try {
+      token = jwt.sign(
+        {
+          userId: newApplicant.id,
+          email: newApplicant.email,
+          isCompany: newApplicant.isCompany,
+        },
+        "one_batch_two_batch_penny_and_dime",
+        {
+          expiresIn: "3h",
+        }
+      );
+    } catch (err) {
+      const error = new HttpError("Could not create user.", 500);
+      return next(error);
+    }
 
-		try {
-			await newApplicant.save();
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
-
-		let token;
-		try {
-			token = jwt.sign(
-				{
-					userId: newApplicant.id,
-					email: newApplicant.email,
-					isCompany: newApplicant.isCompany
-				},
-				'one_batch_two_batch_penny_and_dime',
-				{
-					expiresIn: '3h'
-				}
-			);
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
-
-		return res.status(201).json({
-			userId: newApplicant.id,
-			email: newApplicant.email,
-			isCompany: newApplicant.isCompany,
-			token
-		});
-	}
-
+    return res.status(201).json({
+      userId: newApplicant.id,
+      email: newApplicant.email,
+      isCompany: newApplicant.isCompany,
+      token,
+    });
+  }
 };
 
 const login = async (req, res, next) => {
-	const { email, password } = req.body;
+  const { email, password } = req.body;
 
-	let foundUser = null;
-	try {
-		foundUser = await Company.findOne({ email });
-		if (!foundUser) {
-			foundUser = await Applicant.findOne({ email });
-		}
-	} catch (err) {
-		return next(new HttpError('Could not logged you in. Please try again later', 500));
-	}
+  let foundUser = null;
+  try {
+    foundUser = await Company.findOne({ email });
+    if (!foundUser) {
+      foundUser = await Applicant.findOne({ email });
+    }
+  } catch (err) {
+    return next(
+      new HttpError("Could not logged you in. Please try again later", 500)
+    );
+  }
 
-	if (!foundUser) {
-		return next(new HttpError('Could not identify user. Authentication Failed', 401));
-	}
+  if (!foundUser) {
+    return next(
+      new HttpError("Could not identify user. Authentication Failed", 401)
+    );
+  }
 
-	let isValidPassword = false;
-	try {
-		isValidPassword = await bcrypt.compare(password, foundUser.password);
-	} catch (err) {
-		const error = new HttpError('Could not identified user, please try again', 500);
-		return next(error);
-	}
+  let isValidPassword = false;
+  try {
+    isValidPassword = await bcrypt.compare(password, foundUser.password);
+  } catch (err) {
+    const error = new HttpError(
+      "Could not identified user, please try again",
+      500
+    );
+    return next(error);
+  }
 
-	if (!isValidPassword) {
-		const error = new HttpError('Invalid credential, please try again', 401);
-		return next(error);
-	}
+  if (!isValidPassword) {
+    const error = new HttpError("Invalid credential, please try again", 401);
+    return next(error);
+  }
 
-	let token;
-	try {
-		token = jwt.sign(
-			{
-				userId: foundUser.id,
-				email: foundUser.email,
-				isCompany: foundUser.isCompany
-			},
-			'one_batch_two_batch_penny_and_dime',
-			{ expiresIn: '3h' }
-		);
-	} catch (err) {
-		const error = new HttpError('Could not generate token, please try again', 500);
-		return next(error);
-	}
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: foundUser.id,
+        email: foundUser.email,
+        isCompany: foundUser.isCompany,
+      },
+      "one_batch_two_batch_penny_and_dime",
+      { expiresIn: "3h" }
+    );
+  } catch (err) {
+    const error = new HttpError(
+      "Could not generate token, please try again",
+      500
+    );
+    return next(error);
+  }
 
-	res.status(200).json({
-		userId: foundUser.id,
-		email: foundUser.email,
-		isCompany: foundUser.isCompany,
-		token
-	});
-
+  res.status(200).json({
+    userId: foundUser.id,
+    email: foundUser.email,
+    isCompany: foundUser.isCompany,
+    token,
+  });
 };
 
 const updateApplicantProfile = async (req, res, next) => {
@@ -435,6 +448,42 @@ const updateCompanyProfile = async (req, res, next) => {
   return res.status(200).json({ foundCompany: foundCompany });
 };
 
+const deleteSegment = async (req, res, next) => {
+  const { applicantId, segment, index } = req.body;
+
+  let foundApplicant;
+  try {
+    foundApplicant = await Applicant.findById(applicantId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the feed",
+      500
+    );
+    return next(error);
+  }
+
+  if (!foundApplicant) {
+    const error = new HttpError("No applicant found", 404);
+    return next(error);
+  }
+
+  let foundSegment = foundApplicant[segment][index];
+
+  try {
+    await foundApplicant[segment].pull({ _id: foundSegment._id });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the segment at the moment",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ message: "successful delete!" });
+};
+
+exports.deleteSegment = deleteSegment;
 exports.getAllCompany = getAllCompany;
 exports.getAllApplicant = getAllApplicant;
 exports.getApplicantDetails = getApplicantDetails;

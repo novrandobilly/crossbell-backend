@@ -24,4 +24,5 @@ router.post("/login", usersControllers.login);
 router.patch("/ap/:applicantid", usersControllers.updateApplicantProfile);
 router.patch("/co/:companyid", usersControllers.updateCompanyProfile);
 
+router.delete("/segment", usersControllers.deleteSegment);
 module.exports = router;
