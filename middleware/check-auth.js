@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
 		}
 
 		const decodedToken = jwt.verify(token, 'one_batch_two_batch_penny_and_dime');
-		req.usereData = { userId: decodedToken.userId };
+		req.userData = { userId: decodedToken.userId };
 		next();
 	} catch (err) {
 		const error = new httpError('Authentication failed', 401);

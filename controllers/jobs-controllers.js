@@ -149,6 +149,11 @@ const updateJob = async (req, res, next) => {
 		return next(error);
 	}
 
+	if (req.userData.userId !== updatedJob.companyId.id) {
+		const error = new HttpError('You are not allowed to do that', 401);
+		return next(error);
+	}
+
 	if (!updatedJob) {
 		const error = new HttpError('Job not found, update failed', 404);
 		return next(error);
@@ -235,9 +240,14 @@ const deleteJob = async (req, res, next) => {
 
 	let foundJob;
 	try {
-		foundJob = await Job.findById(jobId).populate('companyId jobApplicants');
+		foundJob = await Job.findById(jobId).populate('companyId jobApplicants', '-password');
 	} catch (err) {
 		const error = new HttpError('Something went wrong. Cannot delete the jobs', 500);
+		return next(error);
+	}
+
+	if (req.userData.userId !== foundJob.companyId.id) {
+		const error = new HttpError('You are not allowed to do that', 401);
 		return next(error);
 	}
 
