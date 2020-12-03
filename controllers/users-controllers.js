@@ -1,3 +1,4 @@
+
 const { validationResult } = require('express-validator');
 const Applicant = require('../models/applicant-model');
 const { update } = require('../models/company-model');
@@ -8,6 +9,7 @@ const jwt = require('jsonwebtoken');
 
 const HttpError = require('../models/http-error');
 
+
 const getFeedback = async (req, res, next) => {
 	let foundFeedback;
 	try {
@@ -16,12 +18,14 @@ const getFeedback = async (req, res, next) => {
 		return next(new HttpError('Fetching feedsfailed, please try again later', 500));
 	}
 
+
 	if (!foundFeedback) {
 		return next(new HttpError('No feedback found!', 404));
 	}
 
 	res.status(200).json({ Feedback: foundFeedback });
 };
+
 
 const createFeedback = async (req, res, next) => {
 	const errors = validationResult(req);
@@ -114,6 +118,7 @@ const getCompanyDetails = async (req, res, next) => {
 };
 
 const signup = async (req, res, next) => {
+
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
@@ -284,6 +289,7 @@ const login = async (req, res, next) => {
 		isCompany: foundUser.isCompany,
 		token
 	});
+
 };
 
 const updateApplicantProfile = async (req, res, next) => {
@@ -384,6 +390,42 @@ const updateCompanyProfile = async (req, res, next) => {
 	return res.status(200).json({ foundCompany: foundCompany });
 };
 
+const deleteSegment = async (req, res, next) => {
+  const { applicantId, segment, index } = req.body;
+
+  let foundApplicant;
+  try {
+    foundApplicant = await Applicant.findById(applicantId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the feed",
+      500
+    );
+    return next(error);
+  }
+
+  if (!foundApplicant) {
+    const error = new HttpError("No applicant found", 404);
+    return next(error);
+  }
+
+  let foundSegment = foundApplicant[segment][index];
+
+  try {
+    await foundApplicant[segment].pull({ _id: foundSegment._id });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the segment at the moment",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ message: "successful delete!" });
+};
+
+exports.deleteSegment = deleteSegment;
 exports.getAllCompany = getAllCompany;
 exports.getAllApplicant = getAllApplicant;
 exports.getApplicantDetails = getApplicantDetails;
