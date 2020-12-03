@@ -1,8 +1,8 @@
-
 const express = require('express');
 const { check } = require('express-validator');
 const adminControllers = require('../controllers/admin-controllers');
 const router = express.Router();
+const checkAuth = require('../middleware/check-auth');
 
 const regAdminChecker = [
 	check('NIK').trim().notEmpty(),
@@ -18,15 +18,16 @@ const regAdminChecker = [
 ];
 
 // router.get('/admlog', adminControllers.admlog);
-
 router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
+// router.use(checkAuth);
 router.get('/jobs', adminControllers.getWholeJobs);
 router.get('/applicants', adminControllers.getWholeApplicants);
 router.get('/companies', adminControllers.getWholeCompanies);
 router.get('/:jobid/applicants', adminControllers.getApplicantsFromJob);
 router.get('/:applicantid/jobs', adminControllers.getJobsFromApplicant);
+router.post('/:companyid/activate', adminControllers.activateCompany);
+router.post('/:companyid/block', adminControllers.blockCompany);
 
-
-router.delete("/feedback", adminControllers.deleteFeed);
+router.delete('/feedback', adminControllers.deleteFeed);
 module.exports = router;
