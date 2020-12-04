@@ -11,8 +11,8 @@ const Applicant = require('../models/applicant-model');
 const getAllAvailableJobs = async (req, res, next) => {
 	let availableJobs;
 	try {
-		// availableJobs = await Job.find({ expiredDate: { $gte: new Date() } });
-		availableJobs = await Job.find().populate('companyId', '-password');
+		availableJobs = await Job.find({ expiredDate: { $gte: new Date() } }).populate('companyId', '-password');
+		// availableJobs = await Job.find().populate('companyId', '-password');
 	} catch (err) {
 		const error = new HttpError('Fetching available jobs failed. Please try again later.', 500);
 		return next(error);
@@ -69,7 +69,6 @@ const createJob = async (req, res, next) => {
 		const error = new HttpError('Invalid input properties, please check your data', 422);
 		return next(error);
 	}
-
 	const {
 		jobTitle,
 		description,
@@ -82,7 +81,7 @@ const createJob = async (req, res, next) => {
 		employment,
 		jobFunction,
 		benefit,
-		expiredDate,
+		slot,
 		salary,
 		companyId
 	} = req.body;
@@ -96,6 +95,13 @@ const createJob = async (req, res, next) => {
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
 	}
+	let parsedSlot = parseInt(slot);
+
+	if (foundCompany.slot - parsedSlot < 0 || parsedSlot < 1) {
+		return next(new HttpError('Your remaining slot is not sufficient', 401));
+	}
+
+	const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
 
 	const newJob = new Job({
 		jobTitle,
@@ -109,11 +115,13 @@ const createJob = async (req, res, next) => {
 		employment,
 		jobFunction,
 		benefit,
-		expiredDate,
+		expiredDate: expCalculation.toISOString(),
 		salary,
 		jobApplicants: [],
 		companyId
 	});
+
+	foundCompany.slot = foundCompany.slot - parsedSlot;
 
 	try {
 		const sess = await mongoose.startSession();
