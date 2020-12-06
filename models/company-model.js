@@ -8,17 +8,22 @@ const companySchema = new Schema({
 	companyName: { type: String, required: true },
 	email: { type: String, required: true, unique: true },
 	password: { type: String, required: true, minlength: 6 },
-	size: { type: String, default: null },
 	industry: { type: String, default: null },
 	address: { type: String, default: null },
 	website: { type: String, default: null },
-	emailRecipient: { type: String, default: null },
-	details: { type: String, default: null },
-	mission: { type: String, default: null },
+
+	picName: { type: String, default: null },
+	picPhone: { type: String, default: null },
+	picEmail: { type: String, default: null },
+	picOfficePhone: { type: String, default: null },
+	picJobTitle: { type: String, default: null },
+
+	briefDescriptions: { type: String, default: null },
 	slot: { type: Number, default: 0 },
 	isCompany: { type: Boolean, default: true },
 	isActive: { type: Boolean, default: false },
-	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ]
+	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
+	order: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Order' } ]
 });
 
 companySchema.plugin(uniqueValidator);

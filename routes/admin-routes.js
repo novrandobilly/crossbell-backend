@@ -26,6 +26,8 @@ router.use(checkAuth);
 router.get('/jobs', adminControllers.getWholeJobs);
 router.get('/applicants', adminControllers.getWholeApplicants);
 router.get('/companies', adminControllers.getWholeCompanies);
+router.post('/order', adminControllers.createOrder);
+router.post('/approve', adminControllers.approveOrder);
 router.get('/:jobid/applicants', adminControllers.getApplicantsFromJob);
 router.get('/:applicantid/jobs', adminControllers.getJobsFromApplicant);
 router.post('/:companyid/activate', adminControllers.activateCompany);
