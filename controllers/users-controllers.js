@@ -150,7 +150,7 @@ const signup = async (req, res, next) => {
 			email,
 			password: hashedPassword,
 			logo: null,
-			details: null,
+			briefDescriptions: null,
 			jobAds: [],
 			isCompany,
 			isActive: false
@@ -360,21 +360,24 @@ const updateCompanyProfile = async (req, res, next) => {
 
 	try {
 		foundCompany = await Company.findOne({ _id: companyId });
-
-		foundCompany.logo = data.logo ? data.logo : foundCompany.logo;
-		foundCompany.companyName = data.companyName ? data.companyName : foundCompany.companyName;
-		foundCompany.email = data.email ? data.email : foundCompany.email;
-		foundCompany.size = data.size ? data.size : foundCompany.size;
-		foundCompany.address = data.address ? data.address : foundCompany.address;
-		foundCompany.industry = data.industry ? data.industry : foundCompany.industry;
-		foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient : foundCompany.emailRecipient;
-		foundCompany.website = data.website ? data.website : foundCompany.website;
-		foundCompany.details = data.details ? data.details : foundCompany.details;
-		foundCompany.mission = data.mission ? data.mission : foundCompany.mission;
 	} catch (err) {
 		const error = new HttpError('Something went wrong. Please try again later', 500);
 		return next(error);
 	}
+
+	foundCompany.logo = data.logo ? data.logo : foundCompany.logo;
+	foundCompany.companyName = data.companyName ? data.companyName : foundCompany.companyName;
+	foundCompany.email = data.email ? data.email : foundCompany.email;
+	foundCompany.picName = data.picName ? data.picName : foundCompany.picName;
+	foundCompany.picJobTitle = data.picJobTitle ? data.picJobTitle : foundCompany.picJobTitle;
+	foundCompany.picEmail = data.picEmail ? data.picEmail : foundCompany.picEmail;
+	foundCompany.picOfficePhone = data.picOfficePhone ? data.picOfficePhone : foundCompany.picOfficePhone;
+	foundCompany.picPhone = data.picPhone ? data.picPhone : foundCompany.picPhone;
+	foundCompany.address = data.address ? data.address : foundCompany.address;
+	foundCompany.industry = data.industry ? data.industry : foundCompany.industry;
+	foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient : foundCompany.emailRecipient;
+	foundCompany.website = data.website ? data.website : foundCompany.website;
+	foundCompany.briefDescriptions = data.briefDescriptions ? data.briefDescriptions : foundCompany.briefDescriptions;
 
 	try {
 		await foundCompany.save();

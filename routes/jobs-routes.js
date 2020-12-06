@@ -11,8 +11,8 @@ const createJobChecker = [
 	check('jobTitle').trim().notEmpty(),
 	check('description').trim().isLength({ min: 5 }),
 	check('city').trim().notEmpty(),
+	check('emailRecipient').normalizeEmail().isEmail(),
 	check('region').trim().notEmpty(),
-	// check('expiredDate').isAfter(new Date().toDateString()),
 	check('salary').trim().notEmpty(),
 	check('companyId').trim().notEmpty()
 ];

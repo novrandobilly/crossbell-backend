@@ -14,7 +14,10 @@ const jobSchema = new Schema({
 	employment: { type: String, required: true },
 	jobFunction: { type: String, required: true },
 	benefit: { type: String, required: true },
+	slot: { type: Number, required: true },
+	emailRecipient: { type: String, required: true },
 	expiredDate: { type: Date },
+	createdAt: { type: Date },
 	salary: { type: String, required: true },
 	jobApplicants: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Applicant' } ],
 	companyId: { type: mongoose.Types.ObjectId, required: true, ref: 'Company' }

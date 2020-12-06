@@ -78,6 +78,7 @@ const createJob = async (req, res, next) => {
 		jobQualification,
 		technicalRequirement,
 		level,
+		emailRecipient,
 		employment,
 		jobFunction,
 		benefit,
@@ -112,10 +113,13 @@ const createJob = async (req, res, next) => {
 		jobQualification,
 		technicalRequirement,
 		level,
+		emailRecipient,
 		employment,
 		jobFunction,
 		benefit,
 		expiredDate: expCalculation.toISOString(),
+		createdAt: new Date().toISOString(),
+		slot: parsedSlot,
 		salary,
 		jobApplicants: [],
 		companyId
@@ -185,25 +189,24 @@ const updateJob = async (req, res, next) => {
 
 const applyJob = async (req, res, next) => {
 	const jobId = req.params.jobid;
-	// const { applicantId, companyEmail } = req.body;
-	const { companyEmail } = req.body;
+	const { applicantId } = req.body;
 
-	// let foundJob, foundApplicant;
-	// try {
-	// 	foundJob = await Job.findById(jobId);
-	// 	foundApplicant = await Applicant.findById(applicantId);
-	// } catch (err) {
-	// 	return next(new HttpError('Searching for job/applicant ID failed. Please try again later', 500));
-	// }
+	let foundJob, foundApplicant;
+	try {
+		foundJob = await Job.findById(jobId);
+		foundApplicant = await Applicant.findById(applicantId);
+	} catch (err) {
+		return next(new HttpError('Cannot retrieve for job/applicant ID failed. Please try again later', 500));
+	}
 
-	// if (!foundJob || !foundApplicant) {
-	// 	return next(new HttpError('Job/Applicant could not not found. Please try again later', 404));
-	// }
+	if (!foundJob || !foundApplicant) {
+		return next(new HttpError('Job/Applicant could not not found. Please try again later', 404));
+	}
 
-	// let applicantHasApplied = foundApplicant.jobsApplied.toObject({ getters: true }).some(job => job.toString() === jobId);
-	// if (applicantHasApplied) {
-	// 	return next(new HttpError('You have applied to this job', 500));
-	// }
+	let applicantHasApplied = foundApplicant.jobsApplied.toObject({ getters: true }).some(job => job.toString() === jobId);
+	if (applicantHasApplied) {
+		return next(new HttpError('You have applied to this job', 500));
+	}
 
 	//========================================SEND EMAIL USING SENDGRID========================================
 	// const emailData = {
@@ -217,25 +220,25 @@ const applyJob = async (req, res, next) => {
 	// 	`
 	// };
 	const emailData = {
-		to: companyEmail,
+		to: foundJob.emailRecipient,
 		from: 'crossbellcorps@gmail.com',
 		subject: `Job Application from Crossbell Front-End`,
-		text: `Test Email Send - Job Application from Crossbell Front-End for jobid ${jobId} \n To Email: ${companyEmail}`,
+		text: `Test Email Send - Job Application from Crossbell Front-End for jobid ${jobId} \n To Email: ${foundJob.emailRecipient}`,
 		html: `
 		<strong>Test Email Send - Job Application for jobid ${jobId}</strong>
-		<p>Ini contoh email sending job application ke email ${companyEmail}</p>
+		<p>Ini contoh email sending job application ke email ${foundJob.emailRecipient}</p>
 		`
 	};
 
 	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		foundJob.jobApplicants.push(foundApplicant);
+		foundApplicant.jobsApplied.push(foundJob);
+		await foundJob.save({ session: sess });
+		await foundApplicant.save({ session: sess });
 		await sgMail.send(emailData);
-		// const sess = await mongoose.startSession();
-		// sess.startTransaction();
-		// foundJob.jobApplicants.push(foundApplicant);
-		// foundApplicant.jobsApplied.push(foundJob);
-		// await foundJob.save({ session: sess });
-		// await foundApplicant.save({ session: sess });
-		// sess.commitTransaction();
+		sess.commitTransaction();
 	} catch (err) {
 		return next(new HttpError('Applying for job failed. Please try again later', 500));
 	}

@@ -3,6 +3,7 @@ const Job = require('../models/job-model');
 const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
 const Admin = require('../models/admin-model');
+const Order = require('../models/order-model');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -315,11 +316,101 @@ const blockCompany = async (req, res, next) => {
 	res.status(200).json(foundCompany.toObject({ getters: true }));
 };
 
+//============================CREATE ORDER==================================================
+
+const createOrder = async (req, res, next) => {
+	const { invoiceId, companyId, packageName, status, slot, packagePrice, amount, totalPrice } = req.body;
+
+	let foundCompany;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
+
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedSlot = parseInt(slot);
+	const parsedPackagePrice = parseInt(packagePrice);
+	const parsedAmount = parseInt(amount);
+
+	const newOrder = new Order({
+		invoiceId,
+		companyId,
+		packageName,
+		status,
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		slot: parsedSlot,
+		packagePrice: parsedPackagePrice,
+		amount: parsedAmount,
+		totalPrice: parsedAmount * parsedPackagePrice
+	});
+
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.order.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+};
+
+const approveOrder = async (req, res, next) => {
+	const { orderId, companyId } = req.body;
+
+	let foundOrder, foundCompany;
+	try {
+		foundOrder = await Order.findById(orderId);
+	} catch (err) {
+		return next(new HttpError('Fetching Order failed. Please try again', 404));
+	}
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Fetching Company failed. Please try again', 404));
+	}
+	if (!foundOrder) {
+		return next(new HttpError('Could not find order with such id.', 404));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
+
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		foundCompany.slot = foundCompany.slot + foundOrder.slot * foundOrder.amount;
+		foundOrder.status = 'Paid';
+		foundOrder.approvedAt = new Date().toISOString();
+		await foundOrder.save({ session: sess });
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not approve new order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ message: 'Successfully approve order!' });
+};
+
 exports.getWholeJobs = getWholeJobs;
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
 exports.getJobsFromApplicant = getJobsFromApplicant;
+exports.createOrder = createOrder;
+exports.approveOrder = approveOrder;
 
 exports.admReg = admReg;
 exports.admSign = admSign;
