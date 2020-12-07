@@ -9,14 +9,12 @@ const router = express.Router();
 //=======================CHECKER=======================
 const createJobChecker = [
 	check('jobTitle').trim().notEmpty(),
-	check('description').trim().isLength({ min: 5 }),
-	check('city').trim().notEmpty(),
+	check('jobDescriptions').trim().isLength({ min: 5 }),
+	check('placementLocation').trim().notEmpty(),
 	check('emailRecipient').normalizeEmail().isEmail(),
-	check('region').trim().notEmpty(),
-	check('salary').trim().notEmpty(),
 	check('companyId').trim().notEmpty()
 ];
-const updateJobChecker = [ check('description').trim().isLength({ min: 5 }), check('salary').trim().notEmpty() ];
+const updateJobChecker = [ check('jobDescriptions').trim().isLength({ min: 5 }) ];
 
 // =======================ROUTES=======================
 router.get('/', jobsControllers.getAllAvailableJobs);
