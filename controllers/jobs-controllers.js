@@ -65,22 +65,19 @@ const getSpecificJob = async (req, res, next) => {
 
 const createJob = async (req, res, next) => {
 	const errors = validationResult(req);
+	console.log(req.body);
 	if (!errors.isEmpty()) {
 		const error = new HttpError('Invalid input properties, please check your data', 422);
 		return next(error);
 	}
 	const {
 		jobTitle,
-		description,
-		city,
-		region,
-		jobDescription,
+		placementLocation,
+		jobDescriptions,
 		jobQualification,
 		technicalRequirement,
-		level,
 		emailRecipient,
 		employment,
-		jobFunction,
 		benefit,
 		slot,
 		salary,
@@ -96,8 +93,9 @@ const createJob = async (req, res, next) => {
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
 	}
-	let parsedSlot = parseInt(slot);
 
+	let parsedSlot = parseInt(slot);
+	parsedSlot = parsedSlot / 2;
 	if (foundCompany.slot - parsedSlot < 0 || parsedSlot < 1) {
 		return next(new HttpError('Your remaining slot is not sufficient', 401));
 	}
@@ -106,21 +104,17 @@ const createJob = async (req, res, next) => {
 
 	const newJob = new Job({
 		jobTitle,
-		description,
-		city,
-		region,
-		jobDescription,
+		placementLocation,
+		jobDescriptions,
 		jobQualification,
 		technicalRequirement,
-		level,
 		emailRecipient,
 		employment,
-		jobFunction,
-		benefit,
 		expiredDate: expCalculation.toISOString(),
 		createdAt: new Date().toISOString(),
 		slot: parsedSlot,
-		salary,
+		benefit: benefit || null,
+		salary: salary || null,
 		jobApplicants: [],
 		companyId
 	});
@@ -150,7 +144,7 @@ const updateJob = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { description, salary, jobQualification, technicalRequirement, employment } = req.body;
+	const { jobDescriptions, salary, jobQualification, technicalRequirement, employment } = req.body;
 	const jobId = req.params.jobid;
 
 	let updatedJob;
@@ -171,7 +165,7 @@ const updateJob = async (req, res, next) => {
 		return next(error);
 	}
 
-	updatedJob.description = description ? description : updatedJob.description;
+	updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions : updatedJob.jobDescriptions;
 	updatedJob.salary = salary ? salary : updatedJob.salary;
 	updatedJob.jobQualification = jobQualification ? jobQualification : updatedJob.jobQualification;
 	updatedJob.technicalRequirement = technicalRequirement ? technicalRequirement : updatedJob.technicalRequirement;
