@@ -19,11 +19,13 @@ const companySchema = new Schema({
 	picJobTitle: { type: String, default: null },
 
 	briefDescriptions: { type: String, default: null },
-	slot: { type: Number, default: 0 },
+	slotREG: { type: Number, default: 0 },
+	slotBC: { type: Number, default: 0 },
 	isCompany: { type: Boolean, default: true },
 	isActive: { type: Boolean, default: false },
 	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
-	order: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Order' } ]
+	orderREG: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Order' } ],
+	orderBC: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderbc' } ]
 });
 
 companySchema.plugin(uniqueValidator);

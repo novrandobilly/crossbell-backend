@@ -3,7 +3,8 @@ const Job = require('../models/job-model');
 const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
 const Admin = require('../models/admin-model');
-const Order = require('../models/order-model');
+const Orderreg = require('../models/orderreg-model');
+const Orderbc = require('../models/orderbc-model');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -316,10 +317,10 @@ const blockCompany = async (req, res, next) => {
 	res.status(200).json(foundCompany.toObject({ getters: true }));
 };
 
-//============================CREATE ORDER==================================================
+//============================REGULER ORDER==================================================
 
-const createOrder = async (req, res, next) => {
-	const { invoiceId, companyId, packageName, status, slot, packagePrice, amount, totalPrice } = req.body;
+const createOrderReg = async (req, res, next) => {
+	const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
 
 	let foundCompany;
 	try {
@@ -333,27 +334,36 @@ const createOrder = async (req, res, next) => {
 
 	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
 	const parsedSlot = parseInt(slot);
-	const parsedPackagePrice = parseInt(packagePrice);
-	const parsedAmount = parseInt(amount);
+	let parsedPricePerSlot;
+	if (packageName === 'bronze') {
+		parsedPricePerSlot = 20000;
+	} else if (packageName === 'silver') {
+		parsedPricePerSlot = 17500;
+	} else if (packageName === 'gold') {
+		parsedPricePerSlot = 16000;
+	} else if (packageName === 'platinum') {
+		parsedPricePerSlot = 15000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
 
 	const newOrder = new Order({
 		invoiceId,
 		companyId,
 		packageName,
-		status,
+		status: 'Pending',
 		createdAt: new Date().toISOString(),
 		dueDate: dueDateCalculation.toISOString(),
-		slot: parsedSlot,
-		packagePrice: parsedPackagePrice,
-		amount: parsedAmount,
-		totalPrice: parsedAmount * parsedPackagePrice
+		slotREG: parsedSlot,
+		pricePerSlot: parsedPricePerSlot,
+		totalPrice: parsedSlot * parsedPricePerSlot
 	});
 
 	try {
 		const sess = await mongoose.startSession();
 		sess.startTransaction();
 		await newOrder.save({ session: sess });
-		foundCompany.order.push(newOrder);
+		foundCompany.orderREG.push(newOrder);
 		await foundCompany.save({ session: sess });
 		await sess.commitTransaction();
 	} catch (err) {
@@ -365,12 +375,12 @@ const createOrder = async (req, res, next) => {
 	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
 };
 
-const approveOrder = async (req, res, next) => {
+const approveOrderReg = async (req, res, next) => {
 	const { orderId, companyId } = req.body;
 
 	let foundOrder, foundCompany;
 	try {
-		foundOrder = await Order.findById(orderId);
+		foundOrder = await Orderreg.findById(orderId);
 	} catch (err) {
 		return next(new HttpError('Fetching Order failed. Please try again', 404));
 	}
@@ -389,7 +399,7 @@ const approveOrder = async (req, res, next) => {
 	try {
 		const sess = await mongoose.startSession();
 		sess.startTransaction();
-		foundCompany.slot = foundCompany.slot + foundOrder.slot * foundOrder.amount;
+		foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
 		foundOrder.status = 'Paid';
 		foundOrder.approvedAt = new Date().toISOString();
 		await foundOrder.save({ session: sess });
@@ -397,7 +407,101 @@ const approveOrder = async (req, res, next) => {
 		await sess.commitTransaction();
 	} catch (err) {
 		console.log(err);
-		const error = new HttpError('Could not approve new order. Please try again later', 500);
+		const error = new HttpError('Could not approve new Reguler order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ message: 'Successfully approve order!' });
+};
+
+//=============================BULK CANDIDATES===================================================
+const createOrderBC = async (req, res, next) => {
+	const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
+
+	let foundCompany;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
+
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedSlot = parseInt(slot);
+	let parsedPricePerSlot;
+	if (packageName === 'silver') {
+		parsedPricePerSlot = 10000;
+	} else if (packageName === 'gold') {
+		parsedPricePerSlot = 8500;
+	} else if (packageName === 'platinum') {
+		parsedPricePerSlot = 7000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
+
+	const newOrder = new Orderbc({
+		invoiceId,
+		companyId,
+		packageName,
+		status: 'Pending',
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		slotBC: parsedSlot,
+		pricePerSlot: parsedPricePerSlot,
+		totalPrice: parsedSlot * parsedPricePerSlot
+	});
+
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.orderBC.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new Bulk Candidates order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+};
+
+const approveOrderBC = async (req, res, next) => {
+	const { orderId, companyId } = req.body;
+
+	let foundOrder, foundCompany;
+	try {
+		foundOrder = await Orderbc.findById(orderId);
+	} catch (err) {
+		return next(new HttpError('Fetching Order failed. Please try again', 404));
+	}
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Fetching Company failed. Please try again', 404));
+	}
+	if (!foundOrder) {
+		return next(new HttpError('Could not find order with such id.', 404));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
+
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		foundCompany.slotBC = foundCompany.slotBC + foundOrder.slot;
+		foundOrder.status = 'Paid';
+		foundOrder.approvedAt = new Date().toISOString();
+		await foundOrder.save({ session: sess });
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not approve new Reguler order. Please try again later', 500);
 		return next(error);
 	}
 
@@ -409,8 +513,11 @@ exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
 exports.getJobsFromApplicant = getJobsFromApplicant;
-exports.createOrder = createOrder;
-exports.approveOrder = approveOrder;
+
+exports.createOrderReg = createOrderReg;
+exports.approveOrderReg = approveOrderReg;
+exports.createOrderBC = createOrderBC;
+exports.approveOrderBC = approveOrderBC;
 
 exports.admReg = admReg;
 exports.admSign = admSign;
