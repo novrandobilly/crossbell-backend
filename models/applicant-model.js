@@ -15,7 +15,6 @@ const applicantSchema = new Schema({
 	state: { type: String },
 	zip: { type: String },
 	phone: { type: String },
-	website: { type: String },
 	details: { type: String },
 	dateOfBirth: { type: Date },
 	education: [
