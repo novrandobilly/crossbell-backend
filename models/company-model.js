@@ -18,16 +18,16 @@ const companySchema = new Schema({
   picOfficePhone: { type: String, default: null },
   picJobTitle: { type: String, default: null },
 
-  briefDescriptions: { type: String, default: null },
-  slotREG: { type: Number, default: 0 },
-  slotBC: { type: Number, default: 0 },
-  isCompany: { type: Boolean, default: true },
-  isActive: { type: Boolean, default: false },
-  jobAds: [{ type: mongoose.Types.ObjectId, required: true, ref: "Job" }],
-  orderREG: [
-    { type: mongoose.Types.ObjectId, required: true, ref: "Orderreg" },
-  ],
-  orderBC: [{ type: mongoose.Types.ObjectId, required: true, ref: "Orderbc" }],
+
+	briefDescriptions: { type: String, default: null },
+	slotREG: { type: Number, default: 0 },
+	slotBC: { type: Number, default: 0 },
+	isCompany: { type: Boolean, default: true },
+	isActive: { type: Boolean, default: false },
+	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
+	orderREG: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderreg' } ],
+	orderBC: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderbc' } ]
+
 });
 
 companySchema.plugin(uniqueValidator);

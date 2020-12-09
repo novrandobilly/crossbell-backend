@@ -1,14 +1,16 @@
-const HttpError = require("../models/http-error");
-const Job = require("../models/job-model");
-const Applicant = require("../models/applicant-model");
-const Company = require("../models/company-model");
-const Admin = require("../models/admin-model");
-const Orderreg = require("../models/orderreg-model");
-const Orderbc = require("../models/orderbc-model");
-const { validationResult } = require("express-validator");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose");
+
+const mongoose = require('mongoose');
+const HttpError = require('../models/http-error');
+const Job = require('../models/job-model');
+const Applicant = require('../models/applicant-model');
+const Company = require('../models/company-model');
+const Admin = require('../models/admin-model');
+const Orderreg = require('../models/orderreg-model');
+const Orderbc = require('../models/orderbc-model');
+const { validationResult } = require('express-validator');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
 
 const getWholeJobs = async (req, res, next) => {
   let wholeJobs;
@@ -451,66 +453,61 @@ const getOrderInvoice = async (req, res, next) => {
 };
 
 const createOrderReg = async (req, res, next) => {
-  const { invoiceId, companyId, packageName, slot } = req.body;
 
-  let foundCompany;
-  try {
-    foundCompany = await Company.findById(companyId);
-  } catch (err) {
-    return next(
-      new HttpError("Could not find company data. Please try again later", 500)
-    );
-  }
-  if (!foundCompany) {
-    return next(new HttpError("Could not find company with such id.", 404));
-  }
+	const { invoiceId, companyId, packageName, slot } = req.body;
 
-  const dueDateCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 14
-  );
-  const parsedSlot = parseInt(slot);
-  let parsedPricePerSlot;
-  if (packageName === "bronze") {
-    parsedPricePerSlot = 20000;
-  } else if (packageName === "silver") {
-    parsedPricePerSlot = 17500;
-  } else if (packageName === "gold") {
-    parsedPricePerSlot = 16000;
-  } else if (packageName === "platinum") {
-    parsedPricePerSlot = 15000;
-  } else {
-    return next(new HttpError("Package Type is not defined.", 404));
-  }
+	let foundCompany;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
 
-  const newOrder = new Orderreg({
-    invoiceId,
-    companyId,
-    packageName,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    dueDate: dueDateCalculation.toISOString(),
-    slot: parsedSlot,
-    pricePerSlot: parsedPricePerSlot,
-    totalPrice: parsedSlot * parsedPricePerSlot,
-  });
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedSlot = parseInt(slot);
+	let parsedPricePerSlot;
+	if (packageName === 'bronze') {
+		parsedPricePerSlot = 20000;
+	} else if (packageName === 'silver') {
+		parsedPricePerSlot = 17500;
+	} else if (packageName === 'gold') {
+		parsedPricePerSlot = 16000;
+	} else if (packageName === 'platinum') {
+		parsedPricePerSlot = 15000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await newOrder.save({ session: sess });
-    foundCompany.orderREG.push(newOrder);
-    await foundCompany.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "Could not create new order. Please try again later",
-      500
-    );
-    return next(error);
-  }
+	const newOrder = new Order({
+		invoiceId,
+		companyId,
+		packageName,
+		status: 'Pending',
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		slot: parsedSlot,
+		pricePerSlot: parsedPricePerSlot,
+		totalPrice: parsedSlot * parsedPricePerSlot
+	});
 
-  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.orderREG.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+
 };
 
 const approveOrderReg = async (req, res, next) => {
@@ -559,64 +556,59 @@ const approveOrderReg = async (req, res, next) => {
 
 //=============================BULK CANDIDATES===================================================
 const createOrderBC = async (req, res, next) => {
-  const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
 
-  let foundCompany;
-  try {
-    foundCompany = await Company.findById(companyId);
-  } catch (err) {
-    return next(
-      new HttpError("Could not find company data. Please try again later", 500)
-    );
-  }
-  if (!foundCompany) {
-    return next(new HttpError("Could not find company with such id.", 404));
-  }
+	const { invoiceId, companyId, packageName, slot } = req.body;
 
-  const dueDateCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 14
-  );
-  const parsedSlot = parseInt(slot);
-  let parsedPricePerSlot;
-  if (packageName === "silver") {
-    parsedPricePerSlot = 10000;
-  } else if (packageName === "gold") {
-    parsedPricePerSlot = 8500;
-  } else if (packageName === "platinum") {
-    parsedPricePerSlot = 7000;
-  } else {
-    return next(new HttpError("Package Type is not defined.", 404));
-  }
+	let foundCompany;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
 
-  const newOrder = new Orderbc({
-    invoiceId,
-    companyId,
-    packageName,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    dueDate: dueDateCalculation.toISOString(),
-    slot: parsedSlot,
-    pricePerSlot: parsedPricePerSlot,
-    totalPrice: parsedSlot * parsedPricePerSlot,
-  });
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedSlot = parseInt(slot);
+	let parsedPricePerSlot;
+	if (packageName === 'silver') {
+		parsedPricePerSlot = 10000;
+	} else if (packageName === 'gold') {
+		parsedPricePerSlot = 8500;
+	} else if (packageName === 'platinum') {
+		parsedPricePerSlot = 7000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await newOrder.save({ session: sess });
-    foundCompany.orderBC.push(newOrder);
-    await foundCompany.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "Could not create new Bulk Candidates order. Please try again later",
-      500
-    );
-    return next(error);
-  }
+	const newOrder = new Orderbc({
+		invoiceId,
+		companyId,
+		packageName,
+		status: 'Pending',
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		slot: parsedSlot,
+		pricePerSlot: parsedPricePerSlot,
+		totalPrice: parsedSlot * parsedPricePerSlot
+	});
 
-  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.orderBC.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new Bulk Candidates order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+
 };
 
 const approveOrderBC = async (req, res, next) => {
