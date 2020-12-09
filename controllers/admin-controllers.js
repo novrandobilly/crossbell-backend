@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const HttpError = require('../models/http-error');
 const Job = require('../models/job-model');
 const Applicant = require('../models/applicant-model');
@@ -320,7 +321,7 @@ const blockCompany = async (req, res, next) => {
 //============================REGULER ORDER==================================================
 
 const createOrderReg = async (req, res, next) => {
-	const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
+	const { invoiceId, companyId, packageName, slot } = req.body;
 
 	let foundCompany;
 	try {
@@ -354,7 +355,7 @@ const createOrderReg = async (req, res, next) => {
 		status: 'Pending',
 		createdAt: new Date().toISOString(),
 		dueDate: dueDateCalculation.toISOString(),
-		slotREG: parsedSlot,
+		slot: parsedSlot,
 		pricePerSlot: parsedPricePerSlot,
 		totalPrice: parsedSlot * parsedPricePerSlot
 	});
@@ -416,7 +417,7 @@ const approveOrderReg = async (req, res, next) => {
 
 //=============================BULK CANDIDATES===================================================
 const createOrderBC = async (req, res, next) => {
-	const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
+	const { invoiceId, companyId, packageName, slot } = req.body;
 
 	let foundCompany;
 	try {
@@ -448,7 +449,7 @@ const createOrderBC = async (req, res, next) => {
 		status: 'Pending',
 		createdAt: new Date().toISOString(),
 		dueDate: dueDateCalculation.toISOString(),
-		slotBC: parsedSlot,
+		slot: parsedSlot,
 		pricePerSlot: parsedPricePerSlot,
 		totalPrice: parsedSlot * parsedPricePerSlot
 	});

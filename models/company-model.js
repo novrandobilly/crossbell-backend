@@ -24,7 +24,7 @@ const companySchema = new Schema({
 	isCompany: { type: Boolean, default: true },
 	isActive: { type: Boolean, default: false },
 	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
-	orderREG: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Order' } ],
+	orderREG: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderreg' } ],
 	orderBC: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderbc' } ]
 });
 
