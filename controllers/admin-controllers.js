@@ -433,11 +433,18 @@ const getOrderInvoice = async (req, res, next) => {
   const orderId = req.params.orderid;
 
   let foundOrder;
+
   try {
     foundOrder = await Orderreg.findById(orderId).populate(
       "companyId",
       "-password"
     );
+    if (!foundOrder) {
+      foundOrder = await Orderbc.findById(orderId).populate(
+        "companyId",
+        "-password"
+      );
+    }
   } catch (err) {
     return next(
       new HttpError("Fetching order failed, please try again later", 500)
@@ -447,7 +454,7 @@ const getOrderInvoice = async (req, res, next) => {
   if (!foundOrder) {
     return next(new HttpError("Order not found", 404));
   }
-  res.status(200).json({ orderreg: foundOrder.toObject({ getters: true }) });
+  res.status(200).json({ order: foundOrder.toObject({ getters: true }) });
 };
 
 const createOrderReg = async (req, res, next) => {
@@ -510,7 +517,7 @@ const createOrderReg = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+  res.status(201).json({ orderreg: newOrder.toObject({ getters: true }) });
 };
 
 const approveOrderReg = async (req, res, next) => {
@@ -557,9 +564,126 @@ const approveOrderReg = async (req, res, next) => {
   res.status(201).json({ message: "Successfully approve order!" });
 };
 
+const cancelOrderReg = async (req, res, next) => {
+  const { orderId, companyId } = req.body;
+
+  let foundOrder, foundCompany;
+  try {
+    foundOrder = await Orderreg.findById(orderId);
+  } catch (err) {
+    return next(new HttpError("Fetching Order failed. Please try again", 404));
+  }
+  try {
+    foundCompany = await Company.findById(companyId);
+  } catch (err) {
+    return next(
+      new HttpError("Fetching Company failed. Please try again", 404)
+    );
+  }
+  if (!foundOrder) {
+    return next(new HttpError("Could not find order with such id.", 404));
+  }
+  if (!foundCompany) {
+    return next(new HttpError("Could not find company with such id.", 404));
+  }
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
+    foundOrder.status = "Cancel";
+    foundOrder.approvedAt
+      ? null
+      : (foundOrder.approvedAt = new Date().toISOString());
+    await foundOrder.save({ session: sess });
+    await foundCompany.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Could not approve new Reguler order. Please try again later",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(201).json({ message: "Successfully approve order!" });
+};
+
 //=============================BULK CANDIDATES===================================================
+
+const getOrderBC = async (req, res, next) => {
+  let foundOrder;
+  try {
+    foundOrder = await Orderbc.find().populate("companyId", "-password");
+  } catch (err) {
+    return next(
+      new HttpError("Fetching order failed, please try again later", 500)
+    );
+  }
+
+  if (!foundOrder) {
+    return next(new HttpError("No order at the moment", 404));
+  }
+
+  res.status(200).json({ orderbc: foundOrder });
+};
+
+const getCompanyOrderBC = async (req, res, next) => {
+  const companyId = req.params.companyid;
+
+  let foundOrder;
+  try {
+    foundOrder = await Orderbc.find({ companyId: companyId });
+  } catch (err) {
+    return next(
+      new HttpError("Fetching order failed, please try again later", 500)
+    );
+  }
+
+  if (!foundOrder) {
+    return next(new HttpError("Order not found", 404));
+  }
+
+  res.status(200).json({ orderbc: foundOrder });
+};
+
+const getOrderBCInvoice = async (req, res, next) => {
+  const orderId = req.params.orderid;
+
+  let foundOrder;
+  try {
+    foundOrder = await Orderbc.findById(orderId).populate(
+      "companyId",
+      "-password"
+    );
+  } catch (err) {
+    return next(
+      new HttpError("Fetching order failed, please try again later", 500)
+    );
+  }
+
+  if (!foundOrder) {
+    return next(new HttpError("Order not found", 404));
+  }
+  res.status(200).json({ orderbc: foundOrder.toObject({ getters: true }) });
+};
+
 const createOrderBC = async (req, res, next) => {
-  const { invoiceId, companyId, packageName, slot, pricePerSlot } = req.body;
+  const {
+    invoiceId,
+    companyId,
+    packageName,
+    amount,
+    gender,
+    education,
+    location,
+    min,
+    max,
+    shift,
+    note,
+    jobFunction,
+  } = req.body;
 
   let foundCompany;
   try {
@@ -576,28 +700,39 @@ const createOrderBC = async (req, res, next) => {
   const dueDateCalculation = new Date(
     new Date().getTime() + 1000 * 60 * 60 * 24 * 14
   );
-  const parsedSlot = parseInt(slot);
-  let parsedPricePerSlot;
-  if (packageName === "silver") {
-    parsedPricePerSlot = 10000;
-  } else if (packageName === "gold") {
-    parsedPricePerSlot = 8500;
-  } else if (packageName === "platinum") {
-    parsedPricePerSlot = 7000;
+  const parsedAmount = parseInt(amount);
+  let parsedPrice;
+  if (parsedAmount < 11) {
+    parsedPrice = 40000;
+  } else if (parsedAmount < 21) {
+    parsedPrice = 35000;
+  } else if (parsedAmount < 31) {
+    parsedPrice = 30000;
+  } else if (parsedAmount > 30) {
+    parsedPrice = 20000;
   } else {
     return next(new HttpError("Package Type is not defined.", 404));
   }
-
   const newOrder = new Orderbc({
     invoiceId,
     companyId,
     packageName,
+    education,
+    gender,
+    location,
+    shift,
+    age: {
+      min,
+      max,
+    },
+    note,
+    jobFunction,
     status: "Pending",
     createdAt: new Date().toISOString(),
     dueDate: dueDateCalculation.toISOString(),
-    slot: parsedSlot,
-    pricePerSlot: parsedPricePerSlot,
-    totalPrice: parsedSlot * parsedPricePerSlot,
+    amount: parsedAmount,
+    price: parsedPrice,
+    totalPrice: parsedAmount * parsedPrice,
   });
 
   try {
@@ -671,8 +806,12 @@ exports.getJobsFromApplicant = getJobsFromApplicant;
 exports.getOrderInvoice = getOrderInvoice;
 exports.getCompanyOrder = getCompanyOrder;
 exports.getOrderReguler = getOrderReguler;
+exports.getOrderBC = getOrderBC;
+exports.getOrderBCInvoice = getOrderBCInvoice;
+exports.getCompanyOrderBC = getCompanyOrderBC;
 
 exports.createOrderReg = createOrderReg;
+exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;
 exports.createOrderBC = createOrderBC;
 exports.approveOrderBC = approveOrderBC;
