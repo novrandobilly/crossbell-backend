@@ -293,7 +293,6 @@ const updateApplicantProfile = async (req, res, next) => {
 
 	const data = req.body;
 	let foundApplicant;
-
 	try {
 		foundApplicant = await Applicant.findOne({ _id: applicantId });
 
@@ -307,9 +306,11 @@ const updateApplicantProfile = async (req, res, next) => {
 		foundApplicant.state = data.state ? data.state : foundApplicant.state;
 		foundApplicant.zip = data.zip ? data.zip : foundApplicant.zip;
 		foundApplicant.phone = data.phone ? data.phone : foundApplicant.phone;
-		foundApplicant.website = data.website ? data.website : foundApplicant.website;
+		foundApplicant.gender = data.gender ? data.gender : foundApplicant.gender;
 		foundApplicant.details = data.details ? data.details : foundApplicant.details;
-		foundApplicant.dateOfBirth = data.dateOfBirth ? data.dateOfBirth : foundApplicant.dateOfBirth;
+		foundApplicant.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : foundApplicant.dateOfBirth;
+		foundApplicant.outOfTown = data.outOfTown ? data.outOfTown : foundApplicant.outOfTown;
+		foundApplicant.workShifts = data.workShifts ? data.workShifts : foundApplicant.workShifts;
 
 		if (data.education) {
 			if (data.index) {
