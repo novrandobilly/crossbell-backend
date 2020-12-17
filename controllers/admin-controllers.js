@@ -928,7 +928,6 @@ const addCandidateES = async (req, res, next) => {
   };
   let candidateContainer = [...foundOrder.candidates, newCandidate];
   foundOrder.candidates = candidateContainer;
-
   try {
     await foundOrder.save();
   } catch (err) {
@@ -939,11 +938,11 @@ const addCandidateES = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ order: newCandidate.toObject({ getters: true }) });
+  res.status(201).json({ order: newCandidate });
 };
 
 const updateCandidateStatusES = async (req, res, next) => {
-  const { orderId, candidateId, status } = req.body;
+  const { orderId, candidateId, status, index, note } = req.body;
 
   let foundOrder;
   try {
@@ -960,11 +959,16 @@ const updateCandidateStatusES = async (req, res, next) => {
     return next(new HttpError("Could not find order with such id.", 404));
   }
 
-  const candidateIndex = foundOrder.findIndex(
-    (cand) => cand._id.toString() === candidateId
-  );
-  foundOrder[candidateIndex].status = status;
+  // const candidateIndex = foundOrder.findIndex(
+  //   (cand) => cand._id.toString() === candidateId
+  // );
+  if (status) {
+    foundOrder.candidates[index].status = status.toString();
+  }
 
+  if (note) {
+    foundOrder.candidates[index].note = note;
+  }
   try {
     await foundOrder.save();
   } catch (err) {
