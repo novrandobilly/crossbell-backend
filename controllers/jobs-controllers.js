@@ -65,7 +65,6 @@ const getSpecificJob = async (req, res, next) => {
 
 const createJob = async (req, res, next) => {
 	const errors = validationResult(req);
-	console.log(req.body);
 	if (!errors.isEmpty()) {
 		const error = new HttpError('Invalid input properties, please check your data', 422);
 		return next(error);
@@ -96,7 +95,7 @@ const createJob = async (req, res, next) => {
 
 	let parsedSlot = parseInt(slot);
 	parsedSlot = parsedSlot / 2;
-	if (foundCompany.slot - parsedSlot < 0 || parsedSlot < 1) {
+	if (foundCompany.slotREG - parsedSlot < 0 || parsedSlot < 1) {
 		return next(new HttpError('Your remaining slot is not sufficient', 401));
 	}
 
@@ -119,7 +118,7 @@ const createJob = async (req, res, next) => {
 		companyId
 	});
 
-	foundCompany.slot = foundCompany.slot - parsedSlot;
+	foundCompany.slotREG = foundCompany.slotREG - parsedSlot;
 
 	try {
 		const sess = await mongoose.startSession();
