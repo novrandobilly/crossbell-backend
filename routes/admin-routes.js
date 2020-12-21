@@ -34,14 +34,15 @@ router.post(
   adminControllers.updateCandidateStatusES
 );
 router.post("/order/es/updateorder", adminControllers.updateOrderStatusES);
+router.delete("/order/es/deletecandidate", adminControllers.deleteCandidateES);
 
 router.post("/order/bc", adminControllers.createOrderBC);
-router.get("/order/bc", adminControllers.getOrderBC);
+router.get("/order/bc", adminControllers.getWholeOrderBC);
 router.post("/approve/bc", adminControllers.approveOrderBC);
 router.get("/:companyid/order/bc", adminControllers.getCompanyOrderBC);
 
 router.post("/order/reg", adminControllers.createOrderReg);
-router.get("/order/reguler", adminControllers.getOrderReguler);
+router.get("/order/reg", adminControllers.getWholeOrderREG);
 router.post("/approve/reg", adminControllers.approveOrderReg);
 router.get("/:companyid/order/reg", adminControllers.getCompanyOrder);
 
