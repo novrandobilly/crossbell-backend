@@ -138,7 +138,6 @@ const getJobsFromApplicant = async (req, res, next) => {
 const deleteFeed = async (req, res, next) => {
   const { feedId } = req.body;
 
-  let allFeed;
   let foundFeed;
   try {
     // allFeed = await Feed.find({}, "-__v");
@@ -394,10 +393,10 @@ const blockCompany = async (req, res, next) => {
 
 //============================REGULER ORDER==================================================
 
-const getOrderReguler = async (req, res, next) => {
+const getWholeOrderREG = async (req, res, next) => {
   let foundOrder;
   try {
-    foundOrder = await Orderreg.find();
+    foundOrder = await Orderreg.find().populate("companyId", "-password");
   } catch (err) {
     return next(
       new HttpError("Fetching order failed, please try again later", 500)
@@ -619,7 +618,7 @@ const cancelOrderReg = async (req, res, next) => {
 
 //=============================BULK CANDIDATES===================================================
 
-const getOrderBC = async (req, res, next) => {
+const getWholeOrderBC = async (req, res, next) => {
   let foundOrder;
   try {
     foundOrder = await Orderbc.find().populate("companyId", "-password");
@@ -1015,6 +1014,45 @@ const updateOrderStatusES = async (req, res, next) => {
   res.status(201).json({ order: foundOrder.toObject({ getters: true }) });
 };
 
+const deleteCandidateES = async (req, res, next) => {
+  const { candidateESId, orderId } = req.body;
+
+  let foundCandidate;
+  let foundOrder;
+  try {
+    foundOrder = await Orderes.findById(orderId);
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the Candidate",
+      500
+    );
+    return next(error);
+  }
+
+  foundCandidate = foundOrder.candidates.filter(
+    (el) => el._id.toString() !== candidateESId
+  );
+
+  if (!foundCandidate) {
+    const error = new HttpError("No Candidate found", 404);
+    return next(error);
+  }
+
+  foundOrder.candidates = foundCandidate;
+
+  try {
+    await foundOrder.save();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Something went wrong. Cannot delete the jobs",
+      500
+    );
+    return next(error);
+  }
+  res.status(201).json({ order: foundOrder.toObject({ getters: true }) });
+};
+
 exports.getWholeJobs = getWholeJobs;
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
@@ -1024,12 +1062,12 @@ exports.getJobsFromApplicant = getJobsFromApplicant;
 exports.getOrderInvoice = getOrderInvoice;
 
 exports.getCompanyOrder = getCompanyOrder;
-exports.getOrderReguler = getOrderReguler;
+exports.getWholeOrderREG = getWholeOrderREG;
 exports.createOrderReg = createOrderReg;
 exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;
 
-exports.getOrderBC = getOrderBC;
+exports.getWholeOrderBC = getWholeOrderBC;
 exports.getCompanyOrderBC = getCompanyOrderBC;
 exports.createOrderBC = createOrderBC;
 exports.approveOrderBC = approveOrderBC;
@@ -1041,6 +1079,7 @@ exports.updateOrderStatusES = updateOrderStatusES;
 exports.getWholeOrderES = getWholeOrderES;
 exports.getOneOrderES = getOneOrderES;
 exports.getCompanyOrderES = getCompanyOrderES;
+exports.deleteCandidateES = deleteCandidateES;
 
 exports.admReg = admReg;
 exports.admSign = admSign;
