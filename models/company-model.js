@@ -26,7 +26,9 @@ const companySchema = new Schema({
 	jobAds: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
 	orderREG: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderreg' } ],
 	orderBC: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderbc' } ],
-	orderES: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderes' } ]
+	orderES: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Orderes' } ],
+	resetPasswordToken: { type: String },
+	resetPasswordExpire: { type: Date }
 });
 
 companySchema.plugin(uniqueValidator);

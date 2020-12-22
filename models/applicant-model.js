@@ -54,7 +54,9 @@ const applicantSchema = new Schema({
 	skills: [ { type: String } ],
 	status: { type: Boolean, default: true },
 	jobsApplied: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
-	isCompany: { type: Boolean, default: false }
+	isCompany: { type: Boolean, default: false },
+	resetPasswordToken: { type: String },
+	resetPasswordExpire: { type: Date }
 });
 
 applicantSchema.plugin(uniqueValidator);
