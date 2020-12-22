@@ -765,7 +765,6 @@ const approveOrderBC = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    foundCompany.slotBC = foundCompany.slotBC + foundOrder.slot;
     foundOrder.status = "Paid";
     foundOrder.approvedAt = new Date().toISOString();
     await foundOrder.save({ session: sess });
@@ -774,7 +773,7 @@ const approveOrderBC = async (req, res, next) => {
   } catch (err) {
     console.log(err);
     const error = new HttpError(
-      "Could not approve new Reguler order. Please try again later",
+      "Could not approve new bulk candidate order. Please try again later",
       500
     );
     return next(error);
