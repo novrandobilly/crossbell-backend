@@ -46,21 +46,23 @@ const applicantSchema = new Schema({
     },
   ],
 
-  certification: [
-    {
-      title: { type: String },
-      organization: { type: String },
-      startDate: { type: Date },
-      endDate: { type: Date },
-      description: { type: String },
-    },
-  ],
-  skills: [{ type: String }],
-  status: { type: Boolean, default: true },
-  jobsApplied: [{ type: mongoose.Types.ObjectId, required: true, ref: "Job" }],
-  isCompany: { type: Boolean, default: false },
-  resetPasswordToken: { type: String },
-  resetPasswordExpire: { type: Date },
+
+	certification: [
+		{
+			title: { type: String },
+			organization: { type: String },
+			startDate: { type: Date },
+			endDate: { type: Date },
+			description: { type: String }
+		}
+	],
+	skills: [ { type: String } ],
+	status: { type: Boolean, default: true },
+	jobsApplied: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
+	isCompany: { type: Boolean, default: false },
+	resetPasswordToken: { type: String },
+	resetPasswordExpire: { type: Date }
+
 });
 
 applicantSchema.plugin(uniqueValidator);

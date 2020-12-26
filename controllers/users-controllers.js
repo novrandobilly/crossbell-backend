@@ -1,12 +1,18 @@
-const { validationResult } = require("express-validator");
-const Applicant = require("../models/applicant-model");
-const { update } = require("../models/company-model");
-const Company = require("../models/company-model");
-const Feed = require("../models/feedback-model");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
-const HttpError = require("../models/http-error");
+const { validationResult } = require('express-validator');
+const Applicant = require('../models/applicant-model');
+const { update } = require('../models/company-model');
+const Company = require('../models/company-model');
+const Feed = require('../models/feedback-model');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const moment = require('moment');
+
+const HttpError = require('../models/http-error');
+const mail = require('@sendgrid/mail');
+
 
 const getFeedback = async (req, res, next) => {
   let foundFeedback;
@@ -474,6 +480,7 @@ const updateCompanyProfile = async (req, res, next) => {
 };
 
 const deleteSegment = async (req, res, next) => {
+
   const { applicantId, segment, index, elementId } = req.body;
 
   let foundApplicant;
@@ -509,8 +516,161 @@ const deleteSegment = async (req, res, next) => {
   }
 
   res.status(200).json({ message: "successfully delete segment element!" });
+
 };
 
+const forgotPwd = async (req, res, next) => {
+	const userEmail = req.body.email;
+
+	let foundUser;
+	try {
+		foundUser = await Applicant.findOne({ email: userEmail });
+		if (!foundUser) {
+			foundUser = await Company.findOne({ email: userEmail });
+		}
+	} catch (err) {
+		const error = new HttpError('Something went wrong. Cannot retreive any users', 500);
+		return next(error);
+	}
+
+	if (!foundUser) {
+		const error = new HttpError('There is no user with that email, please try again', 404);
+		return next(error);
+	}
+
+	const token = crypto.randomBytes(20).toString('hex');
+
+	foundUser.resetPasswordToken = token;
+	foundUser.resetPasswordExpire = moment().add(60, 'm');
+
+	try {
+		await foundUser.save();
+	} catch (err) {
+		const error = new HttpError(err.message, 500);
+		return next(error);
+	}
+
+	const smptTransport = nodemailer.createTransport({
+		service: 'gmail',
+		auth: {
+			user: 'crossbellcorps@gmail.com',
+			pass: process.env.MAILPASS
+		}
+	});
+
+	const mailOptions = {
+		to: userEmail,
+		from: 'crossbellcorps@gmail.com',
+		subject: 'Crossbell Account Password Reset',
+		text: `You are receiving this because you (or someone else) have requested the reset of the password. 
+Please click on the following link, or paste this onto your browser to complete the process. 
+http://localhost:3000/reset/${token} 
+If you did not request this, please ignore this email and your password will remain unchanged`
+	};
+
+	try {
+		await smptTransport.sendMail(mailOptions);
+	} catch (err) {
+		const error = new HttpError(err.message, 500);
+		return next(error);
+	}
+	res.status(200).json({ message: `An email has been sent to ${userEmail} with further instructions.` });
+};
+
+const checkResetToken = async (req, res, next) => {
+	const { token } = req.params;
+
+	let foundUser;
+
+	try {
+		foundUser = await Applicant.findOne({ resetPasswordToken: token, resetPasswordExpire: { $gt: new Date() } });
+		if (!foundUser) {
+			foundUser = await Company.findOne({ resetPasswordToken: token, resetPasswordExpire: { $gt: new Date() } });
+		}
+	} catch (err) {
+		const error = new HttpError('Retreiveng user failed, please try again later', 500);
+		return next(error);
+	}
+
+	if (!foundUser) {
+		const error = new HttpError('Password reset token invalid or has expired', 500);
+		return next(error);
+	}
+
+	res.status(200).json({ tokenIsValid: true, foundUser });
+};
+
+const resetPwd = async (req, res, next) => {
+	const { newPassword, confirmPassword } = req.body;
+	const { token } = req.params;
+
+	let foundUser;
+
+	try {
+		foundUser = await Applicant.findOne({ resetPasswordToken: token, resetPasswordExpire: { $gt: new Date() } });
+		if (!foundUser) {
+			foundUser = await Company.findOne({ resetPasswordToken: token, resetPasswordExpire: { $gt: new Date() } });
+		}
+	} catch (err) {
+		const error = new HttpError('Retreiveng user failed, please try again later', 500);
+		return next(error);
+	}
+
+	if (!foundUser) {
+		const error = new HttpError('Password reset token invalid or has expired', 500);
+		return next(error);
+	}
+
+	if (newPassword === confirmPassword) {
+		let hashedPassword;
+		try {
+			hashedPassword = await bcrypt.hash(newPassword, 12);
+		} catch (err) {
+			const error = new HttpError('Could not change password, please try again', 500);
+			return next(error);
+		}
+		foundUser.password = hashedPassword;
+		foundUser.resetPasswordToken = undefined;
+		foundUser.resetPasswordExpire = undefined;
+
+		try {
+			await foundUser.save();
+		} catch (err) {
+			const error = new HttpError('Could not save new password. Please input a valid value', 500);
+			return next(error);
+		}
+
+		let token;
+		try {
+			token = jwt.sign(
+				{
+					userId: foundUser._id,
+					email: foundUser.email,
+					isCompany: foundUser.isCompany
+				},
+				'one_batch_two_batch_penny_and_dime',
+				{ expiresIn: '3h' }
+			);
+		} catch (err) {
+			const error = new HttpError('Could not generate token, please try again', 500);
+			return next(error);
+		}
+		res.status(200).json({
+			userId: foundUser.id,
+			email: foundUser.email,
+			isCompany: foundUser.isCompany,
+			isActive: foundUser.isActive || false,
+			token
+		});
+	} else {
+		const error = new HttpError('Password do not match', 500);
+		return next(error);
+	}
+};
+
+exports.forgotPwd = forgotPwd;
+exports.checkResetToken = checkResetToken;
+exports.resetPwd = resetPwd;
 exports.deleteSegment = deleteSegment;
 exports.getAllCompany = getAllCompany;
 exports.getAllApplicant = getAllApplicant;
