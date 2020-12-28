@@ -1,5 +1,8 @@
-const express = require('express');
-const { check } = require('express-validator');
+
+const express = require("express");
+const { check } = require("express-validator");
+const upload = require("../uploads/multer");
+
 
 const usersControllers = require('../controllers/users-controllers');
 
@@ -16,13 +19,20 @@ router.get('/ap/:applicantid', usersControllers.getApplicantDetails);
 router.get('/feedback', usersControllers.getFeedback);
 router.get('/reset/:token', usersControllers.checkResetToken);
 
-router.post('/feedback', usersControllers.createFeedback);
-router.post('/signup', signupChecker, usersControllers.signup);
-router.post('/login', usersControllers.login);
+router.post("/feedback", usersControllers.createFeedback);
+router.post("/signup", signupChecker, usersControllers.signup);
+router.post("/login", usersControllers.login);
+router.patch("/ap/:applicantid", usersControllers.updateApplicantProfile);
+router.patch(
+  "/co/:companyid",
+  [upload.single("attachment")],
+  usersControllers.updateCompanyProfile
+);
 router.post('/forgot', usersControllers.forgotPwd);
 router.post('/reset/:token', usersControllers.resetPwd);
 router.patch('/ap/:applicantid', usersControllers.updateApplicantProfile);
 router.patch('/co/:companyid', usersControllers.updateCompanyProfile);
+
 
 router.delete('/segment', usersControllers.deleteSegment);
 module.exports = router;
