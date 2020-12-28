@@ -18,6 +18,7 @@ const companySchema = new Schema({
   picOfficePhone: { type: String, default: null },
   picJobTitle: { type: String, default: null },
 
+
   briefDescriptions: { type: String, default: null },
   slotREG: { type: Number, default: 0 },
   isCompany: { type: Boolean, default: true },
@@ -30,6 +31,7 @@ const companySchema = new Schema({
   orderES: [{ type: mongoose.Types.ObjectId, required: true, ref: "Orderes" }],
   resetPasswordToken: { type: String },
   resetPasswordExpire: { type: Date },
+
 });
 
 companySchema.plugin(uniqueValidator);
