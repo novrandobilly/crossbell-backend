@@ -1,5 +1,6 @@
 const express = require("express");
 const { check } = require("express-validator");
+const upload = require("../uploads/multer");
 
 const usersControllers = require("../controllers/users-controllers");
 
@@ -22,7 +23,11 @@ router.post("/feedback", usersControllers.createFeedback);
 router.post("/signup", signupChecker, usersControllers.signup);
 router.post("/login", usersControllers.login);
 router.patch("/ap/:applicantid", usersControllers.updateApplicantProfile);
-router.patch("/co/:companyid", usersControllers.updateCompanyProfile);
+router.patch(
+  "/co/:companyid",
+  [upload.single("attachment")],
+  usersControllers.updateCompanyProfile
+);
 
 router.delete("/segment", usersControllers.deleteSegment);
 module.exports = router;
