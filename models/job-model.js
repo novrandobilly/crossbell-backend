@@ -10,6 +10,7 @@ const jobSchema = new Schema({
 	technicalRequirement: { type: String, required: true },
 	employment: { type: String, required: true },
 	slot: { type: Number, required: true },
+	fieldOfWork: { type: String, required: true },
 	emailRecipient: { type: String, required: true },
 	expiredDate: { type: Date, required: true },
 	createdAt: { type: Date, required: true },

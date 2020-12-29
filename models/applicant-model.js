@@ -8,6 +8,7 @@ const applicantSchema = new Schema({
 	lastName: { type: String, required: true },
 	email: { type: String, required: true, unique: true },
 	password: { type: String, required: true, minlength: 6 },
+
 	picture: { type: String, default: null },
 	headline: { type: String, default: null },
 	address: { type: String, default: null },
@@ -18,8 +19,14 @@ const applicantSchema = new Schema({
 	details: { type: String, default: null },
 	dateOfBirth: { type: Date, default: null },
 	gender: { type: String, default: null },
+	interest: [ { type: String } ],
+
 	outOfTown: { type: Boolean, default: false },
 	workShifts: { type: Boolean, default: false },
+	autoRemind: { type: Boolean, default: false },
+	autoSend: { type: Boolean, default: false },
+	headhunterProgram: { type: Boolean, default: false },
+
 	education: [
 		{
 			school: { type: String },
@@ -54,6 +61,7 @@ const applicantSchema = new Schema({
 	skills: [ { type: String } ],
 	status: { type: Boolean, default: true },
 	jobsApplied: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
+	jobsReminded: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
 	isCompany: { type: Boolean, default: false },
 	resetPasswordToken: { type: String },
 	resetPasswordExpire: { type: Date }

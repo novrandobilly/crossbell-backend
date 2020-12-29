@@ -6,10 +6,13 @@ const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const schedule = require('node-schedule');
 
 const jobsRoutes = require('./routes/jobs-routes');
 const usersRoutes = require('./routes/users-routes');
 const adminRoutes = require('./routes/admin-routes');
+
+const cronControllers = require('./controllers/cron-controllers');
 const HttpError = require('./models/http-error');
 
 const app = express();
@@ -27,6 +30,11 @@ app.use((req, res, next) => {
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/alphaomega', adminRoutes);
+
+schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec);
+schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec);
+// cronControllers.autoRemindExec();
+// cronControllers.autoSendExec();
 
 // =============================== Image uploader ===================================
 app.use('/api/upload', upload.single('image'), async (req, res) => {

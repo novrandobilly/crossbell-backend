@@ -299,52 +299,53 @@ const updateApplicantProfile = async (req, res, next) => {
 	let foundApplicant;
 	try {
 		foundApplicant = await Applicant.findOne({ _id: applicantId });
-
-		foundApplicant.picture = data.picture ? data.picture : foundApplicant.picture;
-		foundApplicant.firstName = data.firstName ? data.firstName : foundApplicant.firstName;
-		foundApplicant.lastName = data.lastName ? data.lastName : foundApplicant.lastName;
-		foundApplicant.email = data.email ? data.email : foundApplicant.email;
-		foundApplicant.headline = data.headline ? data.headline : foundApplicant.headline;
-		foundApplicant.address = data.address ? data.address : foundApplicant.address;
-		foundApplicant.city = data.city ? data.city : foundApplicant.city;
-		foundApplicant.state = data.state ? data.state : foundApplicant.state;
-		foundApplicant.zip = data.zip ? data.zip : foundApplicant.zip;
-		foundApplicant.phone = data.phone ? data.phone : foundApplicant.phone;
-		foundApplicant.gender = data.gender ? data.gender : foundApplicant.gender;
-		foundApplicant.details = data.details ? data.details : foundApplicant.details;
-		foundApplicant.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : foundApplicant.dateOfBirth;
-		foundApplicant.outOfTown = data.outOfTown ? data.outOfTown : foundApplicant.outOfTown;
-		foundApplicant.workShifts = data.workShifts ? data.workShifts : foundApplicant.workShifts;
-
-		if (data.education) {
-			if (data.index) {
-				foundApplicant.education[data.index] = data.education;
-			} else {
-				foundApplicant.education.push(data.education);
-			}
-		} else {
-		}
-
-		if (data.experience) {
-			if (data.index) {
-				foundApplicant.experience[data.index] = data.experience;
-			} else {
-				foundApplicant.experience.push(data.experience);
-			}
-		} else {
-		}
-
-		if (data.certification) {
-			if (data.index) {
-				foundApplicant.certification[data.index] = data.certification;
-			} else {
-				foundApplicant.certification.push(data.certification);
-			}
-		} else {
-		}
 	} catch (err) {
 		const error = new HttpError('Something went wrong. Please try again later', 500);
 		return next(error);
+	}
+
+	foundApplicant.picture = data.picture ? data.picture : foundApplicant.picture;
+	foundApplicant.firstName = data.firstName ? data.firstName : foundApplicant.firstName;
+	foundApplicant.lastName = data.lastName ? data.lastName : foundApplicant.lastName;
+	foundApplicant.email = data.email ? data.email : foundApplicant.email;
+	foundApplicant.headline = data.headline ? data.headline : foundApplicant.headline;
+	foundApplicant.address = data.address ? data.address : foundApplicant.address;
+	foundApplicant.city = data.city ? data.city : foundApplicant.city;
+	foundApplicant.state = data.state ? data.state : foundApplicant.state;
+	foundApplicant.zip = data.zip ? data.zip : foundApplicant.zip;
+	foundApplicant.phone = data.phone ? data.phone : foundApplicant.phone;
+	foundApplicant.gender = data.gender ? data.gender : foundApplicant.gender;
+	foundApplicant.details = data.details ? data.details : foundApplicant.details;
+	foundApplicant.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : foundApplicant.dateOfBirth;
+	foundApplicant.outOfTown = data.outOfTown;
+	foundApplicant.workShifts = data.workShifts;
+	foundApplicant.autoRemind = data.autoRemind;
+	foundApplicant.autoSend = data.autoSend;
+	foundApplicant.headhunterProgram = data.headhunterProgram;
+	foundApplicant.interest = data.interest ? data.interest : foundApplicant.interest;
+
+	if (data.education) {
+		if (data.index) {
+			foundApplicant.education[data.index] = data.education;
+		} else {
+			foundApplicant.education.push(data.education);
+		}
+	}
+
+	if (data.experience) {
+		if (data.index) {
+			foundApplicant.experience[data.index] = data.experience;
+		} else {
+			foundApplicant.experience.push(data.experience);
+		}
+	}
+
+	if (data.certification) {
+		if (data.index) {
+			foundApplicant.certification[data.index] = data.certification;
+		} else {
+			foundApplicant.certification.push(data.certification);
+		}
 	}
 
 	try {
