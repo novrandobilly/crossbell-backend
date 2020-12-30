@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const jobSchema = new Schema({
+
   jobTitle: { type: String, required: true },
   placementLocation: { type: String, required: true },
   jobDescriptions: { type: String, required: true },
@@ -10,6 +11,7 @@ const jobSchema = new Schema({
   technicalRequirement: { type: String, required: true },
   employment: { type: String, required: true },
   slot: { type: Number, required: true },
+  fieldOfWork: { type: String, required: true },
   emailRecipient: { type: String, required: true },
   expiredDate: { type: Date, default: null },
   createdAt: { type: Date, required: true },
@@ -20,6 +22,7 @@ const jobSchema = new Schema({
     { type: mongoose.Types.ObjectId, required: true, ref: "Applicant" },
   ],
   companyId: { type: mongoose.Types.ObjectId, required: true, ref: "Company" },
+
 });
 
 module.exports = mongoose.model("Job", jobSchema);
