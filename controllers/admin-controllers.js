@@ -782,6 +782,41 @@ const approveOrderBC = async (req, res, next) => {
   res.status(201).json({ message: "Successfully approve order!" });
 };
 
+const sentApplicantBC = async (req, res, next) => {
+  const { orderId, applicantId } = req.body;
+
+  let foundOrder;
+  try {
+    foundOrder = await Orderbc.findById(orderId);
+  } catch (err) {
+    return next(
+      new HttpError(
+        "Could not retrieve order data. Please try again later",
+        500
+      )
+    );
+  }
+  if (!foundOrder) {
+    return next(new HttpError("Could not find order with such id.", 404));
+  }
+
+  let applicantArray = [...foundOrder.applicantSent, applicantId];
+  foundOrder.applicantSent = applicantArray;
+  foundOrder.amount = foundOrder.amount - 1;
+
+  try {
+    await foundOrder.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Could not add Executive Search candidate. Please try again later",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(201).json({ order: foundOrder });
+};
+
 //============================= EXECUTIVE SEARCH =========================================
 
 const getWholeOrderES = async (req, res, next) => {
@@ -1070,6 +1105,7 @@ exports.getWholeOrderBC = getWholeOrderBC;
 exports.getCompanyOrderBC = getCompanyOrderBC;
 exports.createOrderBC = createOrderBC;
 exports.approveOrderBC = approveOrderBC;
+exports.sentApplicantBC = sentApplicantBC;
 
 exports.createOrderES = createOrderES;
 exports.addCandidateES = addCandidateES;

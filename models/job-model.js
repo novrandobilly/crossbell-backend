@@ -16,6 +16,7 @@ const jobSchema = new Schema({
   releasedAt: { type: Date, default: null },
   salary: { type: String, default: null },
   benefit: { type: String, default: null },
+  fieldOfWork: { type: String },
   jobApplicants: [
     { type: mongoose.Types.ObjectId, required: true, ref: "Applicant" },
   ],

@@ -103,6 +103,7 @@ const createJob = async (req, res, next) => {
     slot,
     salary,
     companyId,
+    fieldOfWork,
   } = req.body;
 
   let foundCompany;
@@ -143,6 +144,7 @@ const createJob = async (req, res, next) => {
     salary: salary || null,
     jobApplicants: [],
     companyId,
+    fieldOfWork,
   });
 
   foundCompany.slotREG = foundCompany.slotREG - parsedSlot;
@@ -187,6 +189,7 @@ const saveJobDraft = async (req, res, next) => {
     slot,
     salary,
     companyId,
+    fieldOfWork,
   } = req.body;
 
   let foundCompany;
@@ -218,6 +221,7 @@ const saveJobDraft = async (req, res, next) => {
     salary: salary || null,
     jobApplicants: [],
     companyId,
+    fieldOfWork,
   });
 
   try {
