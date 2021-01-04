@@ -1,8 +1,7 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+	require('dotenv').config();
+}
 
-const upload = require('./uploads/multer');
-const cloudinary = require('./uploads/cloudinary');
-const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -33,31 +32,6 @@ app.use('/api/alphaomega', adminRoutes);
 
 schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec);
 schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec);
-// cronControllers.autoRemindExec();
-// cronControllers.autoSendExec();
-
-// =============================== Image uploader ===================================
-app.use('/api/upload', upload.single('image'), async (req, res) => {
-	const uploader = async path => await cloudinary.uploads(path, 'Images');
-	if (req.method === 'POST') {
-		const urls = [];
-
-		const files = req.files;
-
-		for (const file of files) {
-			const { path } = file;
-			const newPath = await uploader(path);
-			urls.push(newPath);
-			fs.unlinkSync(path);
-		}
-		res.status(200).json({
-			message: 'Image upload success',
-			data: urls
-		});
-	} else {
-		res.status(405).json({ err: 'Failed to upload image' });
-	}
-});
 
 app.use((req, res, next) => {
 	throw new HttpError('Could not find the requested route', 404);
