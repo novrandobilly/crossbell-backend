@@ -40,6 +40,7 @@ router.post("/order/bc", adminControllers.createOrderBC);
 router.get("/order/bc", adminControllers.getWholeOrderBC);
 router.post("/approve/bc", adminControllers.approveOrderBC);
 router.get("/:companyid/order/bc", adminControllers.getCompanyOrderBC);
+router.post("/order/bc/applicant", adminControllers.sentApplicantBC);
 
 router.post("/order/reg", adminControllers.createOrderReg);
 router.get("/order/reg", adminControllers.getWholeOrderREG);

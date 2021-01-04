@@ -22,6 +22,7 @@ const orderbcSchema = new Schema({
   note: { type: String },
   jobFunction: { type: String, required: true },
   amount: { type: Number, required: true },
+  applicantSent: [{ type: mongoose.Types.ObjectId, ref: "Applicant" }],
 });
 
 module.exports = mongoose.model("Orderbc", orderbcSchema);
