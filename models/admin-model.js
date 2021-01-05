@@ -9,7 +9,10 @@ const adminSchema = new Schema({
 	lastName: { type: String, required: true },
 	email: { type: String, required: true, unique: true },
 	password: { type: String, required: true, minlength: 8 },
-	picture: { type: String },
+	picture: {
+		url: { type: String },
+		fileName: { type: String }
+	},
 	gender: { type: String, required: true },
 	dateOfBirth: { type: String, required: true },
 	address: { type: String, required: true },
