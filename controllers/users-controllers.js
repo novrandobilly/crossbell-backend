@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const moment = require('moment');
+const { cloudinary } = require('../cloudinary');
 
 const HttpError = require('../models/http-error');
 const mail = require('@sendgrid/mail');
@@ -303,6 +304,10 @@ const updateApplicantProfile = async (req, res, next) => {
 		return next(error);
 	}
 
+	if (foundApplicant.picture.url) {
+		await cloudinary.uploader.destroy(foundApplicant.picture.fileName);
+	}
+
 	foundApplicant.picture = req.file
 		? {
 				url: req.file.path,
@@ -327,6 +332,7 @@ const updateApplicantProfile = async (req, res, next) => {
 	foundApplicant.autoSend = data.autoSend;
 	foundApplicant.headhunterProgram = data.headhunterProgram;
 	foundApplicant.interest = data.interest ? data.interest : foundApplicant.interest;
+	foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
 
 	if (data.education) {
 		if (data.index) {
@@ -375,7 +381,15 @@ const updateCompanyProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	foundCompany.logo = data.logo ? data.logo : foundCompany.logo;
+	if (foundCompany.logo.url) {
+		await cloudinary.uploader.destroy(foundCompany.logo.fileName);
+	}
+	foundCompany.logo = req.file
+		? {
+				url: req.file.path,
+				fileName: req.file.filename
+			}
+		: foundCompany.logo;
 	foundCompany.companyName = data.companyName ? data.companyName : foundCompany.companyName;
 	foundCompany.email = data.email ? data.email : foundCompany.email;
 	foundCompany.picName = data.picName ? data.picName : foundCompany.picName;

@@ -7,12 +7,27 @@ cloudinary.config({
 	api_secret: process.env.CLOUDINARY_SECRET
 });
 
-const storage = new CloudinaryStorage({
+const applicantStorage = new CloudinaryStorage({
 	cloudinary,
 	params: {
-		folder: 'crossbell',
+		folder: 'crossbell-applicant',
 		allowed_formats: [ 'jpg', 'jpeg', 'png' ]
 	}
 });
 
-module.exports = { cloudinary, storage };
+const companyStorage = new CloudinaryStorage({
+	cloudinary,
+	params: {
+		folder: 'crossbell-company',
+		allowed_formats: [ 'jpg', 'jpeg', 'png' ]
+	}
+});
+const adminStorage = new CloudinaryStorage({
+	cloudinary,
+	params: {
+		folder: 'crossbell-admin',
+		allowed_formats: [ 'jpg', 'jpeg', 'png' ]
+	}
+});
+
+module.exports = { cloudinary, applicantStorage, companyStorage, adminStorage };
