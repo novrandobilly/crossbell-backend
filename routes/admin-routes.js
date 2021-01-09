@@ -24,6 +24,9 @@ router.post("/admreg", regAdminChecker, adminControllers.admReg);
 router.post("/admsign", adminControllers.admSign);
 router.use(checkAuth);
 
+router.patch("/:adminid/profile", adminControllers.updateAdminProfile);
+router.get("/:adminid/profile", adminControllers.getAdminDetails);
+
 router.post("/order/es", adminControllers.createOrderES);
 router.get("/order/es", adminControllers.getWholeOrderES);
 router.get("/:companyid/order/es", adminControllers.getCompanyOrderES);
@@ -46,7 +49,6 @@ router.post("/order/reg", adminControllers.createOrderReg);
 router.get("/order/reg", adminControllers.getWholeOrderREG);
 router.post("/approve/reg", adminControllers.approveOrderReg);
 router.get("/:companyid/order/reg", adminControllers.getCompanyOrder);
-
 router.get("/order/:orderid/invoice", adminControllers.getOrderInvoice);
 
 router.get("/jobs", adminControllers.getWholeJobs);
