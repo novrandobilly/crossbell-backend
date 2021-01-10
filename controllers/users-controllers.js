@@ -485,11 +485,16 @@ const forgotPwd = async (req, res, next) => {
 	const mailOptions = {
 		to: userEmail,
 		from: 'crossbellcorps@gmail.com',
-		subject: 'Crossbell Account Password Reset',
-		text: `You are receiving this because you (or someone else) have requested the reset of the password. 
-Please click on the following link, or paste this onto your browser to complete the process. 
-http://localhost:3000/reset/${token} 
-If you did not request this, please ignore this email and your password will remain unchanged`
+		subject: '<Crossbell> Account Password Reset Request',
+		html: `
+		<h2>Password Reset Instruction</h2>
+		<hr/>
+		<p>Hello ${foundUser.firstName} ${foundUser.lastName},</p>
+		<p>You are receiving this because you (or someone else) have requested to reset your Crossbell account's password.</p>
+		<p>Please click on the following link, or paste this onto your browser to complete the process.</p> 
+		<p><strong><a href='http://localhost:3000/reset/${token}'>Click For Resetting Your Password</a></strong><p/>
+		<p>This link will only valid for <strong>1 hour</strong>.</p>
+		<p>If you did not request this, please ignore this email and your password will remain unchanged</p>`
 	};
 
 	try {
