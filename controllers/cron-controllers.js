@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API);
 
+const applyJobTemplate = require('../assets/htmlJobApplicationTemplate');
+
 const autoRemindExec = async () => {
 	let foundApplicants;
 	try {
@@ -16,8 +18,12 @@ const autoRemindExec = async () => {
 		return new HttpError('Could not fetch Applicants. Please try again later', 500);
 	}
 
+	if (!foundApplicants) {
+		return new HttpError('Applicant is empty', 500);
+	}
 	for (const app of foundApplicants) {
 		let foundJobs;
+		console.log(app.interest);
 		try {
 			foundJobs = await Job.find(
 				{ _id: { $nin: app.jobsReminded }, fieldOfWork: app.interest, expiredDate: { $gte: moment() } },
@@ -27,7 +33,6 @@ const autoRemindExec = async () => {
 			console.log(err);
 			return new HttpError('Could not fetch Jobs. Please try again later', 500);
 		}
-
 		if (foundJobs && foundJobs.length > 0) {
 			let jobLists = '';
 			for (const job of foundJobs) {
@@ -40,15 +45,20 @@ const autoRemindExec = async () => {
 			const emailData = {
 				to: app.email,
 				from: 'crossbellcorps@gmail.com',
-				subject: `Crossbell New Jobs Reminder ${moment().format('LL')}`,
-				text: `This email is intended for ${app.firstName} ${app.lastName}, (${app.headline})`,
-				html: `This email is intended for ${app.firstName} ${app.lastName}, (${app.headline})
-					<ul style="list-style: none;">${jobLists}</ul>`
+				subject: `<Crossbell> New Jobs You Might Interested ${moment().format('LL')}`,
+				html: `This email is intended for ${app.firstName} ${app.lastName})
+					<p>Below is a list of new posted job(s) that match your interest</p>
+					<p>Click the link on certain job to see the job's detail</p>
+					<ul style="list-style: none;">${jobLists}</ul>
+					<br/>
+					<br/>
+					<p>To stop receiving this email, you can deactivate Jobs Auto Reminder by click <a href='#'>this link</a> and follow the next procedure.</p>
+					`
 			};
 
 			try {
-				// await sgMail.send(emailData);
-				// await app.save();
+				await sgMail.send(emailData);
+				await app.save();
 				console.log('Success');
 			} catch (err) {
 				console.log(err);
@@ -63,7 +73,7 @@ const autoRemindExec = async () => {
 const autoSendExec = async () => {
 	let foundApplicants;
 	try {
-		foundApplicants = await Applicant.find({ autoSend: true }, 'firstName lastName email autoSend interest headline jobsApplied');
+		foundApplicants = await Applicant.find({ autoSend: true }, '-password');
 	} catch (err) {
 		console.log(err);
 		return new HttpError('Could not fetch Applicants. Please try again later', 500);
@@ -83,15 +93,32 @@ const autoSendExec = async () => {
 
 		if (foundJobs && foundJobs.length > 0) {
 			for (const job of foundJobs) {
+				const payload = {
+					companyName: job.companyId.companyName || '-',
+					avatarUrl: app.picture.url || 'User has not posted any photo yet',
+					firstName: app.firstName || '-',
+					lastName: app.lastName || '-',
+					dateOfBirth: app.dateOfBirth,
+					gender: app.gender || '-',
+					email: app.email || '-',
+					address: app.address || '-',
+					phone: app.phone || '-',
+					outOfTown: app.outOfTown,
+					workShifts: app.workShifts,
+					headline: app.headline || '-',
+					experience: app.experience,
+					education: app.education,
+					certification: app.certification,
+					skills: app.skills
+				};
+
+				const htmlBody = applyJobTemplate(payload);
+
 				const emailData = {
 					to: job.emailRecipient,
 					from: 'crossbellcorps@gmail.com',
-					subject: `Crossbell Job Application from ${app.firstName} ${app.lastName}`,
-					html: `
-					<p><strong>${app.firstName} ${app.lastName}</strong> send an application for ${job.jobTitle}</p>
-					<p>Below is the quick resume of <strong>${app.firstName} ${app.lastName}</strong></p>
-					<p>Please check this email's attachment to see if there is additional CV/Resume from the candidate</p>
-					`
+					subject: `<Crossbell> Application for ${job.jobTitle} - ${app.firstName} ${app.lastName}`,
+					html: htmlBody
 				};
 
 				try {
