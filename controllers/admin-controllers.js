@@ -337,42 +337,51 @@ const getAdminDetails = async (req, res, next) => {
 };
 
 const updateAdminProfile = async (req, res, next) => {
-	const adminId = req.params.adminid;
 
-	const data = req.body;
-	let foundAdmin;
+  const adminId = req.params.adminid;
 
-	try {
-		foundAdmin = await Admin.findOne({ _id: adminId });
-	} catch (err) {
-		const error = new HttpError('Something went wrong. Please try again later', 500);
-		return next(error);
-	}
+  const data = req.body;
+  let foundAdmin;
 
-	if (foundAdmin.picture.url) {
-		await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
-	}
-	foundAdmin.picture = req.file
-		? {
-				url: req.file.path,
-				fileName: req.file.filename
-			}
-		: foundAdmin.picture;
-	foundAdmin.email = data.email ? data.email : foundAdmin.email;
-	foundAdmin.password = data.password ? data.password : foundAdmin.password;
-	foundAdmin.dateOfBirth = data.dateOfBirth ? data.dateOfBirth : foundAdmin.dateOfBirth;
-	foundAdmin.address = data.address ? data.address : foundAdmin.address;
-	foundAdmin.phoneNumber = data.phoneNumber ? data.phoneNumber : foundAdmin.phoneNumber;
-	foundAdmin.role = data.role ? data.role : foundAdmin.role;
+  try {
+    foundAdmin = await Admin.findOne({ _id: adminId });
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong. Please try again later",
+      500
+    );
+    return next(error);
+  }
 
-	try {
-		await foundAdmin.save();
-	} catch (err) {
-		const error = new HttpError(err.message, 500);
-		return next(error);
-	}
+  if (foundAdmin.picture.url) {
+    await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
+  }
+  console.log(req.phoneNumber);
+  foundAdmin.picture = req.file
+    ? {
+        url: req.file.path,
+        fileName: req.file.filename,
+      }
+    : foundAdmin.picture;
+  foundAdmin.email = data.email ? data.email : foundAdmin.email;
+  foundAdmin.password = data.password ? data.password : foundAdmin.password;
+  foundAdmin.dateOfBirth = data.dateOfBirth
+    ? data.dateOfBirth
+    : foundAdmin.dateOfBirth;
+  foundAdmin.address = data.address ? data.address : foundAdmin.address;
+  foundAdmin.phoneNumber = data.phoneNumber
+    ? data.phoneNumber
+    : foundAdmin.phoneNumber;
+  foundAdmin.role = data.role ? data.role : foundAdmin.role;
 
-	return res.status(200).json({ foundAdmin: foundAdmin });
+  try {
+    await foundAdmin.save();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    return next(error);
+  }
+
+  return res.status(200).json({ foundAdmin: foundAdmin });
 };
 
 //============================REGULER ORDER==================================================
