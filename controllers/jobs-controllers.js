@@ -8,6 +8,7 @@ const HttpError = require('../models/http-error');
 const Job = require('../models/job-model');
 const Company = require('../models/company-model');
 const Applicant = require('../models/applicant-model');
+const cloudinary = require('cloudinary');
 
 const getAllAvailableJobs = async (req, res, next) => {
 	let availableJobs;
@@ -326,11 +327,12 @@ const applyJob = async (req, res, next) => {
 		phone: foundApplicant.phone || '-',
 		outOfTown: foundApplicant.outOfTown,
 		workShifts: foundApplicant.workShifts,
-		headline: foundApplicant.headline || '-',
+		details: foundApplicant.details || '-',
 		experience: foundApplicant.experience,
 		education: foundApplicant.education,
 		certification: foundApplicant.certification,
-		skills: foundApplicant.skills
+		skills: foundApplicant.skills,
+		resume: foundApplicant.resume.url || ''
 	};
 
 	const htmlBody = applyJobTemplate(payload);
@@ -343,14 +345,14 @@ const applyJob = async (req, res, next) => {
 	};
 
 	try {
-		const sess = await mongoose.startSession();
-		sess.startTransaction();
-		foundJob.jobApplicants.push(foundApplicant);
-		foundApplicant.jobsApplied.push(foundJob);
-		await foundJob.save({ session: sess });
-		await foundApplicant.save({ session: sess });
+		// const sess = await mongoose.startSession();
+		// sess.startTransaction();
+		// foundJob.jobApplicants.push(foundApplicant);
+		// foundApplicant.jobsApplied.push(foundJob);
+		// await foundJob.save({ session: sess });
+		// await foundApplicant.save({ session: sess });
 		await sgMail.send(emailData);
-		sess.commitTransaction();
+		// sess.commitTransaction();
 	} catch (err) {
 		return next(new HttpError('Applying for job failed. Please try again later', 500));
 	}

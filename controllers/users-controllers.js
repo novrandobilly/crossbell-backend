@@ -368,6 +368,40 @@ const updateApplicantProfile = async (req, res, next) => {
 	return res.status(200).json({ foundApplicant: foundApplicant });
 };
 
+const updateApplicantResume = async (req, res, next) => {
+	const applicantId = req.params.applicantid;
+	let foundApplicant;
+	try {
+		foundApplicant = await Applicant.findById(applicantId);
+	} catch (err) {
+		return next(new HttpError('Retreiving applicant error. Please try again later', 500));
+	}
+
+	if (!foundApplicant) {
+		return next(new HttpError('Applicant not found.', 500));
+	}
+
+	if (foundApplicant.resume.url) {
+		await cloudinary.uploader.destroy(foundApplicant.resume.fileName);
+	}
+
+	foundApplicant.resume = req.file
+		? {
+				url: req.file.path,
+				fileName: req.file.filename
+			}
+		: foundApplicant.resume;
+
+	try {
+		await foundApplicant.save();
+	} catch (err) {
+		const error = new HttpError(err.message, 500);
+		return next(error);
+	}
+
+	return res.status(200).json({ message: 'resume uploaded successfuly' });
+};
+
 const updateCompanyProfile = async (req, res, next) => {
 	const companyId = req.params.companyid;
 
@@ -608,6 +642,7 @@ exports.getCompanyDetails = getCompanyDetails;
 exports.signup = signup;
 exports.login = login;
 exports.updateApplicantProfile = updateApplicantProfile;
+exports.updateApplicantResume = updateApplicantResume;
 exports.updateCompanyProfile = updateCompanyProfile;
 exports.getFeedback = getFeedback;
 exports.createFeedback = createFeedback;

@@ -14,7 +14,6 @@ const applicantStorage = new CloudinaryStorage({
 		allowed_formats: [ 'jpg', 'jpeg', 'png' ]
 	}
 });
-
 const companyStorage = new CloudinaryStorage({
 	cloudinary,
 	params: {
@@ -29,5 +28,12 @@ const adminStorage = new CloudinaryStorage({
 		allowed_formats: [ 'jpg', 'jpeg', 'png' ]
 	}
 });
+const resumeStorage = new CloudinaryStorage({
+	cloudinary,
+	params: {
+		folder: 'crossbell-resume',
+		allowed_formats: [ 'pdf' ]
+	}
+});
 
-module.exports = { cloudinary, applicantStorage, companyStorage, adminStorage };
+module.exports = { cloudinary, applicantStorage, companyStorage, adminStorage, resumeStorage };
