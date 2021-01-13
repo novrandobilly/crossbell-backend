@@ -1,4 +1,5 @@
 const moment = require('moment');
+const cloudinary = require('cloudinary');
 
 const htmlTemplate = payload => {
 	let experienceList = '';
@@ -84,6 +85,8 @@ const htmlTemplate = payload => {
 	} else {
 		skillList = 'Belum Ada';
 	}
+
+	let resume = payload.resume.slice(0, payload.resume.length - 4) + '.jpg';
 
 	return `
    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -364,11 +367,14 @@ const htmlTemplate = payload => {
                                                         <div style="font-family: inherit; text-align: inherit">Bersedia bekerja di luar kota asal: <strong>${payload.outOfTown
 															? '<span style="color: green;">BERSEDIA</span>'
 															: '<span style="color: maroon;">TIDAK</span>'} </strong>
-																			 </div>
-                                                        <div style="font-family: inherit; text-align: inherit">Bersedia bekerja sistem shift: <strong>${payload.workShifts
-															? '<span style="color: green;">BERSEDIA</span>'
-															: '<span style="color: maroon;">TIDAK</span>'} </strong>
-																			 </div>
+                              </div>
+                              <div style="font-family: inherit; text-align: inherit">Bersedia bekerja sistem shift: <strong>${payload.workShifts
+									? '<span style="color: green;">BERSEDIA</span>'
+									: '<span style="color: maroon;">TIDAK</span>'} </strong>
+                              </div>
+                              <div style="font-family: inherit; text-align: inherit">Resume: <strong><a href='${resume ||
+									'#'}'>Resume Link</a></strong>
+                              </div>
                                                         <div></div>
                                                       </div>
                                                     </td>
@@ -427,7 +433,7 @@ const htmlTemplate = payload => {
                                     <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;"
                                       height="100%" valign="top" bgcolor="" role="module-content">
                                       <div>
-                                        <div style="font-family: inherit; text-align: inherit">${payload.headline}
+                                        <div style="font-family: inherit; text-align: inherit">${payload.details}
                                         </div>
                                         <div></div>
                                       </div>

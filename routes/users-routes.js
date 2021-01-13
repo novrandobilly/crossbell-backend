@@ -1,6 +1,6 @@
 const express = require('express');
 const { check } = require('express-validator');
-const { applicantAvatar, companyAvatar } = require('../middleware/file-upload');
+const { applicantAvatar, companyAvatar, applicantResume } = require('../middleware/file-upload');
 
 const usersControllers = require('../controllers/users-controllers');
 
@@ -21,6 +21,7 @@ router.post('/feedback', usersControllers.createFeedback);
 router.post('/signup', signupChecker, usersControllers.signup);
 router.post('/login', usersControllers.login);
 router.patch('/ap/:applicantid', applicantAvatar, usersControllers.updateApplicantProfile);
+router.patch('/ap/:applicantid/resume', applicantResume, usersControllers.updateApplicantResume);
 router.patch('/co/:companyid', companyAvatar, usersControllers.updateCompanyProfile);
 router.post('/forgot', usersControllers.forgotPwd);
 router.post('/reset/:token', usersControllers.resetPwd);

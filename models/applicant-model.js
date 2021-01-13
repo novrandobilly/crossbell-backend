@@ -61,6 +61,10 @@ const applicantSchema = new Schema({
 		}
 	],
 	skills: [ { type: String } ],
+	resume: {
+		url: { type: String },
+		fileName: { type: String }
+	},
 	status: { type: Boolean, default: true },
 	jobsApplied: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
 	jobsReminded: [ { type: mongoose.Types.ObjectId, required: true, ref: 'Job' } ],
