@@ -1,6 +1,6 @@
 const multer = require('multer');
 const HttpError = require('../models/http-error');
-const { applicantStorage, companyStorage, adminStorage } = require('../cloudinary');
+const { applicantStorage, companyStorage, adminStorage, resumeStorage } = require('../cloudinary');
 const applicantUpload = multer({
 	storage: applicantStorage,
 	limits: { fileSize: 500000 }
@@ -11,6 +11,10 @@ const companyUpload = multer({
 });
 const adminUpload = multer({
 	storage: adminStorage,
+	limits: { fileSize: 500000 }
+});
+const resumeUpload = multer({
+	storage: resumeStorage,
 	limits: { fileSize: 500000 }
 });
 
@@ -53,4 +57,17 @@ const adminAvatar = (req, res, next) => {
 	});
 };
 
-module.exports = { applicantAvatar, companyAvatar, adminAvatar };
+const applicantResume = (req, res, next) => {
+	const uploadProcess = resumeUpload.single('resume');
+
+	uploadProcess(req, res, err => {
+		if (err instanceof multer.MulterError) {
+			return next(new HttpError(err, 500));
+		} else if (err) {
+			return next(new HttpError(err, 500));
+		}
+		next();
+	});
+};
+
+module.exports = { applicantAvatar, companyAvatar, adminAvatar, applicantResume };
