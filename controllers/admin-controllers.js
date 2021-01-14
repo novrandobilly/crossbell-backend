@@ -429,7 +429,6 @@ const updateAdminProfile = async (req, res, next) => {
   if (foundAdmin.picture.url) {
     await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
   }
-  console.log(req.phoneNumber);
   foundAdmin.picture = req.file
     ? {
         url: req.file.path,
@@ -437,7 +436,6 @@ const updateAdminProfile = async (req, res, next) => {
       }
     : foundAdmin.picture;
   foundAdmin.email = data.email ? data.email : foundAdmin.email;
-  foundAdmin.password = data.password ? data.password : foundAdmin.password;
   foundAdmin.dateOfBirth = data.dateOfBirth
     ? data.dateOfBirth
     : foundAdmin.dateOfBirth;
@@ -724,7 +722,6 @@ const createOrderBC = async (req, res, next) => {
   const {
     invoiceId,
     companyId,
-    packageName,
     amount,
     gender,
     education,
@@ -768,7 +765,6 @@ const createOrderBC = async (req, res, next) => {
   const newOrder = new Orderbc({
     invoiceId,
     companyId,
-    packageName,
     education,
     gender,
     location,

@@ -1,6 +1,7 @@
 const express = require("express");
 const { check } = require("express-validator");
 const adminControllers = require("../controllers/admin-controllers");
+const { adminAvatar } = require("../middleware/file-upload");
 
 const router = express.Router();
 const checkAuth = require("../middleware/check-auth");
@@ -24,7 +25,11 @@ router.post("/admreg", regAdminChecker, adminControllers.admReg);
 router.post("/admsign", adminControllers.admSign);
 router.use(checkAuth);
 
-router.patch("/:adminid/profile", adminControllers.updateAdminProfile);
+router.patch(
+  "/:adminid/profile",
+  adminAvatar,
+  adminControllers.updateAdminProfile
+);
 router.get("/:adminid/profile", adminControllers.getAdminDetails);
 
 router.post("/order/es", adminControllers.createOrderES);
