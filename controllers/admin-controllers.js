@@ -356,7 +356,6 @@ const updateAdminProfile = async (req, res, next) => {
   if (foundAdmin.picture.url) {
     await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
   }
-  console.log(req.phoneNumber);
   foundAdmin.picture = req.file
     ? {
         url: req.file.path,
@@ -364,7 +363,6 @@ const updateAdminProfile = async (req, res, next) => {
       }
     : foundAdmin.picture;
   foundAdmin.email = data.email ? data.email : foundAdmin.email;
-  foundAdmin.password = data.password ? data.password : foundAdmin.password;
   foundAdmin.dateOfBirth = data.dateOfBirth
     ? data.dateOfBirth
     : foundAdmin.dateOfBirth;
@@ -610,83 +608,89 @@ const getCompanyOrderBC = async (req, res, next) => {
 };
 
 const createOrderBC = async (req, res, next) => {
-	const {
-		invoiceId,
-		companyId,
-		packageName,
-		amount,
-		gender,
-		education,
-		location,
-		min,
-		max,
-		shift,
-		note,
-		jobFunction,
-		emailRecipient
-	} = req.body;
+  const {
+    invoiceId,
+    companyId,
+    amount,
+    gender,
+    education,
+    location,
+    min,
+    max,
+    shift,
+    note,
+    jobFunction,
+    emailRecipient,
+  } = req.body;
 
-	let foundCompany;
-	try {
-		foundCompany = await Company.findById(companyId);
-	} catch (err) {
-		return next(new HttpError('Could not find company data. Please try again later', 500));
-	}
-	if (!foundCompany) {
-		return next(new HttpError('Could not find company with such id.', 404));
-	}
+  let foundCompany;
+  try {
+    foundCompany = await Company.findById(companyId);
+  } catch (err) {
+    return next(
+      new HttpError("Could not find company data. Please try again later", 500)
+    );
+  }
+  if (!foundCompany) {
+    return next(new HttpError("Could not find company with such id.", 404));
+  }
 
-	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
-	const parsedAmount = parseInt(amount);
-	let parsedPrice;
-	if (parsedAmount < 11) {
-		parsedPrice = 40000;
-	} else if (parsedAmount < 21) {
-		parsedPrice = 35000;
-	} else if (parsedAmount < 31) {
-		parsedPrice = 30000;
-	} else if (parsedAmount > 30) {
-		parsedPrice = 20000;
-	} else {
-		return next(new HttpError('Package Type is not defined.', 404));
-	}
-	const newOrder = new Orderbc({
-		invoiceId,
-		companyId,
-		packageName,
-		education,
-		gender,
-		location,
-		emailRecipient,
-		shift,
-		age: {
-			min,
-			max
-		},
-		note,
-		jobFunction,
-		status: 'Pending',
-		createdAt: new Date().toISOString(),
-		dueDate: dueDateCalculation.toISOString(),
-		amount: parsedAmount,
-		price: parsedPrice,
-		totalPrice: parsedAmount * parsedPrice
-	});
+  const dueDateCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 14
+  );
+  const parsedAmount = parseInt(amount);
+  let parsedPrice;
+  if (parsedAmount < 11) {
+    parsedPrice = 40000;
+  } else if (parsedAmount < 21) {
+    parsedPrice = 35000;
+  } else if (parsedAmount < 31) {
+    parsedPrice = 30000;
+  } else if (parsedAmount > 30) {
+    parsedPrice = 20000;
+  } else {
+    return next(new HttpError("Package Type is not defined.", 404));
+  }
+  const newOrder = new Orderbc({
+    invoiceId,
+    companyId,
+    education,
+    gender,
+    location,
+    emailRecipient,
+    shift,
+    age: {
+      min,
+      max,
+    },
+    note,
+    jobFunction,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+    dueDate: dueDateCalculation.toISOString(),
+    amount: parsedAmount,
+    price: parsedPrice,
+    totalPrice: parsedAmount * parsedPrice,
+  });
 
-	try {
-		const sess = await mongoose.startSession();
-		sess.startTransaction();
-		await newOrder.save({ session: sess });
-		foundCompany.orderBC.push(newOrder);
-		await foundCompany.save({ session: sess });
-		await sess.commitTransaction();
-	} catch (err) {
-		console.log(err);
-		const error = new HttpError('Could not create new Bulk Candidates order. Please try again later', 500);
-		return next(error);
-	}
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await newOrder.save({ session: sess });
+    foundCompany.orderBC.push(newOrder);
+    await foundCompany.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Could not create new Bulk Candidates order. Please try again later",
+      500
+    );
+    return next(error);
+  }
 
-	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+
 };
 
 const approveOrderBC = async (req, res, next) => {
