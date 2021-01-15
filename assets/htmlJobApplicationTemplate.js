@@ -1,21 +1,25 @@
-const moment = require('moment');
-const cloudinary = require('cloudinary');
+const moment = require("moment");
+const cloudinary = require("cloudinary");
 
-const htmlTemplate = payload => {
-	let experienceList = '';
-	let educationList = '';
-	let certificationList = '';
-	let skillList = '';
+const htmlTemplate = (payload) => {
+  let experienceList = "";
+  let educationList = "";
+  let certificationList = "";
+  let skillList = "";
 
-	if (payload.experience && payload.experience.length > 0) {
-		payload.experience.sort((a, b) => b.startDate - a.startDate).map(exp => {
-			experienceList =
-				experienceList +
-				`
+  if (payload.experience && payload.experience.length > 0) {
+    payload.experience
+      .sort((a, b) => b.startDate - a.startDate)
+      .map((exp) => {
+        experienceList =
+          experienceList +
+          `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(exp.startDate).format('MMMM YYYY')} - ${exp.endDate
-					? moment(exp.endDate).format('MMMM YYYY')
-					: 'Sekarang'}</strong></p>
+            <p>Periode: <strong>${moment(exp.startDate).format(
+              "MMMM YYYY"
+            )} - ${
+            exp.endDate ? moment(exp.endDate).format("MMMM YYYY") : "Sekarang"
+          }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
                   <li>Jabatan: <strong>${exp.prevTitle}</strong></li>
                   <li>Perusahaan: <strong>${exp.prevCompany}</strong></li>
@@ -24,20 +28,24 @@ const htmlTemplate = payload => {
             </div>
             <br/>
             `;
-		});
-	} else {
-		experienceList = 'Belum Ada';
-	}
+      });
+  } else {
+    experienceList = "Belum Ada";
+  }
 
-	if (payload.education && payload.education.length > 0) {
-		payload.education.sort((a, b) => b.startDate - a.startDate).map(edu => {
-			educationList =
-				educationList +
-				`
+  if (payload.education && payload.education.length > 0) {
+    payload.education
+      .sort((a, b) => b.startDate - a.startDate)
+      .map((edu) => {
+        educationList =
+          educationList +
+          `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(edu.startDate).format('MMMM YYYY')} - ${edu.endDate
-					? moment(edu.endDate).format('MMMM YYYY')
-					: 'Sekarang'}</strong></p>
+            <p>Periode: <strong>${moment(edu.startDate).format(
+              "MMMM YYYY"
+            )} - ${
+            edu.endDate ? moment(edu.endDate).format("MMMM YYYY") : "Sekarang"
+          }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
                   <li>Major: <strong>${edu.major}</strong></li>
                   <li>Jenjang Pendidikan: <strong>${edu.degree}</strong></li>
@@ -47,48 +55,58 @@ const htmlTemplate = payload => {
             </div>
             <br/>
             `;
-		});
-	} else {
-		educationList = 'Belum Ada';
-	}
+      });
+  } else {
+    educationList = "Belum Ada";
+  }
 
-	if (payload.certification && payload.certification.length > 0) {
-		payload.certification.sort((a, b) => b.startDate - a.startDate).map(cert => {
-			certificationList =
-				certificationList +
-				`
+  if (payload.certification && payload.certification.length > 0) {
+    payload.certification
+      .sort((a, b) => b.startDate - a.startDate)
+      .map((cert) => {
+        certificationList =
+          certificationList +
+          `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(cert.startDate).format('MMMM YYYY')} - ${cert.endDate
-					? moment(cert.endDate).format('MMMM YYYY')
-					: 'Seumur Hidup'}</strong></p>
+            <p>Periode: <strong>${moment(cert.startDate).format(
+              "MMMM YYYY"
+            )} - ${
+            cert.endDate
+              ? moment(cert.endDate).format("MMMM YYYY")
+              : "Seumur Hidup"
+          }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
                   <li>Sertifikasi: <strong>${cert.title}</strong></li>
-                  <li>Organisasi/Institusi: <strong>${cert.organization}</strong></li>
+                  <li>Organisasi/Institusi: <strong>${
+                    cert.organization
+                  }</strong></li>
                   <li>Deskripsi: <strong>${cert.description}</strong></li>
                </ul>
             </div>
             <br/>
             `;
-		});
-	} else {
-		certificationList = 'Belum Ada';
-	}
+      });
+  } else {
+    certificationList = "Belum Ada";
+  }
 
-	if (payload.skills && payload.skills.length > 0) {
-		payload.skills.map(skill => {
-			skillList =
-				skillList +
-				`
+  if (payload.skills && payload.skills.length > 0) {
+    payload.skills.map((skill) => {
+      skillList =
+        skillList +
+        `
                <li><strong>${skill}</strong></li>     
             `;
-		});
-	} else {
-		skillList = 'Belum Ada';
-	}
+    });
+  } else {
+    skillList = "Belum Ada";
+  }
 
-	let resume = payload.resume.slice(0, payload.resume.length - 4) + '.jpg';
+  let resume = payload.resume
+    ? payload.resume.slice(0, payload.resume.length - 4) + ".jpg"
+    : "";
 
-	return `
+  return `
    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
    <html data-editor-version="2" class="sg-campaigns" xmlns="http://www.w3.org/1999/xhtml">
 
@@ -262,7 +280,9 @@ const htmlTemplate = payload => {
                                     <td style="padding:18px 0px 6px 0px; line-height:22px; text-align:inherit;"
                                       height="100%" valign="top" bgcolor="" role="module-content">
                                       <div>
-                                        <div style="font-family: inherit; text-align: inherit">Yth. Human Resource Department ${payload.companyName}</div>
+                                        <div style="font-family: inherit; text-align: inherit">Yth. Human Resource Department ${
+                                          payload.companyName
+                                        }</div>
                                         <div style="font-family: inherit; text-align: inherit">di tempat,</div>
                                         <div style="font-family: inherit; text-align: inherit"><br></div>
                                         <div style="font-family: inherit; text-align: inherit">Berikut resume <span
@@ -318,7 +338,9 @@ const htmlTemplate = payload => {
                                                       height="100%" valign="top" bgcolor="" role="module-content">
                                                       <div>
 																		  <div style="font-family: inherit; width: 200px; height: 250px; text-align: center;">
-																		 <img alt="avatar" src="${payload.avatarUrl}" style="max-width: 100%; max-height: 100%; "/> 
+																		 <img alt="avatar" src="${
+                                       payload.avatarUrl
+                                     }" style="max-width: 100%; max-height: 100%; "/> 
 																		  </div>
                                                         <div></div>
                                                       </div>
@@ -348,32 +370,49 @@ const htmlTemplate = payload => {
                                                       style="padding:18px 0px 18px 0px; line-height:32px; text-align:inherit;"
                                                       height="100%" valign="top" bgcolor="" role="module-content">
                                                       <div>
-                                                        <div style="font-family: inherit; text-align: inherit">Nama: <strong>${payload.firstName} ${payload.lastName} </strong>
+                                                        <div style="font-family: inherit; text-align: inherit">Nama: <strong>${
+                                                          payload.firstName
+                                                        } ${
+    payload.lastName
+  } </strong>
                                                         </div>
                                                         <div style="font-family: inherit; text-align: inherit">Usia: <strong>${moment().diff(
-															payload.dateOfBirth,
-															'years',
-															false
-														)} tahun </strong>
+                                                          payload.dateOfBirth,
+                                                          "years",
+                                                          false
+                                                        )} tahun </strong>
                                                         </div>
-																		  <div style="font-family: inherit; text-align: inherit">Jenis Kelamin: <strong>${payload.gender} </strong>
+																		  <div style="font-family: inherit; text-align: inherit">Jenis Kelamin: <strong>${
+                                        payload.gender
+                                      } </strong>
 																		  </div>
-                                                        <div style="font-family: inherit; text-align: inherit">Email: <strong>${payload.email} </strong>
+                                                        <div style="font-family: inherit; text-align: inherit">Email: <strong>${
+                                                          payload.email
+                                                        } </strong>
                                                         </div>
-                                                        <div style="font-family: inherit; text-align: inherit">Alamat: <strong>${payload.address} </strong>
+                                                        <div style="font-family: inherit; text-align: inherit">Alamat: <strong>${
+                                                          payload.address
+                                                        } </strong>
                                                         </div>
-                                                        <div style="font-family: inherit; text-align: inherit">No. Telp: <strong>${payload.phone} </strong>
+                                                        <div style="font-family: inherit; text-align: inherit">No. Telp: <strong>${
+                                                          payload.phone
+                                                        } </strong>
                                                         </div>
-                                                        <div style="font-family: inherit; text-align: inherit">Bersedia bekerja di luar kota asal: <strong>${payload.outOfTown
-															? '<span style="color: green;">BERSEDIA</span>'
-															: '<span style="color: maroon;">TIDAK</span>'} </strong>
+                                                        <div style="font-family: inherit; text-align: inherit">Bersedia bekerja di luar kota asal: <strong>${
+                                                          payload.outOfTown
+                                                            ? '<span style="color: green;">BERSEDIA</span>'
+                                                            : '<span style="color: maroon;">TIDAK</span>'
+                                                        } </strong>
                               </div>
-                              <div style="font-family: inherit; text-align: inherit">Bersedia bekerja sistem shift: <strong>${payload.workShifts
-									? '<span style="color: green;">BERSEDIA</span>'
-									: '<span style="color: maroon;">TIDAK</span>'} </strong>
+                              <div style="font-family: inherit; text-align: inherit">Bersedia bekerja sistem shift: <strong>${
+                                payload.workShifts
+                                  ? '<span style="color: green;">BERSEDIA</span>'
+                                  : '<span style="color: maroon;">TIDAK</span>'
+                              } </strong>
                               </div>
-                              <div style="font-family: inherit; text-align: inherit">Resume: <strong><a href='${resume ||
-									'#'}'>Resume Link</a></strong>
+                              <div style="font-family: inherit; text-align: inherit">Resume: <strong><a href='${
+                                resume || "#"
+                              }'>Resume Link</a></strong>
                               </div>
                                                         <div></div>
                                                       </div>
@@ -433,7 +472,9 @@ const htmlTemplate = payload => {
                                     <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;"
                                       height="100%" valign="top" bgcolor="" role="module-content">
                                       <div>
-                                        <div style="font-family: inherit; text-align: inherit">${payload.details}
+                                        <div style="font-family: inherit; text-align: inherit">${
+                                          payload.details
+                                        }
                                         </div>
                                         <div></div>
                                       </div>

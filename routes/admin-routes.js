@@ -56,7 +56,6 @@ router.post("/approve/reg", adminControllers.approveOrderReg);
 router.get("/:companyid/order/reg", adminControllers.getCompanyOrder);
 router.get("/order/:orderid/invoice", adminControllers.getOrderInvoice);
 
-router.get("/jobs", adminControllers.getWholeJobs);
 router.get("/applicants", adminControllers.getWholeApplicants);
 router.get("/companies", adminControllers.getWholeCompanies);
 router.get("/:jobid/applicants", adminControllers.getApplicantsFromJob);
