@@ -86,7 +86,7 @@ const htmlTemplate = payload => {
 		skillList = 'Belum Ada';
 	}
 
-	let resume = payload.resume.slice(0, payload.resume.length - 4) + '.jpg';
+	let resume = payload.resume ? payload.resume.slice(0, payload.resume.length - 4) + '.jpg' : '#';
 
 	return `
    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -622,8 +622,7 @@ const htmlTemplate = payload => {
                                       height="100%" valign="top" bgcolor="" role="module-content">
                                       <div>
                                         <div style="font-family: inherit; text-align: inherit"><span
-                                            style="font-size: 18px; font-family: arial, helvetica, sans-serif"><strong>SKILLS
-                                              / TECHNICAL SKILLS</strong></span></div>
+                                            style="font-size: 18px; font-family: arial, helvetica, sans-serif"><strong>TECHNICAL SKILLS</strong></span></div>
                                         <div></div>
                                       </div>
                                     </td>

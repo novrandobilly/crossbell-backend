@@ -313,6 +313,7 @@ const googleLogin = async (req, res, next) => {
 	if (email_verified) {
 		try {
 			foundUser = await Applicant.findOne({ email });
+			if (!foundUser) foundUser = await Company.findOne({ email });
 		} catch (err) {
 			return next(new HttpError('Something went wrong.', 500));
 		}
@@ -395,8 +396,6 @@ const googleLogin = async (req, res, next) => {
 		const error = new HttpError('Email could not be verified.', 500);
 		return next(error);
 	}
-
-	console.log(response.payload);
 };
 
 const updateApplicantProfile = async (req, res, next) => {
