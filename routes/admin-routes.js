@@ -1,28 +1,28 @@
-const express = require("express");
-const { check } = require("express-validator");
-const adminControllers = require("../controllers/admin-controllers");
-const { adminAvatar } = require("../middleware/file-upload");
+const express = require('express');
+const { check } = require('express-validator');
+const adminControllers = require('../controllers/admin-controllers');
+const { adminAvatar } = require('../middleware/file-upload');
 
 const router = express.Router();
-const checkAuth = require("../middleware/check-auth");
+const checkAuth = require('../middleware/check-auth');
 
 const regAdminChecker = [
-  check("NIK").trim().notEmpty(),
-  check("firstName").trim().notEmpty(),
-  check("lastName").trim().notEmpty(),
-  check("email").normalizeEmail().isEmail(),
-  check("gender").trim().notEmpty(),
-  check("dateOfBirth").trim().notEmpty(),
-  check("address").trim().notEmpty(),
-  check("phoneNumber").trim().notEmpty(),
-  check("jobTitle").trim().notEmpty(),
-  check("verificationKey").trim().notEmpty(),
+	check('NIK').trim().notEmpty(),
+	check('firstName').trim().notEmpty(),
+	check('lastName').trim().notEmpty(),
+	check('email').normalizeEmail().isEmail(),
+	check('gender').trim().notEmpty(),
+	check('dateOfBirth').trim().notEmpty(),
+	check('address').trim().notEmpty(),
+	check('phoneNumber').trim().notEmpty(),
+	check('role').trim().notEmpty(),
+	check('verificationKey').trim().notEmpty()
 ];
 
 // router.get('/admlog', adminControllers.admlog);
 
-router.post("/admreg", regAdminChecker, adminControllers.admReg);
-router.post("/admsign", adminControllers.admSign);
+router.post('/admreg', regAdminChecker, adminControllers.admReg);
+router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
 router.patch(
@@ -64,5 +64,6 @@ router.post("/:companyid/activate", adminControllers.activateCompany);
 router.post("/:companyid/block", adminControllers.blockCompany);
 
 router.delete("/feedback", adminControllers.deleteFeed);
+
 
 module.exports = router;

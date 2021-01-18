@@ -334,118 +334,109 @@ const login = async (req, res, next) => {
 };
 
 const googleLogin = async (req, res, next) => {
-  const { idToken } = req.body;
-  let response;
 
-  try {
-    response = await client.verifyIdToken({
-      idToken,
-      audience:
-        "968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com",
-    });
-  } catch (err) {
-    const error = new HttpError("Could not verified email.", 500);
-    return next(error);
-  }
-  const { email_verified, given_name, family_name, email } = response.payload;
+	const { idToken } = req.body;
+	let response;
 
-  let foundUser;
-  if (email_verified) {
-    try {
-      foundUser = await Applicant.findOne({ email });
-    } catch (err) {
-      return next(new HttpError("Something went wrong.", 500));
-    }
+	try {
+		response = await client.verifyIdToken({
+			idToken,
+			audience: '968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com'
+		});
+	} catch (err) {
+		const error = new HttpError('Could not verified email.', 500);
+		return next(error);
+	}
+	const { email_verified, given_name, family_name, email } = response.payload;
 
-    if (!foundUser) {
-      let hashedPassword;
-      try {
-        hashedPassword = await bcrypt.hash(
-          email + "one_batch_two_batch_penny_and_dime",
-          12
-        );
-      } catch (err) {
-        const error = new HttpError(
-          "Could not create user, please try again",
-          500
-        );
-        return next(error);
-      }
+	let foundUser;
+	if (email_verified) {
+		try {
+			foundUser = await Applicant.findOne({ email });
+			if (!foundUser) foundUser = await Company.findOne({ email });
+		} catch (err) {
+			return next(new HttpError('Something went wrong.', 500));
+		}
 
-      const newApplicant = new Applicant({
-        firstName: given_name,
-        lastName: family_name,
-        email,
-        password: hashedPassword,
-        resume: null,
-        jobsApplied: [],
-        isCompany: false,
-      });
-      try {
-        await newApplicant.save();
-      } catch (err) {
-        const error = new HttpError("Could not create user.", 500);
-        return next(error);
-      }
+		if (!foundUser) {
+			let hashedPassword;
+			try {
+				hashedPassword = await bcrypt.hash(email + 'one_batch_two_batch_penny_and_dime', 12);
+			} catch (err) {
+				const error = new HttpError('Could not create user, please try again', 500);
+				return next(error);
+			}
 
-      let token;
-      try {
-        token = jwt.sign(
-          {
-            userId: newApplicant.id,
-            email: newApplicant.email,
-            isCompany: newApplicant.isCompany,
-          },
-          "one_batch_two_batch_penny_and_dime",
-          {
-            expiresIn: "3h",
-          }
-        );
-      } catch (err) {
-        const error = new HttpError("Could not create user.", 500);
-        return next(error);
-      }
+			const newApplicant = new Applicant({
+				firstName: given_name,
+				lastName: family_name,
+				email,
+				password: hashedPassword,
+				resume: null,
+				jobsApplied: [],
+				isCompany: false
+			});
+			try {
+				await newApplicant.save();
+			} catch (err) {
+				const error = new HttpError('Could not create user.', 500);
+				return next(error);
+			}
 
-      return res.status(201).json({
-        userId: newApplicant.id,
-        email: newApplicant.email,
-        isCompany: newApplicant.isCompany,
-        token,
-      });
-    } else {
-      let token;
-      try {
-        token = jwt.sign(
-          {
-            userId: foundUser.id,
-            email: foundUser.email,
-            isCompany: foundUser.isCompany,
-          },
-          "one_batch_two_batch_penny_and_dime",
-          { expiresIn: "3h" }
-        );
-      } catch (err) {
-        const error = new HttpError(
-          "Could not generate token, please try again",
-          500
-        );
-        return next(error);
-      }
+			let token;
+			try {
+				token = jwt.sign(
+					{
+						userId: newApplicant.id,
+						email: newApplicant.email,
+						isCompany: newApplicant.isCompany
+					},
+					'one_batch_two_batch_penny_and_dime',
+					{
+						expiresIn: '3h'
+					}
+				);
+			} catch (err) {
+				const error = new HttpError('Could not create user.', 500);
+				return next(error);
+			}
 
-      res.status(200).json({
-        userId: foundUser.id,
-        email: foundUser.email,
-        isCompany: foundUser.isCompany,
-        isActive: foundUser.isActive || false,
-        token,
-      });
-    }
-  } else {
-    const error = new HttpError("Email could not be verified.", 500);
-    return next(error);
-  }
+			return res.status(201).json({
+				userId: newApplicant.id,
+				email: newApplicant.email,
+				isCompany: newApplicant.isCompany,
+				token
+			});
+		} else {
+			let token;
+			try {
+				token = jwt.sign(
+					{
+						userId: foundUser.id,
+						email: foundUser.email,
+						isCompany: foundUser.isCompany
+					},
+					'one_batch_two_batch_penny_and_dime',
+					{ expiresIn: '3h' }
+				);
+			} catch (err) {
+				const error = new HttpError('Could not generate token, please try again', 500);
+				return next(error);
+			}
 
-  console.log(response.payload);
+			res.status(200).json({
+				userId: foundUser.id,
+				email: foundUser.email,
+				isCompany: foundUser.isCompany,
+				isActive: foundUser.isActive || false,
+				token
+			});
+		}
+	} else {
+		const error = new HttpError('Email could not be verified.', 500);
+		return next(error);
+	}
+
 };
 
 const updateApplicantProfile = async (req, res, next) => {
@@ -574,6 +565,7 @@ const updateApplicantResume = async (req, res, next) => {
 };
 
 const updateCompanyProfile = async (req, res, next) => {
+
   const companyId = req.params.companyid;
 
   const data = req.body;
@@ -631,6 +623,7 @@ const updateCompanyProfile = async (req, res, next) => {
   }
 
   return res.status(200).json({ foundCompany: foundCompany });
+
 };
 
 const deleteSegment = async (req, res, next) => {

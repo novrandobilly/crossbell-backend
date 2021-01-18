@@ -153,101 +153,83 @@ const deleteFeed = async (req, res, next) => {
 };
 
 const admReg = async (req, res, next) => {
-  const errors = validationResult(req);
-  const { verificationKey } = req.body;
-  if (!errors.isEmpty() || verificationKey !== process.env.ADMVERIFICATIONKEY) {
-    const error = new HttpError(
-      "Invalid inputs properties. Please check your data",
-      422
-    );
-    return next(error);
-  }
+	const errors = validationResult(req);
+	const { verificationKey } = req.body;
+	if (!errors.isEmpty() || verificationKey !== process.env.ADMVERIFICATIONKEY) {
+		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
+		return next(error);
+	}
 
-  const {
-    NIK,
-    firstName,
-    lastName,
-    email,
-    password,
-    gender,
-    dateOfBirth,
-    address,
-    phoneNumber,
-    jobTitle,
-  } = req.body;
-  let existingAdmin, existingApplicant, existingCompany;
-  try {
-    existingAdmin = await Admin.findOne({ email: email });
-    existingApplicant = await Applicant.findOne({ email: email });
-    existingCompany = await Company.findOne({ email: email });
-  } catch (err) {
-    const error = new HttpError("Signing up failed. Please try again.", 500);
-    return next(error);
-  }
+	const { NIK, firstName, lastName, email, password, gender, dateOfBirth, address, phoneNumber, role } = req.body;
+	let existingAdmin, existingApplicant, existingCompany;
+	try {
+		existingAdmin = await Admin.findOne({ email: email });
+		existingApplicant = await Applicant.findOne({ email: email });
+		existingCompany = await Company.findOne({ email: email });
+	} catch (err) {
+		const error = new HttpError('Signing up failed. Please try again.', 500);
+		return next(error);
+	}
 
-  if (existingAdmin || existingApplicant || existingCompany) {
-    const error = new HttpError(
-      "Could not create user. Email already exists.",
-      422
-    );
-    return next(error);
-  }
+	if (existingAdmin || existingApplicant || existingCompany) {
+		const error = new HttpError('Could not create user. Email already exists.', 422);
+		return next(error);
+	}
 
-  let hashedPassword;
-  try {
-    hashedPassword = await bcrypt.hash(password, 12);
-  } catch (err) {
-    const error = new HttpError("Could not create user, please try again", 500);
-    return next(error);
-  }
+	let hashedPassword;
+	try {
+		hashedPassword = await bcrypt.hash(password, 12);
+	} catch (err) {
+		const error = new HttpError('Could not create user, please try again', 500);
+		return next(error);
+	}
 
-  const newAdmin = new Admin({
-    NIK,
-    firstName,
-    lastName,
-    email,
-    password: hashedPassword,
-    gender,
-    dateOfBirth,
-    address,
-    phoneNumber,
-    jobTitle,
-    isAdmin: true,
-  });
-  try {
-    await newAdmin.save();
-  } catch (err) {
-    const error = new HttpError(
-      "Could not create admin user. Please input a valid value",
-      500
-    );
-    return next(error);
-  }
+	const newAdmin = new Admin({
+		NIK,
+		firstName,
+		lastName,
+		email,
+		password: hashedPassword,
+		gender,
+		dateOfBirth,
+		address,
+		phoneNumber,
+		role,
+		isAdmin: true
+	});
+	try {
+		await newAdmin.save();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create admin user. Please input a valid value', 500);
+		return next(error);
+	}
 
-  let token;
-  try {
-    token = jwt.sign(
-      {
-        userId: newAdmin.id,
-        email: newAdmin.email,
-        isAdmin: newAdmin.isAdmin,
-      },
-      "one_batch_two_batch_penny_and_dime",
-      {
-        expiresIn: "3h",
-      }
-    );
-  } catch (err) {
-    const error = new HttpError("Could not create admin.", 500);
-    return next(error);
-  }
+	let token;
+	try {
+		token = jwt.sign(
+			{
+				userId: newAdmin.id,
+				email: newAdmin.email,
+				isAdmin: newAdmin.isAdmin
+			},
+			'one_batch_two_batch_penny_and_dime',
+			{
+				expiresIn: '3h'
+			}
+		);
+	} catch (err) {
+		const error = new HttpError('Could not create admin.', 500);
+		return next(error);
+	}
 
-  return res.status(201).json({
-    userId: newAdmin._id,
-    email: newAdmin.email,
-    isAdmin: newAdmin.isAdmin,
-    token,
-  });
+	return res.status(201).json({
+		userId: newAdmin._id,
+		email: newAdmin.email,
+		isAdmin: newAdmin.isAdmin,
+		token
+	});
+
 };
 
 const admSign = async (req, res, next) => {
@@ -391,6 +373,7 @@ const getAdminDetails = async (req, res, next) => {
 };
 
 const updateAdminProfile = async (req, res, next) => {
+
   const adminId = req.params.adminid;
 
   const data = req.body;
@@ -433,6 +416,7 @@ const updateAdminProfile = async (req, res, next) => {
   }
 
   return res.status(200).json({ foundAdmin: foundAdmin });
+
 };
 
 //============================REGULER ORDER==================================================
@@ -699,88 +683,69 @@ const getCompanyOrderBC = async (req, res, next) => {
 };
 
 const createOrderBC = async (req, res, next) => {
-  const {
-    invoiceId,
-    companyId,
-    amount,
-    gender,
-    education,
-    location,
-    min,
-    max,
-    shift,
-    note,
-    jobFunction,
-    emailRecipient,
-  } = req.body;
 
-  let foundCompany;
-  try {
-    foundCompany = await Company.findById(companyId);
-  } catch (err) {
-    return next(
-      new HttpError("Could not find company data. Please try again later", 500)
-    );
-  }
-  if (!foundCompany) {
-    return next(new HttpError("Could not find company with such id.", 404));
-  }
+	const { invoiceId, companyId, amount, gender, education, location, min, max, shift, note, jobFunction, emailRecipient } = req.body;
 
-  const dueDateCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 14
-  );
-  const parsedAmount = parseInt(amount);
-  let parsedPrice;
-  if (parsedAmount < 11) {
-    parsedPrice = 40000;
-  } else if (parsedAmount < 21) {
-    parsedPrice = 35000;
-  } else if (parsedAmount < 31) {
-    parsedPrice = 30000;
-  } else if (parsedAmount > 30) {
-    parsedPrice = 20000;
-  } else {
-    return next(new HttpError("Package Type is not defined.", 404));
-  }
-  const newOrder = new Orderbc({
-    invoiceId,
-    companyId,
-    education,
-    gender,
-    location,
-    emailRecipient,
-    shift,
-    age: {
-      min,
-      max,
-    },
-    note,
-    jobFunction,
-    status: "Pending",
-    createdAt: new Date().toISOString(),
-    dueDate: dueDateCalculation.toISOString(),
-    amount: parsedAmount,
-    price: parsedPrice,
-    totalPrice: parsedAmount * parsedPrice,
-  });
+	let foundCompany;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await newOrder.save({ session: sess });
-    foundCompany.orderBC.push(newOrder);
-    await foundCompany.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      "Could not create new Bulk Candidates order. Please try again later",
-      500
-    );
-    return next(error);
-  }
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedAmount = parseInt(amount);
+	let parsedPrice;
+	if (parsedAmount < 11) {
+		parsedPrice = 40000;
+	} else if (parsedAmount < 21) {
+		parsedPrice = 35000;
+	} else if (parsedAmount < 31) {
+		parsedPrice = 30000;
+	} else if (parsedAmount > 30) {
+		parsedPrice = 20000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
+	const newOrder = new Orderbc({
+		invoiceId,
+		companyId,
+		education,
+		gender,
+		location,
+		emailRecipient,
+		shift,
+		age: {
+			min,
+			max
+		},
+		note,
+		jobFunction,
+		status: 'Pending',
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		amount: parsedAmount,
+		price: parsedPrice,
+		totalPrice: parsedAmount * parsedPrice
+	});
 
-  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.orderBC.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new Bulk Candidates order. Please try again later', 500);
+		return next(error);
+	}
+
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
 };
 
 const approveOrderBC = async (req, res, next) => {

@@ -1,8 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
 const jobSchema = new Schema({
+
   companyId: { type: mongoose.Types.ObjectId, required: true, ref: "Company" },
   jobTitle: { type: String, required: true },
   placementLocation: { type: String, required: true },
@@ -22,6 +23,7 @@ const jobSchema = new Schema({
   jobApplicants: [
     { type: mongoose.Types.ObjectId, required: true, ref: "Applicant" },
   ],
+
 });
 
-module.exports = mongoose.model("Job", jobSchema);
+module.exports = mongoose.model('Job', jobSchema);
