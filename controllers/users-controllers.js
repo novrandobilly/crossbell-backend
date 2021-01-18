@@ -520,7 +520,7 @@ const updateCompanyProfile = async (req, res, next) => {
 		const error = new HttpError('Something went wrong. Please try again later', 500);
 		return next(error);
 	}
-
+	console.log(req.file);
 	if (foundCompany.logo.url) {
 		await cloudinary.uploader.destroy(foundCompany.logo.fileName);
 	}
