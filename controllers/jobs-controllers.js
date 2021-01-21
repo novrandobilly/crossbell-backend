@@ -11,6 +11,7 @@ const Applicant = require('../models/applicant-model');
 const cloudinary = require('cloudinary');
 
 const getAllAvailableJobs = async (req, res, next) => {
+
 	let availableJobs;
 	try {
 		availableJobs = await Job.find({
@@ -289,69 +290,85 @@ const updateJob = async (req, res, next) => {
 };
 
 const applyJob = async (req, res, next) => {
-	const jobId = req.params.jobid;
-	const { applicantId } = req.body;
+  const jobId = req.params.jobid;
+  const { applicantId } = req.body;
 
-	let foundJob, foundApplicant;
-	try {
-		foundJob = await Job.findById(jobId).populate('companyId', '-password');
-		foundApplicant = await Applicant.findById(applicantId, '-password');
-	} catch (err) {
-		return next(new HttpError('Cannot retrieve for job/applicant ID failed. Please try again later', 500));
-	}
+  let foundJob, foundApplicant;
+  try {
+    foundJob = await Job.findById(jobId).populate('companyId', '-password');
+    foundApplicant = await Applicant.findById(applicantId, '-password');
+  } catch (err) {
+    return next(
+      new HttpError(
+        'Cannot retrieve for job/applicant ID failed. Please try again later',
+        500
+      )
+    );
+  }
 
-	if (!foundJob || !foundApplicant) {
-		return next(new HttpError('Job/Applicant could not not found. Please try again later', 404));
-	}
+  if (!foundJob || !foundApplicant) {
+    return next(
+      new HttpError(
+        'Job/Applicant could not not found. Please try again later',
+        404
+      )
+    );
+  }
 
-	let applicantHasApplied = foundApplicant.jobsApplied.toObject({ getters: true }).some(job => job.toString() === jobId);
-	if (applicantHasApplied) {
-		return next(new HttpError('You have applied to this job', 500));
-	}
+  let applicantHasApplied = foundApplicant.jobsApplied
+    .toObject({ getters: true })
+    .some((job) => job.toString() === jobId);
+  if (applicantHasApplied) {
+    return next(new HttpError('You have applied to this job', 500));
+  }
 
-	const payload = {
-		companyName: foundJob.companyId.companyName || '-',
-		avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
-		firstName: foundApplicant.firstName || '-',
-		lastName: foundApplicant.lastName || '-',
-		dateOfBirth: foundApplicant.dateOfBirth,
-		gender: foundApplicant.gender || '-',
-		email: foundApplicant.email || '-',
-		address: foundApplicant.address || '-',
-		phone: foundApplicant.phone || '-',
-		outOfTown: foundApplicant.outOfTown,
-		workShifts: foundApplicant.workShifts,
-		details: foundApplicant.details || '-',
-		experience: foundApplicant.experience,
-		education: foundApplicant.education,
-		certification: foundApplicant.certification,
-		skills: foundApplicant.skills,
-		resume: foundApplicant.resume.url || ''
-	};
+  const payload = {
+    companyName: foundJob.companyId.companyName || '-',
+    avatarUrl:
+      foundApplicant.picture.url || 'User has not posted any photo yet',
+    firstName: foundApplicant.firstName || '-',
+    lastName: foundApplicant.lastName || '-',
+    dateOfBirth: foundApplicant.dateOfBirth,
+    gender: foundApplicant.gender || '-',
+    email: foundApplicant.email || '-',
+    address: foundApplicant.address || '-',
+    phone: foundApplicant.phone || '-',
+    outOfTown: foundApplicant.outOfTown,
+    workShifts: foundApplicant.workShifts,
+    details: foundApplicant.details || '-',
+    experience: foundApplicant.experience,
+    education: foundApplicant.education,
+    certification: foundApplicant.certification,
+    skills: foundApplicant.skills,
+    resume: foundApplicant.resume.url || '',
+  };
 
-	const htmlBody = applyJobTemplate(payload);
+  const htmlBody = applyJobTemplate(payload);
 
-	const emailData = {
-		to: foundJob.emailRecipient,
-		from: 'crossbellcorps@gmail.com',
-		subject: `<Crossbell> Application for ${foundJob.jobTitle} - ${foundApplicant.firstName} ${foundApplicant.lastName}`,
-		html: htmlBody
-	};
+  const emailData = {
+    to: foundJob.emailRecipient,
+    from: 'crossbellcorps@gmail.com',
+    subject: `<Crossbell> Application for ${foundJob.jobTitle} - ${foundApplicant.firstName} ${foundApplicant.lastName}`,
+    html: htmlBody,
+  };
 
-	try {
-		// const sess = await mongoose.startSession();
-		// sess.startTransaction();
-		// foundJob.jobApplicants.push(foundApplicant);
-		// foundApplicant.jobsApplied.push(foundJob);
-		// await foundJob.save({ session: sess });
-		// await foundApplicant.save({ session: sess });
-		await sgMail.send(emailData);
-		// sess.commitTransaction();
-	} catch (err) {
-		return next(new HttpError('Applying for job failed. Please try again later', 500));
-	}
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    foundJob.jobApplicants.push(foundApplicant);
+    foundApplicant.jobsApplied.push(foundJob);
+    await foundJob.save({ session: sess });
+    await foundApplicant.save({ session: sess });
+    // await sgMail.send(emailData);
+    sess.commitTransaction();
+  } catch (err) {
+    console.log(err);
+    return next(
+      new HttpError('Applying for job failed. Please try again later', 500)
+    );
+  }
 
-	res.status(200).json({ message: 'Successfully applied to the job' });
+  res.status(200).json({ message: 'Successfully applied to the job' });
 };
 
 const deleteJob = async (req, res, next) => {
@@ -397,6 +414,7 @@ const deleteJob = async (req, res, next) => {
 	}
 
 	res.status(200).json({ message: 'Job successfully deleted!' });
+
 };
 
 exports.getAllAvailableJobs = getAllAvailableJobs;
