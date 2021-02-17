@@ -8,7 +8,7 @@ const orderbcSchema = new Schema({
   status: { type: String, required: true, default: 'Pending' },
   createdAt: { type: Date, required: true },
   approvedAt: { type: Date, default: null },
-  emailRecipient: { type: String, required: true },
+  // emailRecipient: { type: String, required: true },
   dueDate: { type: Date, required: true },
   price: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
