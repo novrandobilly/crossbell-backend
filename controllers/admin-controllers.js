@@ -641,7 +641,7 @@ const createOrderBC = async (req, res, next) => {
 	} else if (parsedAmount < 31) {
 		parsedPrice = 30000;
 	} else if (parsedAmount > 30) {
-		parsedPrice = 20000;
+		parsedPrice = 25000;
 	} else {
 		return next(new HttpError('Package Type is not defined.', 404));
 	}
