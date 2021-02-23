@@ -13,7 +13,7 @@ const orderbcSchema = new Schema({
   price: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
   promo: { type: Number, default: 0 },
-  education: { type: String, required: true },
+  education: [{ type: String, required: true }],
   gender: { type: String, required: true },
   location: { type: Boolean, required: true, default: false },
   shift: { type: Boolean, required: true, default: false },

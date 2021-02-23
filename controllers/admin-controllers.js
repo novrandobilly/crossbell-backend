@@ -725,6 +725,7 @@ const getCompanyOrderBC = async (req, res, next) => {
 };
 
 const createOrderBC = async (req, res, next) => {
+
   const {
     invoiceId,
     companyId,
@@ -829,6 +830,7 @@ const createOrderBC = async (req, res, next) => {
   }
 
   res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+
 };
 
 const approveOrderBC = async (req, res, next) => {
