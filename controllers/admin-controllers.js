@@ -784,7 +784,9 @@ const createOrderBC = async (req, res, next) => {
   } else if (parsedAmount < 31) {
     parsedPrice = 30000;
   } else if (parsedAmount > 30) {
-    parsedPrice = 20000;
+
+    parsedPrice = 25000;
+
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
@@ -937,7 +939,9 @@ const sentApplicantBC = async (req, res, next) => {
   const htmlBody = applyJobTemplate(payload);
 
   const emailData = {
-    to: foundOrder.companyId.emailRecipient,
+
+    to: foundOrder.emailRecipient,
+
     from: 'crossbellcorps@gmail.com',
     subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
     html: `
@@ -948,11 +952,12 @@ const sentApplicantBC = async (req, res, next) => {
 
   try {
     await foundOrder.save();
-    // await sgMail.send(emailData);
+
+    await sgMail.send(emailData);
   } catch (err) {
-    console.log(err.message);
     const error = new HttpError(
-      'Could not add candidate on BC order right now. Please try again later',
+      'Could not add Executive Search candidate. Please try again later',
+
       500
     );
     return next(error);
@@ -1273,11 +1278,17 @@ const updatePromo = async (req, res, next) => {
   }
 
   if (!foundPromo) {
-    return next(new HttpError('Could not find Promo with such id.', 404));
+
+    foundPromo[0] = new Promo({
+      promoReg: promoReg ? promoReg : 0,
+      promoBC: promoBC ? promoBC : 0,
+    });
+    await foundPromo[0].save();
+  } else {
+    foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
+    foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
   }
 
-  foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
-  foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
 
   try {
     const sess = await mongoose.startSession();
