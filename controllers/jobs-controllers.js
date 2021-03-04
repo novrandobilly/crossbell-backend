@@ -471,6 +471,7 @@ const applyJob = async (req, res, next) => {
   }
 
   const payload = {
+    applicantId: applicantId,
     companyName: foundJob.companyId.companyName || '-',
     avatarUrl:
       foundApplicant.picture.url || 'User has not posted any photo yet',
