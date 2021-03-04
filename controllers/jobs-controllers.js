@@ -208,7 +208,7 @@ const saveJobDraft = async (req, res, next) => {
     educationalStage: educationalStage || '-',
     technicalRequirement: technicalRequirement || '-',
     emailRecipient: emailRecipient || '-',
-    employment: employment || '-',
+    employment: employment || 'permanent',
     createdAt: new Date().toISOString(),
     slot: parsedSlot || 0,
     benefit: benefit || null,
@@ -313,7 +313,6 @@ const editJobDraft = async (req, res, next) => {
   const jobId = req.params.jobid;
 
   let parsedSlot = parseInt(slot);
-  parsedSlot = parsedSlot / 2;
 
   let updatedJob;
   try {
