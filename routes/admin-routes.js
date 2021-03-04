@@ -32,6 +32,12 @@ router.patch(
 );
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
 
+router.post('/order/bc', adminControllers.createOrderBC);
+router.get('/order/bc', adminControllers.getWholeOrderBC);
+router.post('/approve/bc', adminControllers.approveOrderBC);
+router.get('/:companyid/order/bc', adminControllers.getCompanyOrderBC);
+router.post('/order/bc/applicant', adminControllers.sentApplicantBC);
+
 router.post('/order/es', adminControllers.createOrderES);
 router.get('/order/es', adminControllers.getWholeOrderES);
 router.get('/:companyid/order/es', adminControllers.getCompanyOrderES);
@@ -43,12 +49,6 @@ router.post(
 );
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
-
-router.post('/order/bc', adminControllers.createOrderBC);
-router.get('/order/bc', adminControllers.getWholeOrderBC);
-router.post('/approve/bc', adminControllers.approveOrderBC);
-router.get('/:companyid/order/bc', adminControllers.getCompanyOrderBC);
-router.post('/order/bc/applicant', adminControllers.sentApplicantBC);
 
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);

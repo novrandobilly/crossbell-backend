@@ -12,6 +12,7 @@ const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sgMail = require('@sendgrid/mail');
+const { cloudinary } = require('../cloudinary');
 sgMail.setApiKey(process.env.SENDGRID_API);
 const applyJobTemplate = require('../assets/htmlJobApplicationTemplate');
 
@@ -411,6 +412,7 @@ const updateAdminProfile = async (req, res, next) => {
   if (foundAdmin.picture.url) {
     await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
   }
+
   foundAdmin.picture = req.file
     ? {
         url: req.file.path,
@@ -723,6 +725,7 @@ const getCompanyOrderBC = async (req, res, next) => {
 };
 
 const createOrderBC = async (req, res, next) => {
+
   const {
     invoiceId,
     companyId,
@@ -781,7 +784,9 @@ const createOrderBC = async (req, res, next) => {
   } else if (parsedAmount < 31) {
     parsedPrice = 30000;
   } else if (parsedAmount > 30) {
+
     parsedPrice = 25000;
+
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
@@ -827,6 +832,7 @@ const createOrderBC = async (req, res, next) => {
   }
 
   res.status(201).json({ order: newOrder.toObject({ getters: true }) });
+
 };
 
 const approveOrderBC = async (req, res, next) => {
@@ -933,7 +939,9 @@ const sentApplicantBC = async (req, res, next) => {
   const htmlBody = applyJobTemplate(payload);
 
   const emailData = {
+
     to: foundOrder.emailRecipient,
+
     from: 'crossbellcorps@gmail.com',
     subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
     html: `
@@ -944,10 +952,12 @@ const sentApplicantBC = async (req, res, next) => {
 
   try {
     await foundOrder.save();
+
     await sgMail.send(emailData);
   } catch (err) {
     const error = new HttpError(
       'Could not add Executive Search candidate. Please try again later',
+
       500
     );
     return next(error);
@@ -1268,6 +1278,7 @@ const updatePromo = async (req, res, next) => {
   }
 
   if (!foundPromo) {
+
     foundPromo[0] = new Promo({
       promoReg: promoReg ? promoReg : 0,
       promoBC: promoBC ? promoBC : 0,
@@ -1277,6 +1288,7 @@ const updatePromo = async (req, res, next) => {
     foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
     foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
   }
+
 
   try {
     const sess = await mongoose.startSession();
