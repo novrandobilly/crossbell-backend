@@ -181,7 +181,7 @@ const saveJobDraft = async (req, res, next) => {
 		educationalStage: educationalStage || '-',
 		technicalRequirement: technicalRequirement || '-',
 		emailRecipient: emailRecipient || '-',
-		employment: employment || '-',
+		employment: employment || 'permanent',
 		createdAt: new Date().toISOString(),
 		slot: parsedSlot || 0,
 		benefit: benefit || null,
@@ -269,7 +269,6 @@ const editJobDraft = async (req, res, next) => {
 	const jobId = req.params.jobid;
 
 	let parsedSlot = parseInt(slot);
-	parsedSlot = parsedSlot / 2;
 
 	let updatedJob;
 	try {
@@ -378,6 +377,7 @@ const applyJob = async (req, res, next) => {
 	}
 
 	const payload = {
+		applicantId: applicantId,
 		companyName: foundJob.companyId.companyName || '-',
 		avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
 		firstName: foundApplicant.firstName || '-',
@@ -413,7 +413,7 @@ const applyJob = async (req, res, next) => {
 		foundApplicant.jobsApplied.push(foundJob);
 		await foundJob.save({ session: sess });
 		await foundApplicant.save({ session: sess });
-		await sgMail.send(emailData);
+		// await sgMail.send(emailData);
 		sess.commitTransaction();
 	} catch (err) {
 		console.log(err);
