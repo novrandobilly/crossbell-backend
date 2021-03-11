@@ -32,9 +32,7 @@ app.use('/api/alphaomega', adminRoutes);
 
 schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec);
 schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec);
-// schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo);
-
-// cronControllers.createPromo();
+schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo);
 
 app.use((req, res, next) => {
 	throw new HttpError('Could not find the requested route', 404);
