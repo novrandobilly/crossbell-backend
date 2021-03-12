@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-// const cors = require('cors');
+const cors = require('cors');
 const schedule = require('node-schedule');
 
 const jobsRoutes = require('./routes/jobs-routes');
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 	next();
 });
 
-// app.use(cors());
+app.use(cors());
 
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
