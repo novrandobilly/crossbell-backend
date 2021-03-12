@@ -16,6 +16,8 @@ const cronControllers = require('./controllers/cron-controllers');
 const HttpError = require('./models/http-error');
 
 const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,8 +25,6 @@ app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
 	next();
 });
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 
 // app.use(cors());
 
