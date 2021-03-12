@@ -24,6 +24,7 @@ const regAdminChecker = [
 router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
+router.post('/order/reg', adminControllers.createOrderReg);
 
 router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
@@ -43,7 +44,6 @@ router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusE
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
-router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
