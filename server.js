@@ -27,7 +27,12 @@ app.use(bodyParser.json());
 // 	next();
 // });
 
-app.use(cors());
+app.use(
+	cors({
+		origin: [ 'https://crossbell.web.app' ],
+		credentials: true
+	})
+);
 
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
