@@ -29,7 +29,7 @@ app.use(bodyParser.json());
 
 app.use(
 	cors({
-		origin: [ 'https://crossbell.web.app' ],
+		origin: [ 'https://crossbell.web.app', 'http://localhost:3000' ],
 		credentials: true
 	})
 );
