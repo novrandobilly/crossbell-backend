@@ -2,7 +2,6 @@ const express = require('express');
 const { check } = require('express-validator');
 const adminControllers = require('../controllers/admin-controllers');
 const { adminAvatar } = require('../middleware/file-upload');
-const cors = require('cors');
 
 const router = express.Router();
 const checkAuth = require('../middleware/check-auth');
@@ -44,7 +43,7 @@ router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusE
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
-router.post('/order/reg', cors(), adminControllers.createOrderReg);
+router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
