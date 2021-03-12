@@ -23,7 +23,7 @@ const regAdminChecker = [
 
 router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
-router.use(checkAuth);
+// router.use(checkAuth);
 
 router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
