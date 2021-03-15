@@ -5,7 +5,6 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-// const cors = require('cors');
 const schedule = require('node-schedule');
 
 const jobsRoutes = require('./routes/jobs-routes');
@@ -26,13 +25,6 @@ app.use((req, res, next) => {
 	res.setHeader('Access-Control-Allow-Credentials', true);
 	next();
 });
-
-// app.use(
-// 	cors({
-// 		origin: [ 'https://crossbell.web.app', 'http://localhost:3000' ],
-// 		credentials: true
-// 	})
-// );
 
 app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
