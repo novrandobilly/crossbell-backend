@@ -411,13 +411,14 @@ const updateApplicantProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (foundApplicant.picture.url) {
+	if (req.file && foundApplicant.picture.url) {
 		await cloudinary.uploader.destroy(foundApplicant.picture.fileName);
 	}
+
 	let splitInterest = [ ...foundApplicant.interest ];
 
 	if (data && data.interest) {
-		splitInterest = data.interest.split(',');
+		splitInterest = data.interest.split(',').filter(interest => interest);
 	}
 
 	foundApplicant.picture = req.file
@@ -493,7 +494,7 @@ const updateApplicantResume = async (req, res, next) => {
 		return next(new HttpError('Applicant not found.', 500));
 	}
 
-	if (foundApplicant.resume.url) {
+	if (req.file && foundApplicant.resume.url) {
 		await cloudinary.uploader.destroy(foundApplicant.resume.fileName);
 	}
 
@@ -545,7 +546,7 @@ const updateCompanyProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (foundCompany.logo.url) {
+	if (req.file && foundCompany.logo.url) {
 		await cloudinary.uploader.destroy(foundCompany.logo.fileName);
 	}
 
