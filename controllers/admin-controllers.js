@@ -334,7 +334,7 @@ const updateAdminProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (foundAdmin.picture.url) {
+	if (req.file && foundAdmin.picture.url) {
 		await cloudinary.uploader.destroy(foundAdmin.picture.fileName);
 	}
 

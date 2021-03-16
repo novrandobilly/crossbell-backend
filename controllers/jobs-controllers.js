@@ -301,6 +301,8 @@ const editJobDraft = async (req, res, next) => {
 	updatedJob.salary = salary ? salary : updatedJob.salary;
 	updatedJob.fieldOfWork = fieldOfWork ? fieldOfWork : updatedJob.fieldOfWork;
 
+	console.log(updatedJob);
+
 	try {
 		await updatedJob.save();
 	} catch (err) {
@@ -413,7 +415,7 @@ const applyJob = async (req, res, next) => {
 		foundApplicant.jobsApplied.push(foundJob);
 		await foundJob.save({ session: sess });
 		await foundApplicant.save({ session: sess });
-		// await sgMail.send(emailData);
+		await sgMail.send(emailData);
 		sess.commitTransaction();
 	} catch (err) {
 		console.log(err);
