@@ -37,6 +37,7 @@ const applicantSchema = new Schema({
       startDate: { type: Date },
       endDate: { type: Date },
       description: { type: String },
+      IPK: { type: Number },
     },
   ],
   experience: [
