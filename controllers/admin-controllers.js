@@ -725,7 +725,6 @@ const getCompanyOrderBC = async (req, res, next) => {
 };
 
 const createOrderBC = async (req, res, next) => {
-
   const {
     invoiceId,
     companyId,
@@ -739,6 +738,8 @@ const createOrderBC = async (req, res, next) => {
     note,
     jobFunction,
     emailRecipient,
+    IPK,
+    school,
   } = req.body;
 
   let foundCompany;
@@ -784,9 +785,7 @@ const createOrderBC = async (req, res, next) => {
   } else if (parsedAmount < 31) {
     parsedPrice = 30000;
   } else if (parsedAmount > 30) {
-
     parsedPrice = 25000;
-
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
@@ -803,6 +802,8 @@ const createOrderBC = async (req, res, next) => {
       max,
     },
     note,
+    IPK,
+    school,
     jobFunction,
     status: 'Pending',
     createdAt: new Date().toISOString(),
@@ -832,7 +833,6 @@ const createOrderBC = async (req, res, next) => {
   }
 
   res.status(201).json({ order: newOrder.toObject({ getters: true }) });
-
 };
 
 const approveOrderBC = async (req, res, next) => {
@@ -939,7 +939,6 @@ const sentApplicantBC = async (req, res, next) => {
   const htmlBody = applyJobTemplate(payload);
 
   const emailData = {
-
     to: foundOrder.emailRecipient,
 
     from: 'crossbellcorps@gmail.com',
@@ -1278,7 +1277,6 @@ const updatePromo = async (req, res, next) => {
   }
 
   if (!foundPromo) {
-
     foundPromo[0] = new Promo({
       promoReg: promoReg ? promoReg : 0,
       promoBC: promoBC ? promoBC : 0,
@@ -1288,7 +1286,6 @@ const updatePromo = async (req, res, next) => {
     foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
     foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
   }
-
 
   try {
     const sess = await mongoose.startSession();
