@@ -177,7 +177,7 @@ const signup = async (req, res, next) => {
 					email: newCompany.email,
 					isCompany: newCompany.isCompany
 				},
-				'one_batch_two_batch_penny_and_dime',
+				process.env.JWT_SECRET_KEY,
 				{
 					expiresIn: '3h'
 				}
@@ -221,7 +221,7 @@ const signup = async (req, res, next) => {
 					email: newApplicant.email,
 					isCompany: newApplicant.isCompany
 				},
-				'one_batch_two_batch_penny_and_dime',
+				process.env.JWT_SECRET_KEY,
 				{
 					expiresIn: '3h'
 				}
@@ -278,7 +278,7 @@ const login = async (req, res, next) => {
 				email: foundUser.email,
 				isCompany: foundUser.isCompany
 			},
-			'one_batch_two_batch_penny_and_dime',
+			process.env.JWT_SECRET_KEY,
 			{ expiresIn: '3h' }
 		);
 	} catch (err) {
@@ -322,7 +322,7 @@ const googleLogin = async (req, res, next) => {
 		if (!foundUser) {
 			let hashedPassword;
 			try {
-				hashedPassword = await bcrypt.hash(email + 'one_batch_two_batch_penny_and_dime', 12);
+				hashedPassword = await bcrypt.hash(email + process.env.JWT_SECRET_KEY, 12);
 			} catch (err) {
 				const error = new HttpError('Could not create user, please try again', 500);
 				return next(error);
@@ -352,7 +352,7 @@ const googleLogin = async (req, res, next) => {
 						email: newApplicant.email,
 						isCompany: newApplicant.isCompany
 					},
-					'one_batch_two_batch_penny_and_dime',
+					process.env.JWT_SECRET_KEY,
 					{
 						expiresIn: '3h'
 					}
@@ -377,7 +377,7 @@ const googleLogin = async (req, res, next) => {
 						email: foundUser.email,
 						isCompany: foundUser.isCompany
 					},
-					'one_batch_two_batch_penny_and_dime',
+					process.env.JWT_SECRET_KEY,
 					{ expiresIn: '3h' }
 				);
 			} catch (err) {
@@ -411,13 +411,14 @@ const updateApplicantProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (foundApplicant.picture.url) {
+	if (req.file && foundApplicant.picture.url) {
 		await cloudinary.uploader.destroy(foundApplicant.picture.fileName);
 	}
+
 	let splitInterest = [ ...foundApplicant.interest ];
 
 	if (data && data.interest) {
-		splitInterest = data.interest.split(',');
+		splitInterest = data.interest.split(',').filter(interest => interest);
 	}
 
 	foundApplicant.picture = req.file
@@ -493,7 +494,7 @@ const updateApplicantResume = async (req, res, next) => {
 		return next(new HttpError('Applicant not found.', 500));
 	}
 
-	if (foundApplicant.resume.url) {
+	if (req.file && foundApplicant.resume.url) {
 		await cloudinary.uploader.destroy(foundApplicant.resume.fileName);
 	}
 
@@ -545,7 +546,7 @@ const updateCompanyProfile = async (req, res, next) => {
 		return next(error);
 	}
 
-	if (foundCompany.logo.url) {
+	if (req.file && foundCompany.logo.url) {
 		await cloudinary.uploader.destroy(foundCompany.logo.fileName);
 	}
 
@@ -756,7 +757,7 @@ const resetPwd = async (req, res, next) => {
 					email: foundUser.email,
 					isCompany: foundUser.isCompany
 				},
-				'one_batch_two_batch_penny_and_dime',
+				process.env.JWT_SECRET_KEY,
 				{ expiresIn: '3h' }
 			);
 		} catch (err) {
