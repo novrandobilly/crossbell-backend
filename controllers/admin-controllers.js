@@ -428,10 +428,13 @@ const createOrderReg = async (req, res, next) => {
 	} catch (err) {
 		return next(new HttpError('Could not find company data. Please try again later', 500));
 	}
+
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
 	}
-
+	if (!foundCompany.isActive) {
+		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
+	}
 	try {
 		promo = await Promo.find();
 	} catch (err) {
@@ -617,6 +620,9 @@ const createOrderBC = async (req, res, next) => {
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
 	}
+	if (!foundCompany.isActive) {
+		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
+	}
 
 	try {
 		promo = await Promo.find();
@@ -771,7 +777,6 @@ const sentApplicantBC = async (req, res, next) => {
 
 	const emailData = {
 		to: foundOrder.emailRecipient,
-
 		from: 'crossbellcorps@gmail.com',
 		subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
 		html: `
@@ -782,7 +787,6 @@ const sentApplicantBC = async (req, res, next) => {
 
 	try {
 		await foundOrder.save();
-
 		await sgMail.send(emailData);
 	} catch (err) {
 		const error = new HttpError('Could not add Executive Search candidate. Please try again later', 500);
@@ -854,6 +858,9 @@ const createOrderES = async (req, res, next) => {
 	}
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
+	}
+	if (!foundCompany.isActive) {
+		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
 	}
 
 	const newRequest = new Orderes({
