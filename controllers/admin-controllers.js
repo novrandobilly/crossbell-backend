@@ -73,22 +73,34 @@ const getApplicantsFromJob = async (req, res, next) => {
 };
 
 const getJobsFromApplicant = async (req, res, next) => {
-	const applicantId = req.params.applicantid;
 
-	let foundApplicant;
-	try {
-		foundApplicant = await Applicant.findById(applicantId).populate('jobsApplied', '-jobApplicants');
-	} catch (err) {
-		return next(new HttpError('Fetching applicant & jobs applied data failed. Please try again', 500));
-	}
+  const applicantId = req.params.applicantid;
 
-	if (!foundApplicant) {
-		return next(new HttpError('Applicant is not found', 404));
-	}
+  let foundApplicant;
+  try {
+    foundApplicant = await Applicant.findById(applicantId).populate(
+      'jobsApplied',
+      '-jobApplicants'
+    );
+  } catch (err) {
+    return next(
+      new HttpError(
+        'Fetching applicant & jobs applied data failed. Please try again',
+        500
+      )
+    );
+  }
 
-	res.status(200).json({
-		applicantsApplied: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true }))
-	});
+  if (!foundApplicant) {
+    return next(new HttpError('Applicant is not found', 404));
+  }
+
+  res.status(200).json({
+    Jobs: foundApplicant.jobsApplied.map((job) =>
+      job.toObject({ getters: true })
+    ),
+  });
+
 };
 
 const deleteFeed = async (req, res, next) => {
