@@ -113,7 +113,7 @@ const getJobsFromApplicant = async (req, res, next) => {
   }
 
   res.status(200).json({
-    applicantsApplied: foundApplicant.jobsApplied.map((job) =>
+    Jobs: foundApplicant.jobsApplied.map((job) =>
       job.toObject({ getters: true })
     ),
   });
