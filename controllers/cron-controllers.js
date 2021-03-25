@@ -156,7 +156,7 @@ const createPromo = async (req, res, next) => {
 	try {
 		foundPromo = await Promo.find();
 	} catch (err) {
-		return next(new HttpError('Fetching promo failed, please try again later', 500));
+		return new HttpError('Fetching promo failed, please try again later', 500);
 	}
 
 	if (foundPromo[0] && foundPromo.length === 1) {
