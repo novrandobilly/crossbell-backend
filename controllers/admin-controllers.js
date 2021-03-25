@@ -73,34 +73,22 @@ const getApplicantsFromJob = async (req, res, next) => {
 };
 
 const getJobsFromApplicant = async (req, res, next) => {
+	const applicantId = req.params.applicantid;
 
-  const applicantId = req.params.applicantid;
+	let foundApplicant;
+	try {
+		foundApplicant = await Applicant.findById(applicantId).populate('jobsApplied', '-jobApplicants');
+	} catch (err) {
+		return next(new HttpError('Fetching applicant & jobs applied data failed. Please try again', 500));
+	}
 
-  let foundApplicant;
-  try {
-    foundApplicant = await Applicant.findById(applicantId).populate(
-      'jobsApplied',
-      '-jobApplicants'
-    );
-  } catch (err) {
-    return next(
-      new HttpError(
-        'Fetching applicant & jobs applied data failed. Please try again',
-        500
-      )
-    );
-  }
+	if (!foundApplicant) {
+		return next(new HttpError('Applicant is not found', 404));
+	}
 
-  if (!foundApplicant) {
-    return next(new HttpError('Applicant is not found', 404));
-  }
-
-  res.status(200).json({
-    Jobs: foundApplicant.jobsApplied.map((job) =>
-      job.toObject({ getters: true })
-    ),
-  });
-
+	res.status(200).json({
+		Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true }))
+	});
 };
 
 const deleteFeed = async (req, res, next) => {
@@ -440,10 +428,13 @@ const createOrderReg = async (req, res, next) => {
 	} catch (err) {
 		return next(new HttpError('Could not find company data. Please try again later', 500));
 	}
+
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
 	}
-
+	if (!foundCompany.isActive) {
+		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
+	}
 	try {
 		promo = await Promo.find();
 	} catch (err) {
@@ -597,121 +588,121 @@ const getWholeOrderBC = async (req, res, next) => {
 
 	res.status(200).json({ orderbc: foundOrder });
 };
-
 const getCompanyOrderBC = async (req, res, next) => {
 	const companyId = req.params.companyid;
 
+	let foundOrder;
+	try {
+		foundOrder = await Orderbc.find({ companyId: companyId });
+	} catch (err) {
+		return next(new HttpError('Fetching order failed, please try again later', 500));
+	}
+
+	if (!foundOrder) {
+		return next(new HttpError('Order not found', 404));
+	}
+
+	res.status(200).json({ orderbc: foundOrder });
+};
 
 const createOrderBC = async (req, res, next) => {
-  const {
-    invoiceId,
-    companyId,
-    amount,
-    gender,
-    education,
-    location,
-    min,
-    max,
-    shift,
-    note,
-    jobFunction,
-    emailRecipient,
-    IPK,
-    school,
-  } = req.body;
+	const {
+		invoiceId,
+		companyId,
+		amount,
+		gender,
+		education,
+		location,
+		min,
+		max,
+		shift,
+		note,
+		jobFunction,
+		emailRecipient,
+		IPK,
+		school
+	} = req.body;
 
-  let foundCompany;
-  let promo;
-  try {
-    foundCompany = await Company.findById(companyId);
-  } catch (err) {
-    return next(
-      new HttpError('Could not find company data. Please try again later', 500)
-    );
-  }
+	let foundCompany;
+	let promo;
+	try {
+		foundCompany = await Company.findById(companyId);
+	} catch (err) {
+		return next(new HttpError('Could not find company data. Please try again later', 500));
+	}
 
-  if (!foundCompany) {
-    return next(new HttpError('Could not find company with such id.', 404));
-  }
+	if (!foundCompany) {
+		return next(new HttpError('Could not find company with such id.', 404));
+	}
 
-  try {
-    promo = await Promo.find();
-  } catch (err) {
-    return next(
-      new HttpError('failed fetching promo. Please try again later', 500)
-    );
-  }
+	try {
+		promo = await Promo.find();
+	} catch (err) {
+		return next(new HttpError('failed fetching promo. Please try again later', 500));
+	}
 
-  if (!promo && promo.length < 1) {
-    promo = [
-      {
-        promoReg: 0,
-        promoBC: 0,
-      },
-    ];
-  }
+	if (!promo && promo.length < 1) {
+		promo = [
+			{
+				promoReg: 0,
+				promoBC: 0
+			}
+		];
+	}
 
-  const dueDateCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 14
-  );
-  const parsedAmount = parseInt(amount);
-  let parsedPrice;
-  if (parsedAmount < 11) {
-    parsedPrice = 40000;
-  } else if (parsedAmount < 21) {
-    parsedPrice = 35000;
-  } else if (parsedAmount < 31) {
-    parsedPrice = 30000;
-  } else if (parsedAmount > 30) {
-    parsedPrice = 25000;
-  } else {
-    return next(new HttpError('Package Type is not defined.', 404));
-  }
-  const newOrder = new Orderbc({
-    invoiceId,
-    companyId,
-    education,
-    gender,
-    location,
-    emailRecipient,
-    shift,
-    age: {
-      min,
-      max,
-    },
-    note,
-    IPK,
-    school,
-    jobFunction,
-    status: 'Pending',
-    createdAt: new Date().toISOString(),
-    dueDate: dueDateCalculation.toISOString(),
-    amount: parsedAmount,
-    price: parsedPrice,
-    promo: promo[0].promoBC,
-    totalPrice:
-      parsedAmount * parsedPrice -
-      (promo[0].promoBC * parsedAmount * parsedPrice) / 100,
-  });
+	const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
+	const parsedAmount = parseInt(amount);
+	let parsedPrice;
+	if (parsedAmount < 11) {
+		parsedPrice = 40000;
+	} else if (parsedAmount < 21) {
+		parsedPrice = 35000;
+	} else if (parsedAmount < 31) {
+		parsedPrice = 30000;
+	} else if (parsedAmount > 30) {
+		parsedPrice = 25000;
+	} else {
+		return next(new HttpError('Package Type is not defined.', 404));
+	}
+	const newOrder = new Orderbc({
+		invoiceId,
+		companyId,
+		education,
+		gender,
+		location,
+		emailRecipient,
+		shift,
+		age: {
+			min,
+			max
+		},
+		note,
+		IPK,
+		school,
+		jobFunction,
+		status: 'Pending',
+		createdAt: new Date().toISOString(),
+		dueDate: dueDateCalculation.toISOString(),
+		amount: parsedAmount,
+		price: parsedPrice,
+		promo: promo[0].promoBC,
+		totalPrice: parsedAmount * parsedPrice - promo[0].promoBC * parsedAmount * parsedPrice / 100
+	});
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await newOrder.save({ session: sess });
-    foundCompany.orderBC.push(newOrder);
-    await foundCompany.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      'Could not create new Bulk Candidates order. Please try again later',
-      500
-    );
-    return next(error);
-  }
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await newOrder.save({ session: sess });
+		foundCompany.orderBC.push(newOrder);
+		await foundCompany.save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Could not create new Bulk Candidates order. Please try again later', 500);
+		return next(error);
+	}
 
-  res.status(201).json({ order: newOrder.toObject({ getters: true }) });
-
+	res.status(201).json({ order: newOrder.toObject({ getters: true }) });
 };
 
 const approveOrderBC = async (req, res, next) => {
@@ -753,72 +744,56 @@ const approveOrderBC = async (req, res, next) => {
 };
 
 const sentApplicantBC = async (req, res, next) => {
+	const { orderId, applicantId } = req.body;
 
-  const { orderId, applicantId } = req.body;
+	let foundOrder, foundCandidate;
+	try {
+		foundOrder = await Orderbc.findById(orderId).populate('companyId', '-password');
+		foundCandidate = await Applicant.findById(applicantId);
+	} catch (err) {
+		return next(new HttpError('Could not retrieve order data or candidate data. Please try again later', 500));
+	}
+	if (!foundOrder || !foundCandidate) {
+		return next(new HttpError('Could not find order/candidate with such id.', 404));
+	}
 
-  let foundOrder, foundCandidate;
-  try {
-    foundOrder = await Orderbc.findById(orderId).populate(
-      'companyId',
-      '-password'
-    );
-    foundCandidate = await Applicant.findById(applicantId);
-  } catch (err) {
-    return next(
-      new HttpError(
-        'Could not retrieve order data or candidate data. Please try again later',
-        500
-      )
-    );
-  }
-  if (!foundOrder || !foundCandidate) {
-    return next(
-      new HttpError('Could not find order/candidate with such id.', 404)
-    );
-  }
+	const checkCandidate = foundOrder.applicantSent.some(appId => appId.toString() === applicantId);
 
-  const checkCandidate = foundOrder.applicantSent.some(
-    (appId) => appId.toString() === applicantId
-  );
+	if (checkCandidate) {
+		return next(new HttpError('Applicant with this ID has already been sent.', 401));
+	}
 
-  if (checkCandidate) {
-    return next(
-      new HttpError('Applicant with this ID has already been sent.', 401)
-    );
-  }
+	let applicantArray = [ ...foundOrder.applicantSent, applicantId ];
+	foundOrder.applicantSent = applicantArray;
+	foundOrder.amount = foundOrder.amount - 1;
 
-  let applicantArray = [...foundOrder.applicantSent, applicantId];
-  foundOrder.applicantSent = applicantArray;
-  foundOrder.amount = foundOrder.amount - 1;
+	const payload = {
+		companyName: foundOrder.companyId.companyName || '-',
+		avatarUrl: foundCandidate.picture.url || 'User has not posted any photo yet',
+		firstName: foundCandidate.firstName || '-',
+		lastName: foundCandidate.lastName || '-',
+		dateOfBirth: foundCandidate.dateOfBirth,
+		gender: foundCandidate.gender || '-',
+		email: foundCandidate.email || '-',
+		address: foundCandidate.address || '-',
+		phone: foundCandidate.phone || '-',
+		outOfTown: foundCandidate.outOfTown,
+		workShifts: foundCandidate.workShifts,
+		details: foundCandidate.details || '-',
+		experience: foundCandidate.experience,
+		education: foundCandidate.education,
+		certification: foundCandidate.certification,
+		skills: foundCandidate.skills
+	};
 
-  const payload = {
-    companyName: foundOrder.companyId.companyName || '-',
-    avatarUrl:
-      foundCandidate.picture.url || 'User has not posted any photo yet',
-    firstName: foundCandidate.firstName || '-',
-    lastName: foundCandidate.lastName || '-',
-    dateOfBirth: foundCandidate.dateOfBirth,
-    gender: foundCandidate.gender || '-',
-    email: foundCandidate.email || '-',
-    address: foundCandidate.address || '-',
-    phone: foundCandidate.phone || '-',
-    outOfTown: foundCandidate.outOfTown,
-    workShifts: foundCandidate.workShifts,
-    details: foundCandidate.details || '-',
-    experience: foundCandidate.experience,
-    education: foundCandidate.education,
-    certification: foundCandidate.certification,
-    skills: foundCandidate.skills,
-  };
+	const htmlBody = applyJobTemplate(payload);
 
-  const htmlBody = applyJobTemplate(payload);
+	const emailData = {
+		to: foundOrder.emailRecipient,
 
-  const emailData = {
-    to: foundOrder.emailRecipient,
-
-    from: 'crossbellcorps@gmail.com',
-    subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
-    html: `
+		from: 'crossbellcorps@gmail.com',
+		subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
+		html: `
 
     <h3>Crossbell BULK CANDIDATE - Applicant ${foundCandidate.firstName} ${foundCandidate.lastName} </h3>
     ${htmlBody}
@@ -827,7 +802,6 @@ const sentApplicantBC = async (req, res, next) => {
 
 	try {
 		await foundOrder.save();
-
 		await sgMail.send(emailData);
 	} catch (err) {
 		const error = new HttpError('Could not add Executive Search candidate. Please try again later', 500);
@@ -899,6 +873,9 @@ const createOrderES = async (req, res, next) => {
 	}
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
+	}
+	if (!foundCompany.isActive) {
+		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
 	}
 
 	const newRequest = new Orderes({
@@ -1080,43 +1057,38 @@ const getPromo = async (req, res, next) => {
 };
 
 const updatePromo = async (req, res, next) => {
+	const { promoReg, promoBC } = req.body;
 
-  const { promoReg, promoBC } = req.body;
+	let foundPromo;
+	try {
+		foundPromo = await Promo.find();
+	} catch (err) {
+		return next(new HttpError('Fetching Promo failed. Please try again', 404));
+	}
 
-  let foundPromo;
-  try {
-    foundPromo = await Promo.find();
-  } catch (err) {
-    return next(new HttpError('Fetching Promo failed. Please try again', 404));
-  }
+	if (!foundPromo) {
+		foundPromo[0] = new Promo({
+			promoReg: promoReg ? promoReg : 0,
+			promoBC: promoBC ? promoBC : 0
+		});
+		await foundPromo[0].save();
+	} else {
+		foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
+		foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
+	}
 
-  if (!foundPromo) {
-    foundPromo[0] = new Promo({
-      promoReg: promoReg ? promoReg : 0,
-      promoBC: promoBC ? promoBC : 0,
-    });
-    await foundPromo[0].save();
-  } else {
-    foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
-    foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
-  }
+	try {
+		const sess = await mongoose.startSession();
+		sess.startTransaction();
+		await foundPromo[0].save({ session: sess });
+		await sess.commitTransaction();
+	} catch (err) {
+		console.log(err);
+		const error = new HttpError('Something happened while saving, please try again in a few minutes', 500);
+		return next(error);
+	}
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await foundPromo[0].save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError(
-      'Something happened while saving, please try again in a few minutes',
-      500
-    );
-    return next(error);
-  }
-
-  res.status(201).json({ message: 'Successfully update promo' });
-
+	res.status(201).json({ message: 'Successfully update promo' });
 };
 
 exports.getWholeApplicants = getWholeApplicants;
