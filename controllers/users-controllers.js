@@ -105,6 +105,9 @@ const getAllCompany = async (req, res, next) => {
 const getApplicantDetails = async (req, res, next) => {
   const applicantId = req.params.applicantid;
 
+  console.log(req.params);
+  console.log(req.userData);
+
   let foundAdmin = await Admin.findById(req.userData.userId, '-password');
 
   if (!foundAdmin && req.userData.userId === !applicantId) {
@@ -149,7 +152,6 @@ const getCompanyDetails = async (req, res, next) => {
 };
 
 const signup = async (req, res, next) => {
-
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new HttpError(
@@ -670,7 +672,6 @@ const updateCompanyProfile = async (req, res, next) => {
   }
 
   return res.status(200).json({ foundCompany: foundCompany });
-
 };
 
 const deleteSegment = async (req, res, next) => {
@@ -818,7 +819,6 @@ const checkResetToken = async (req, res, next) => {
 };
 
 const resetPwd = async (req, res, next) => {
-
   const { newPassword, confirmPassword } = req.body;
   const { token } = req.params;
 
@@ -934,7 +934,6 @@ const getApplicantAppliedJobs = async (req, res, next) => {
       job.toObject({ getters: true })
     ),
   });
-
 };
 
 exports.forgotPwd = forgotPwd;
