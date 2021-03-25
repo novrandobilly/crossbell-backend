@@ -588,9 +588,21 @@ const getWholeOrderBC = async (req, res, next) => {
 
 	res.status(200).json({ orderbc: foundOrder });
 };
-
 const getCompanyOrderBC = async (req, res, next) => {
 	const companyId = req.params.companyid;
+
+	let foundOrder;
+	try {
+		foundOrder = await Orderbc.find({ companyId: companyId });
+	} catch (err) {
+		return next(new HttpError('Fetching order failed, please try again later', 500));
+	}
+
+	if (!foundOrder) {
+		return next(new HttpError('Order not found', 404));
+	}
+
+	res.status(200).json({ orderbc: foundOrder });
 };
 
 const createOrderBC = async (req, res, next) => {
