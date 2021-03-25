@@ -87,7 +87,7 @@ const getJobsFromApplicant = async (req, res, next) => {
 	}
 
 	res.status(200).json({
-		applicantsApplied: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true }))
+		Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true }))
 	});
 };
 
@@ -591,23 +591,25 @@ const getWholeOrderBC = async (req, res, next) => {
 
 const getCompanyOrderBC = async (req, res, next) => {
 	const companyId = req.params.companyid;
-
-	let foundOrder;
-	try {
-		foundOrder = await Orderbc.find({ companyId: companyId });
-	} catch (err) {
-		return next(new HttpError('Fetching order failed, please try again later', 500));
-	}
-
-	if (!foundOrder) {
-		return next(new HttpError('Order not found', 404));
-	}
-
-	res.status(200).json({ orderbc: foundOrder });
 };
 
 const createOrderBC = async (req, res, next) => {
-	const { invoiceId, companyId, amount, gender, education, location, min, max, shift, note, jobFunction, emailRecipient } = req.body;
+	const {
+		invoiceId,
+		companyId,
+		amount,
+		gender,
+		education,
+		location,
+		min,
+		max,
+		shift,
+		note,
+		jobFunction,
+		emailRecipient,
+		IPK,
+		school
+	} = req.body;
 
 	let foundCompany;
 	let promo;
@@ -619,9 +621,6 @@ const createOrderBC = async (req, res, next) => {
 
 	if (!foundCompany) {
 		return next(new HttpError('Could not find company with such id.', 404));
-	}
-	if (!foundCompany.isActive) {
-		return next(new HttpError('Could not proceed to the order, company has not been verified by admin', 404));
 	}
 
 	try {
@@ -666,6 +665,8 @@ const createOrderBC = async (req, res, next) => {
 			max
 		},
 		note,
+		IPK,
+		school,
 		jobFunction,
 		status: 'Pending',
 		createdAt: new Date().toISOString(),
@@ -777,9 +778,11 @@ const sentApplicantBC = async (req, res, next) => {
 
 	const emailData = {
 		to: foundOrder.emailRecipient,
+
 		from: 'crossbellcorps@gmail.com',
 		subject: `<Crossbell Bulk Candidate> - Candidate ${foundCandidate.firstName} ${foundCandidate.lastName}`,
 		html: `
+
     <h3>Crossbell BULK CANDIDATE - Applicant ${foundCandidate.firstName} ${foundCandidate.lastName} </h3>
     ${htmlBody}
 		`
