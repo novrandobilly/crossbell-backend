@@ -91,6 +91,9 @@ const getAllCompany = async (req, res, next) => {
 const getApplicantDetails = async (req, res, next) => {
 	const applicantId = req.params.applicantid;
 
+	console.log(req.params);
+	console.log(req.userData);
+
 	let foundAdmin = await Admin.findById(req.userData.userId, '-password');
 
 	if (!foundAdmin && req.userData.userId === !applicantId) {
@@ -183,7 +186,7 @@ const signup = async (req, res, next) => {
 					email: newCompany.email,
 					isCompany: newCompany.isCompany
 				},
-				process.env.JWT_SECRET_KEY,
+				'one_batch_two_batch_penny_and_dime',
 				{
 					expiresIn: '3h'
 				}
@@ -227,7 +230,7 @@ const signup = async (req, res, next) => {
 					email: newApplicant.email,
 					isCompany: newApplicant.isCompany
 				},
-				process.env.JWT_SECRET_KEY,
+				'one_batch_two_batch_penny_and_dime',
 				{
 					expiresIn: '3h'
 				}
@@ -762,7 +765,7 @@ const resetPwd = async (req, res, next) => {
 					email: foundUser.email,
 					isCompany: foundUser.isCompany
 				},
-				process.env.JWT_SECRET_KEY,
+				'one_batch_two_batch_penny_and_dime',
 				{ expiresIn: '3h' }
 			);
 		} catch (err) {

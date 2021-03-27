@@ -7,16 +7,16 @@ const router = express.Router();
 const checkAuth = require('../middleware/check-auth');
 
 const regAdminChecker = [
-	check('NIK').trim().notEmpty(),
-	check('firstName').trim().notEmpty(),
-	check('lastName').trim().notEmpty(),
-	check('email').normalizeEmail().isEmail(),
-	check('gender').trim().notEmpty(),
-	check('dateOfBirth').trim().notEmpty(),
-	check('address').trim().notEmpty(),
-	check('phoneNumber').trim().notEmpty(),
-	check('role').trim().notEmpty(),
-	check('verificationKey').trim().notEmpty()
+  check('NIK').trim().notEmpty(),
+  check('firstName').trim().notEmpty(),
+  check('lastName').trim().notEmpty(),
+  check('email').normalizeEmail().isEmail(),
+  check('gender').trim().notEmpty(),
+  check('dateOfBirth').trim().notEmpty(),
+  check('address').trim().notEmpty(),
+  check('phoneNumber').trim().notEmpty(),
+  check('role').trim().notEmpty(),
+  check('verificationKey').trim().notEmpty(),
 ];
 
 // router.get('/admlog', adminControllers.admlog);
@@ -25,7 +25,11 @@ router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
-router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
+router.patch(
+  '/:adminid/profile',
+  adminAvatar,
+  adminControllers.updateAdminProfile
+);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
 
 router.post('/order/bc', adminControllers.createOrderBC);
@@ -39,7 +43,10 @@ router.get('/order/es', adminControllers.getWholeOrderES);
 router.get('/:companyid/order/es', adminControllers.getCompanyOrderES);
 router.get('/order/es/:orderid', adminControllers.getOneOrderES);
 router.post('/order/es/addcandidate', adminControllers.addCandidateES);
-router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusES);
+router.post(
+  '/order/es/updatecandidate',
+  adminControllers.updateCandidateStatusES
+);
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
