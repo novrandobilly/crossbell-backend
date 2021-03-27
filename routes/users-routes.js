@@ -27,10 +27,10 @@ router.post('/forgot', usersControllers.forgotPwd);
 router.post('/reset/:token', usersControllers.resetPwd);
 
 router.use(checkAuth);
+router.get('/ap/:applicantid', usersControllers.getApplicantDetails);
 router.get('/ap', usersControllers.getAllApplicant);
 router.get('/co', usersControllers.getAllCompany);
 router.get('/ap/:applicantid/jobs', usersControllers.getApplicantAppliedJobs);
-router.get('/ap/:applicantid', usersControllers.getApplicantDetails);
 router.get('/feedback', usersControllers.getFeedback);
 
 router.patch(
