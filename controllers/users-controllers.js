@@ -105,9 +105,6 @@ const getAllCompany = async (req, res, next) => {
 const getApplicantDetails = async (req, res, next) => {
   const applicantId = req.params.applicantid;
 
-  console.log(req.params);
-  console.log(req.userData);
-
   let foundAdmin = await Admin.findById(req.userData.userId, '-password');
 
   if (!foundAdmin && req.userData.userId === !applicantId) {
@@ -195,6 +192,7 @@ const signup = async (req, res, next) => {
       password: hashedPassword,
       logo: null,
       briefDescriptions: null,
+      NPWP: null,
       jobAds: [],
       isCompany,
       isActive: false,
@@ -660,6 +658,7 @@ const updateCompanyProfile = async (req, res, next) => {
     ? data.emailRecipient
     : foundCompany.emailRecipient;
   foundCompany.website = data.website ? data.website : foundCompany.website;
+  foundCompany.NPWP = data.NPWP ? data.NPWP : foundCompany.NPWP;
   foundCompany.briefDescriptions = data.briefDescriptions
     ? data.briefDescriptions
     : foundCompany.briefDescriptions;
