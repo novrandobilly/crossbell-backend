@@ -50,8 +50,11 @@ app.use((error, req, res, next) => {
 
 mongoose
 	.connect(
-		`mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb.fiwox.mongodb.net/${process.env
-			.DB_NAME}?retryWrites=true&w=majority`,
+		// `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb.fiwox.mongodb.net/${process.env
+		// 	.DB_NAME}?retryWrites=true&w=majority`,
+		`mongodb://${process.env.DB_USER}:${process.env
+			.DB_PASSWORD}@crossbelldb-shard-00-00.fiwox.mongodb.net:27017,crossbelldb-shard-00-01.fiwox.mongodb.net:27017,crossbelldb-shard-00-02.fiwox.mongodb.net:27017/${process
+			.env.DB_NAME}?ssl=true&replicaSet=atlas-13v3tm-shard-0&authSource=admin&retryWrites=true&w=majority`,
 		// `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1ncnh.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
 		// 'mongodb://localhost/crossbelldev',
 		{
