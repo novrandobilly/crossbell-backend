@@ -455,9 +455,9 @@ const createOrderReg = async (req, res, next) => {
 	let parsedPricePerSlot;
 	if (slot <= 1) {
 		parsedPricePerSlot = ORIGINAL_PRICE;
-	} else if (slot > 1) {
+	} else if (slot <= 4) {
 		parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.05;
-	} else if (slot > 4) {
+	} else if (slot <= 9) {
 		parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.1;
 	} else if (slot > 9) {
 		parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.15;
