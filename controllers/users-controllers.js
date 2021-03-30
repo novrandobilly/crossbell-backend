@@ -89,29 +89,34 @@ const getAllCompany = async (req, res, next) => {
 };
 
 const getApplicantDetails = async (req, res, next) => {
-	const applicantId = req.params.applicantid;
 
-	console.log(req.params);
-	console.log(req.userData);
+  const applicantId = req.params.applicantid;
 
-	let foundAdmin = await Admin.findById(req.userData.userId, '-password');
+  let foundAdmin = await Admin.findById(req.userData.userId, '-password');
 
-	if (!foundAdmin && req.userData.userId === !applicantId) {
-		return next(new HttpError('You are unauthorized to access this end point', 401));
-	}
+  if (!foundAdmin && req.userData.userId === !applicantId) {
+    return next(
+      new HttpError('You are unauthorized to access this end point', 401)
+    );
+  }
 
-	let foundApplicant;
-	try {
-		foundApplicant = await Applicant.findOne({ _id: applicantId }, '-password');
-	} catch (err) {
-		return next(new HttpError('Fetching user failed, please try again later', 500));
-	}
+  let foundApplicant;
+  try {
+    foundApplicant = await Applicant.findOne({ _id: applicantId }, '-password');
+  } catch (err) {
+    return next(
+      new HttpError('Fetching user failed, please try again later', 500)
+    );
+  }
 
-	if (!foundApplicant) {
-		return next(new HttpError('User not found', 404));
-	}
+  if (!foundApplicant) {
+    return next(new HttpError('User not found', 404));
+  }
 
-	res.status(200).json({ applicant: foundApplicant.toObject({ getters: true }) });
+  res
+    .status(200)
+    .json({ applicant: foundApplicant.toObject({ getters: true }) });
+
 };
 
 const getCompanyDetails = async (req, res, next) => {
@@ -130,123 +135,135 @@ const getCompanyDetails = async (req, res, next) => {
 };
 
 const signup = async (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		const error = new HttpError('Invalid inputs properties. Please check your data', 422);
-		return next(error);
-	}
 
-	const { email, password, isCompany } = req.body;
-	let existingApplicant, existingCompany;
-	try {
-		existingApplicant = await Applicant.findOne({ email: email });
-		existingCompany = await Company.findOne({ email: email });
-	} catch (err) {
-		const error = new HttpError('Signing up failed. Please try again.', 500);
-		return next(error);
-	}
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new HttpError(
+      'Invalid inputs properties. Please check your data',
+      422
+    );
+    return next(error);
+  }
 
-	if (existingApplicant || existingCompany) {
-		const error = new HttpError('Could not create user. Email already exists.', 422);
-		return next(error);
-	}
+  const { email, password, isCompany } = req.body;
+  let existingApplicant, existingCompany;
+  try {
+    existingApplicant = await Applicant.findOne({ email: email });
+    existingCompany = await Company.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError('Signing up failed. Please try again.', 500);
+    return next(error);
+  }
 
-	let hashedPassword;
-	try {
-		hashedPassword = await bcrypt.hash(password, 12);
-	} catch (err) {
-		const error = new HttpError('Could not create user, please try again', 500);
-		return next(error);
-	}
+  if (existingApplicant || existingCompany) {
+    const error = new HttpError(
+      'Could not create user. Email already exists.',
+      422
+    );
+    return next(error);
+  }
 
-	if (isCompany) {
-		const { companyName } = req.body;
-		const newCompany = new Company({
-			companyName,
-			email,
-			password: hashedPassword,
-			logo: null,
-			briefDescriptions: null,
-			jobAds: [],
-			isCompany,
-			isActive: false
-		});
-		try {
-			await newCompany.save();
-		} catch (err) {
-			const error = new HttpError('Could not create user. Please input a valid value', 500);
-			return next(error);
-		}
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError('Could not create user, please try again', 500);
+    return next(error);
+  }
 
-		let token;
-		try {
-			token = jwt.sign(
-				{
-					userId: newCompany.id,
-					email: newCompany.email,
-					isCompany: newCompany.isCompany
-				},
-				'one_batch_two_batch_penny_and_dime',
-				{
-					expiresIn: '3h'
-				}
-			);
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
+  if (isCompany) {
+    const { companyName } = req.body;
+    const newCompany = new Company({
+      companyName,
+      email,
+      password: hashedPassword,
+      logo: null,
+      briefDescriptions: null,
+      NPWP: null,
+      jobAds: [],
+      isCompany,
+      isActive: false,
+    });
+    try {
+      await newCompany.save();
+    } catch (err) {
+      const error = new HttpError(
+        'Could not create user. Please input a valid value',
+        500
+      );
+      return next(error);
+    }
 
-		return res.status(201).json({
-			userId: newCompany.id,
-			email: newCompany.email,
-			isCompany: newCompany.isCompany,
-			isActive: newCompany.isActive,
-			token
-		});
-	} else {
-		const { firstName, lastName } = req.body;
-		const newApplicant = new Applicant({
-			firstName,
-			lastName,
-			email,
-			password: hashedPassword,
-			resume: null,
-			jobsApplied: [],
-			isCompany
-		});
+    let token;
+    try {
+      token = jwt.sign(
+        {
+          userId: newCompany.id,
+          email: newCompany.email,
+          isCompany: newCompany.isCompany,
+        },
+        'one_batch_two_batch_penny_and_dime',
+        {
+          expiresIn: '3h',
+        }
+      );
+    } catch (err) {
+      const error = new HttpError('Could not create user.', 500);
+      return next(error);
+    }
 
-		try {
-			await newApplicant.save();
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
+    return res.status(201).json({
+      userId: newCompany.id,
+      email: newCompany.email,
+      isCompany: newCompany.isCompany,
+      isActive: newCompany.isActive,
+      token,
+    });
+  } else {
+    const { firstName, lastName } = req.body;
+    const newApplicant = new Applicant({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      resume: null,
+      jobsApplied: [],
+      isCompany,
+    });
 
-		let token;
-		try {
-			token = jwt.sign(
-				{
-					userId: newApplicant.id,
-					email: newApplicant.email,
-					isCompany: newApplicant.isCompany
-				},
-				'one_batch_two_batch_penny_and_dime',
-				{
-					expiresIn: '3h'
-				}
-			);
-		} catch (err) {
-			const error = new HttpError('Could not create user.', 500);
-			return next(error);
-		}
+    try {
+      await newApplicant.save();
+    } catch (err) {
+      const error = new HttpError('Could not create user.', 500);
+      return next(error);
+    }
 
-		return res.status(201).json({
-			userId: newApplicant.id,
-			email: newApplicant.email,
-			isCompany: newApplicant.isCompany,
-			token
-		});
-	}
+    let token;
+    try {
+      token = jwt.sign(
+        {
+          userId: newApplicant.id,
+          email: newApplicant.email,
+          isCompany: newApplicant.isCompany,
+        },
+        'one_batch_two_batch_penny_and_dime',
+        {
+          expiresIn: '3h',
+        }
+      );
+    } catch (err) {
+      const error = new HttpError('Could not create user.', 500);
+      return next(error);
+    }
+
+    return res.status(201).json({
+      userId: newApplicant.id,
+      email: newApplicant.email,
+      isCompany: newApplicant.isCompany,
+      token,
+    });
+  }
+
 };
 
 const login = async (req, res, next) => {
@@ -524,67 +541,91 @@ const updateApplicantResume = async (req, res, next) => {
 };
 
 const updateCompanyProfile = async (req, res, next) => {
-	const companyId = req.params.companyid;
 
-	const data = req.body;
+  const companyId = req.params.companyid;
 
-	let foundCompany;
+  const data = req.body;
 
-	try {
-		foundCompany = await Company.findOne({
-			email: data.email,
-			_id: { $ne: companyId }
-		});
-		if (!foundCompany) foundCompany = await Applicant.findOne({ email: data.email });
-		if (!foundCompany) foundCompany = await Admin.findOne({ email: data.email });
-	} catch (err) {
-		const error = new HttpError('Failed checking email. Please try again later', 500);
-		return next(error);
-	}
+  let foundCompany;
 
-	if (foundCompany) {
-		const error = new HttpError('Email already exist. Please use another email', 500);
-		return next(error);
-	}
+  try {
+    foundCompany = await Company.findOne({
+      email: data.email,
+      _id: { $ne: companyId },
+    });
+    if (!foundCompany)
+      foundCompany = await Applicant.findOne({ email: data.email });
+    if (!foundCompany)
+      foundCompany = await Admin.findOne({ email: data.email });
+  } catch (err) {
+    const error = new HttpError(
+      'Failed checking email. Please try again later',
+      500
+    );
+    return next(error);
+  }
 
-	try {
-		foundCompany = await Company.findOne({ _id: companyId });
-	} catch (err) {
-		const error = new HttpError('Something went wrong. Please try again later', 500);
-		return next(error);
-	}
+  if (foundCompany) {
+    const error = new HttpError(
+      'Email already exist. Please use another email',
+      500
+    );
+    return next(error);
+  }
 
-	if (foundCompany.logo.url) {
-		await cloudinary.uploader.destroy(foundCompany.logo.fileName);
-	}
+  try {
+    foundCompany = await Company.findOne({ _id: companyId });
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
+    return next(error);
+  }
 
-	foundCompany.logo = req.file
-		? {
-				url: req.file.path,
-				fileName: req.file.filename
-			}
-		: foundCompany.logo;
-	foundCompany.companyName = data.companyName ? data.companyName : foundCompany.companyName;
-	foundCompany.email = data.email ? data.email : foundCompany.email;
-	foundCompany.picName = data.picName ? data.picName : foundCompany.picName;
-	foundCompany.picJobTitle = data.picJobTitle ? data.picJobTitle : foundCompany.picJobTitle;
-	foundCompany.picEmail = data.picEmail ? data.picEmail : foundCompany.picEmail;
-	foundCompany.picOfficePhone = data.picOfficePhone ? data.picOfficePhone : foundCompany.picOfficePhone;
-	foundCompany.picPhone = data.picPhone ? data.picPhone : foundCompany.picPhone;
-	foundCompany.address = data.address ? data.address : foundCompany.address;
-	foundCompany.industry = data.industry ? data.industry : foundCompany.industry;
-	foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient : foundCompany.emailRecipient;
-	foundCompany.website = data.website ? data.website : foundCompany.website;
-	foundCompany.briefDescriptions = data.briefDescriptions ? data.briefDescriptions : foundCompany.briefDescriptions;
+  if (foundCompany.logo.url) {
+    await cloudinary.uploader.destroy(foundCompany.logo.fileName);
+  }
 
-	try {
-		await foundCompany.save();
-	} catch (err) {
-		const error = new HttpError(err.message, 500);
-		return next(error);
-	}
+  foundCompany.logo = req.file
+    ? {
+        url: req.file.path,
+        fileName: req.file.filename,
+      }
+    : foundCompany.logo;
+  foundCompany.companyName = data.companyName
+    ? data.companyName
+    : foundCompany.companyName;
+  foundCompany.email = data.email ? data.email : foundCompany.email;
+  foundCompany.picName = data.picName ? data.picName : foundCompany.picName;
+  foundCompany.picJobTitle = data.picJobTitle
+    ? data.picJobTitle
+    : foundCompany.picJobTitle;
+  foundCompany.picEmail = data.picEmail ? data.picEmail : foundCompany.picEmail;
+  foundCompany.picOfficePhone = data.picOfficePhone
+    ? data.picOfficePhone
+    : foundCompany.picOfficePhone;
+  foundCompany.picPhone = data.picPhone ? data.picPhone : foundCompany.picPhone;
+  foundCompany.address = data.address ? data.address : foundCompany.address;
+  foundCompany.industry = data.industry ? data.industry : foundCompany.industry;
+  foundCompany.emailRecipient = data.emailRecipient
+    ? data.emailRecipient
+    : foundCompany.emailRecipient;
+  foundCompany.website = data.website ? data.website : foundCompany.website;
+  foundCompany.NPWP = data.NPWP ? data.NPWP : foundCompany.NPWP;
+  foundCompany.briefDescriptions = data.briefDescriptions
+    ? data.briefDescriptions
+    : foundCompany.briefDescriptions;
 
-	return res.status(200).json({ foundCompany: foundCompany });
+  try {
+    await foundCompany.save();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    return next(error);
+  }
+
+  return res.status(200).json({ foundCompany: foundCompany });
+
 };
 
 const deleteSegment = async (req, res, next) => {
