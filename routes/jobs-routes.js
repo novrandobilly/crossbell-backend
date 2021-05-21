@@ -27,7 +27,7 @@ router.post('/', createJobChecker, jobsControllers.createJob);
 router.post('/:jobid/apply', jobsControllers.applyJob);
 router.patch('/draft/:jobid', jobsControllers.editJobDraft);
 router.post('/draft', jobsControllers.saveJobDraft);
-router.patch('/:jobid/release', createJobChecker, jobsControllers.saveJobDraft);
+router.patch('/:jobid/release', createJobChecker, jobsControllers.releaseJob);
 router.patch('/:jobid', updateJobChecker, jobsControllers.updateJob);
 
 router.delete('/:jobid', jobsControllers.deleteJob);

@@ -14,7 +14,6 @@ const companySchema = new Schema({
   industry: { type: String, default: null },
   address: { type: String, default: null },
   website: { type: String, default: null },
-
   picName: { type: String, default: null },
   picPhone: { type: String, default: null },
   picEmail: { type: String, default: null },
