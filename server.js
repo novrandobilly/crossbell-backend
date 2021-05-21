@@ -1,5 +1,5 @@
 if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
+	require('dotenv').config();
 }
 
 const express = require('express');
@@ -19,13 +19,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Auth-Token'
-  );
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
-  next();
+	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Auth-Token');
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE');
+	next();
 });
 
 app.use('/api/jobs', jobsRoutes);
@@ -38,40 +35,41 @@ schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo);
 cronControllers.createPromo();
 
 app.use((req, res, next) => {
-  throw new HttpError('Could not find the requested route', 404);
+	throw new HttpError('Could not find the requested route', 404);
 });
 
 app.use((error, req, res, next) => {
-  if (res.headerSent) {
-    return next(error);
-  }
+	if (res.headerSent) {
+		return next(error);
+	}
 
-  res.status(error.code || 500);
-  res.json({ message: error.message || 'An unknown error occurred' });
+	res.status(error.code || 500);
+	res.json({ message: error.message || 'An unknown error occurred' });
 });
 //==================================================================================
 
 mongoose
-  .connect(
-    // `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb.fiwox.mongodb.net/${process.env
-    // 	.DB_NAME}?retryWrites=true&w=majority`,
-    // `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb-shard-00-00.fiwox.mongodb.net:27017,crossbelldb-shard-00-01.fiwox.mongodb.net:27017,crossbelldb-shard-00-02.fiwox.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-13v3tm-shard-0&authSource=admin&retryWrites=true&w=majority`,
+	.connect(
+		// `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb.fiwox.mongodb.net/${process.env
+		// 	.DB_NAME}?retryWrites=true&w=majority`,
+		`mongodb://${process.env.DB_USER}:${process.env
+			.DB_PASSWORD}@crossbelldb-shard-00-00.fiwox.mongodb.net:27017,crossbelldb-shard-00-01.fiwox.mongodb.net:27017,crossbelldb-shard-00-02.fiwox.mongodb.net:27017/${process
+			.env.DB_NAME}?ssl=true&replicaSet=atlas-13v3tm-shard-0&authSource=admin&retryWrites=true&w=majority`,
+		// `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1ncnh.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
+		//  `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0-shard-00-00.1ncnh.mongodb.net:27017,cluster0-shard-00-01.1ncnh.mongodb.net:27017,cluster0-shard-00-02.1ncnh.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-99le7k-shard-0&authSource=admin&retryWrites=true&w=majority`,
 
-    // `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.1ncnh.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`,
-    `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0-shard-00-00.1ncnh.mongodb.net:27017,cluster0-shard-00-01.1ncnh.mongodb.net:27017,cluster0-shard-00-02.1ncnh.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-99le7k-shard-0&authSource=admin&retryWrites=true&w=majority`,
-
-    // 'mongodb://localhost/crossbelldev',
-    {
-      useNewUrlParser: true,
-      useFindAndModify: false,
-      useCreateIndex: true,
-      useUnifiedTopology: true,
-    }
-  )
-  .then(() => {
-    app.listen(process.env.PORT || 5000);
-    console.log('Server is listening. Connected to the database');
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+		// 'mongodb://localhost/crossbelldev',
+		{
+			useNewUrlParser: true,
+			useFindAndModify: false,
+			useCreateIndex: true,
+			useUnifiedTopology: true
+		}
+	)
+	.then(() => {
+		app.listen(process.env.PORT || 5000);
+		console.log('Server is listening. Connected to the database');
+	})
+	.catch(err => {
+		console.log(err);
+	});
