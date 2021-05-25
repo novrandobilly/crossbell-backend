@@ -97,15 +97,15 @@ const getApplicantDetails = async (req, res, next) => {
 		return next(new HttpError('You are unauthorized to access this end point', 401));
 	}
 
+	if (!foundAdmin && req.userData.userId === !applicantId) {
+		return next(new HttpError('You are unauthorized to access this end point', 401));
+	}
+
 	let foundApplicant;
 	try {
 		foundApplicant = await Applicant.findOne({ _id: applicantId }, '-password');
 	} catch (err) {
 		return next(new HttpError('Fetching user failed, please try again later', 500));
-	}
-
-	if (!foundApplicant) {
-		return next(new HttpError('User not found', 404));
 	}
 
 	res.status(200).json({ applicant: foundApplicant.toObject({ getters: true }) });
@@ -133,7 +133,7 @@ const signup = async (req, res, next) => {
 		return next(error);
 	}
 
-	const { email, password, isCompany } = req.body;
+	const { email, password, NPWP, isCompany } = req.body;
 	let existingApplicant, existingCompany;
 	try {
 		existingApplicant = await Applicant.findOne({ email: email });
@@ -161,10 +161,10 @@ const signup = async (req, res, next) => {
 		const newCompany = new Company({
 			companyName,
 			email,
+			NPWP,
 			password: hashedPassword,
 			logo: null,
 			briefDescriptions: null,
-			NPWP: null,
 			jobAds: [],
 			isCompany,
 			isActive: false
@@ -173,8 +173,7 @@ const signup = async (req, res, next) => {
 			await newCompany.save();
 		} catch (err) {
 			const error = new HttpError('Could not create user. Please input a valid value', 500);
-			// return next(error);
-			return next(err);
+			return next(error);
 		}
 
 		let token;
@@ -198,6 +197,7 @@ const signup = async (req, res, next) => {
 		return res.status(201).json({
 			userId: newCompany.id,
 			email: newCompany.email,
+			NPWP: newCompany.NPWP,
 			isCompany: newCompany.isCompany,
 			isActive: newCompany.isActive,
 			token
