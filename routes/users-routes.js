@@ -1,20 +1,13 @@
 const express = require('express');
 const { check } = require('express-validator');
-const {
-  applicantAvatar,
-  companyAvatar,
-  applicantResume,
-} = require('../middleware/file-upload');
+const { applicantAvatar, companyAvatar, applicantResume } = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');
 const usersControllers = require('../controllers/users-controllers');
 
 const router = express.Router();
 
 //==========================CHECKER==========================
-const signupChecker = [
-  check('email').isEmail(),
-  check('password').isLength({ min: 6 }),
-];
+const signupChecker = [ check('email').isEmail(), check('password').isLength({ min: 6 }) ];
 
 //===========================ROUTES===========================
 router.get('/co/:companyid', usersControllers.getCompanyDetails);
@@ -33,21 +26,9 @@ router.get('/co', usersControllers.getAllCompany);
 router.get('/ap/:applicantid/jobs', usersControllers.getApplicantAppliedJobs);
 router.get('/feedback', usersControllers.getFeedback);
 
-router.patch(
-  '/co/:companyid',
-  companyAvatar,
-  usersControllers.updateCompanyProfile
-);
-router.patch(
-  '/ap/:applicantid',
-  applicantAvatar,
-  usersControllers.updateApplicantProfile
-);
-router.patch(
-  '/ap/:applicantid/resume',
-  applicantResume,
-  usersControllers.updateApplicantResume
-);
+router.patch('/co/:companyid', companyAvatar, usersControllers.updateCompanyProfile);
+router.patch('/ap/:applicantid', applicantAvatar, usersControllers.updateApplicantProfile);
+router.patch('/ap/:applicantid/resume', applicantResume, usersControllers.updateApplicantResume);
 
 router.delete('/segment', usersControllers.deleteSegment);
 module.exports = router;
