@@ -12,7 +12,7 @@ const router = express.Router();
 
 //==========================CHECKER==========================
 const signupChecker = [
-  check('email').isEmail(),
+  check('email').isEmail().normalizeEmail(),
   check('password').isLength({ min: 6 }),
 ];
 
