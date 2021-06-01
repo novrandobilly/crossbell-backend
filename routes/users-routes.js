@@ -7,7 +7,12 @@ const usersControllers = require('../controllers/users-controllers');
 const router = express.Router();
 
 //==========================CHECKER==========================
-const signupChecker = [ check('email').isEmail(), check('password').isLength({ min: 6 }) ];
+
+const signupChecker = [
+  check('email').isEmail().normalizeEmail(),
+  check('password').isLength({ min: 6 }),
+];
+
 
 //===========================ROUTES===========================
 router.get('/co/:companyid', usersControllers.getCompanyDetails);
