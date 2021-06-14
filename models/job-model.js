@@ -4,6 +4,7 @@ const Schema = mongoose.Schema;
 
 const jobSchema = new Schema({
   companyId: { type: mongoose.Types.ObjectId, required: true, ref: 'Company' },
+  isHidden: { type: Boolean, required: true, default: false },
   jobTitle: { type: String, required: true },
   placementLocation: { type: String, required: true },
   jobDescriptions: { type: String, required: true },
