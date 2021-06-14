@@ -95,6 +95,7 @@ const createJob = async (req, res, next) => {
   }
   const {
     jobTitle,
+    isHidden,
     placementLocation,
     jobDescriptions,
     educationalStage,
@@ -133,6 +134,7 @@ const createJob = async (req, res, next) => {
 
   const newJob = new Job({
     jobTitle: jobTitle.trim(),
+    isHidden: isHidden,
     placementLocation: placementLocation.trim(),
     jobDescriptions: jobDescriptions.trim(),
     educationalStage,
@@ -174,6 +176,7 @@ const createJob = async (req, res, next) => {
 const saveJobDraft = async (req, res, next) => {
   const {
     jobTitle,
+    isHidden,
     placementLocation,
     jobDescriptions,
     educationalStage,
@@ -204,6 +207,7 @@ const saveJobDraft = async (req, res, next) => {
 
   const newJob = new Job({
     jobTitle: jobTitle.trim() || '-',
+    isHidden: isHidden,
     placementLocation: placementLocation.trim() || '-',
     jobDescriptions: jobDescriptions.trim() || '-',
     educationalStage: educationalStage || '-',
@@ -253,6 +257,7 @@ const releaseJob = async (req, res, next) => {
 
   const {
     jobTitle,
+    isHidden,
     placementLocation,
     jobDescriptions,
     educationalStage,
@@ -288,6 +293,7 @@ const releaseJob = async (req, res, next) => {
   );
 
   updatedJob.jobTitle = jobTitle.trim();
+  updatedJob.isHidden = isHidden;
   updatedJob.placementLocation = placementLocation.trim();
   updatedJob.jobDescriptions = jobDescriptions.trim();
   updatedJob.educationalStage = educationalStage;
@@ -326,6 +332,7 @@ const editJobDraft = async (req, res, next) => {
 
   const {
     jobTitle,
+    isHidden,
     placementLocation,
     jobDescriptions,
     educationalStage,
@@ -364,6 +371,7 @@ const editJobDraft = async (req, res, next) => {
   }
 
   updatedJob.jobTitle = jobTitle ? jobTitle.trim() : updatedJob.jobTitle;
+  updatedJob.isHidden = isHidden;
   updatedJob.placementLocation = placementLocation
     ? placementLocation.trim()
     : updatedJob.placementLocation;
