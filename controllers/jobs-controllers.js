@@ -420,6 +420,7 @@ const updateJob = async (req, res, next) => {
   const {
     jobDescriptions,
     salary,
+    isHidden,
     educationalStage,
     technicalRequirement,
     employment,
@@ -450,6 +451,7 @@ const updateJob = async (req, res, next) => {
   updatedJob.jobDescriptions = jobDescriptions
     ? jobDescriptions.trim()
     : updatedJob.jobDescriptions;
+  updatedJob.isHidden = isHidden;
   updatedJob.salary = salary ? salary.trim() : updatedJob.salary;
   updatedJob.educationalStage = educationalStage
     ? educationalStage.trim()
