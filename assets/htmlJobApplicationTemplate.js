@@ -15,12 +15,12 @@ const htmlTemplate = payload => {
           experienceList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(exp.startDate).format('MMMM YYYY')} - ${
-            exp.endDate ? moment(exp.endDate).format('MMMM YYYY') : 'Sekarang'
-          }</strong></p>
+            <p>Jabatan: <strong>${exp.prevTitle}</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
-                  <li>Jabatan: <strong>${exp.prevTitle}</strong></li>
-                  <li>Perusahaan: <strong>${exp.prevCompany}</strong></li>
+               <li>Perusahaan: <strong>${exp.prevCompany}</strong></li>
+               <li>Periode: <strong>${moment(exp.startDate).format('MMMM YYYY')} - ${
+            exp.endDate ? moment(exp.endDate).format('MMMM YYYY') : 'Sekarang'
+          }</strong></li>
                   <li>Deskripsi: <strong>${exp.description}</strong></li>
                </ul>
             </div>
@@ -39,13 +39,15 @@ const htmlTemplate = payload => {
           educationList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(edu.startDate).format('MMMM YYYY')} - ${
-            edu.endDate ? moment(edu.endDate).format('MMMM YYYY') : 'Sekarang'
-          }</strong></p>
+            <p>Major: <strong>${edu.major}</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
-                  <li>Major: <strong>${edu.major}</strong></li>
-                  <li>Jenjang Pendidikan: <strong>${edu.degree}</strong></li>
                   <li>Sekolah/Institusi: <strong>${edu.school}</strong></li>
+                  <li>Jenjang Pendidikan: <strong>${edu.degree}</strong></li>
+                  <li>
+                  Periode: <strong>${moment(edu.startDate).format('MMMM YYYY')} - ${
+            edu.endDate ? moment(edu.endDate).format('MMMM YYYY') : 'Sekarang'
+          }</strong>
+                  </li>
                   <li>Deskripsi: <strong>${edu.description}</strong></li>
                </ul>
             </div>
@@ -64,12 +66,13 @@ const htmlTemplate = payload => {
           certificationList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(cert.startDate).format('MMMM YYYY')} - ${
-            cert.endDate ? moment(cert.endDate).format('MMMM YYYY') : 'Seumur Hidup'
-          }</strong></p>
+            <p>Sertifikasi: <strong>${cert.title}</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
-                  <li>Sertifikasi: <strong>${cert.title}</strong></li>
-                  <li>Organisasi/Institusi: <strong>${cert.organization}</strong></li>
+               <li>Organisasi/Institusi: <strong>${cert.organization}</strong></li>
+                    <li>
+                    Periode: <strong>${moment(cert.startDate).format('MMMM YYYY')} - ${
+            cert.endDate ? moment(cert.endDate).format('MMMM YYYY') : 'Seumur Hidup'
+          }</strong></li>
                   <li>Deskripsi: <strong>${cert.description}</strong></li>
                </ul>
             </div>
