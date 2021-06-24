@@ -44,7 +44,7 @@ const applicantSchema = new Schema({
     {
       prevTitle: { type: String },
       prevCompany: { type: String },
-      prevLocation: { type: String },
+      prevIndustry: { type: String },
       startDate: { type: Date },
       endDate: { type: Date },
       description: { type: String },
