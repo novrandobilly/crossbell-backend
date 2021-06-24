@@ -1,7 +1,7 @@
 const moment = require('moment');
 const cloudinary = require('cloudinary');
 
-const htmlTemplate = (payload) => {
+const htmlTemplate = payload => {
   let experienceList = '';
   let educationList = '';
   let certificationList = '';
@@ -10,14 +10,12 @@ const htmlTemplate = (payload) => {
   if (payload.experience && payload.experience.length > 0) {
     payload.experience
       .sort((a, b) => b.startDate - a.startDate)
-      .map((exp) => {
+      .map(exp => {
         experienceList =
           experienceList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(exp.startDate).format(
-              'MMMM YYYY'
-            )} - ${
+            <p>Periode: <strong>${moment(exp.startDate).format('MMMM YYYY')} - ${
             exp.endDate ? moment(exp.endDate).format('MMMM YYYY') : 'Sekarang'
           }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
@@ -36,14 +34,12 @@ const htmlTemplate = (payload) => {
   if (payload.education && payload.education.length > 0) {
     payload.education
       .sort((a, b) => b.startDate - a.startDate)
-      .map((edu) => {
+      .map(edu => {
         educationList =
           educationList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(edu.startDate).format(
-              'MMMM YYYY'
-            )} - ${
+            <p>Periode: <strong>${moment(edu.startDate).format('MMMM YYYY')} - ${
             edu.endDate ? moment(edu.endDate).format('MMMM YYYY') : 'Sekarang'
           }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
@@ -63,23 +59,17 @@ const htmlTemplate = (payload) => {
   if (payload.certification && payload.certification.length > 0) {
     payload.certification
       .sort((a, b) => b.startDate - a.startDate)
-      .map((cert) => {
+      .map(cert => {
         certificationList =
           certificationList +
           `
             <div style="font-family: inherit; text-align: inherit">
-            <p>Periode: <strong>${moment(cert.startDate).format(
-              'MMMM YYYY'
-            )} - ${
-            cert.endDate
-              ? moment(cert.endDate).format('MMMM YYYY')
-              : 'Seumur Hidup'
+            <p>Periode: <strong>${moment(cert.startDate).format('MMMM YYYY')} - ${
+            cert.endDate ? moment(cert.endDate).format('MMMM YYYY') : 'Seumur Hidup'
           }</strong></p>
                <ul style="list-style:none; margin:0; padding-left: 0">
                   <li>Sertifikasi: <strong>${cert.title}</strong></li>
-                  <li>Organisasi/Institusi: <strong>${
-                    cert.organization
-                  }</strong></li>
+                  <li>Organisasi/Institusi: <strong>${cert.organization}</strong></li>
                   <li>Deskripsi: <strong>${cert.description}</strong></li>
                </ul>
             </div>
@@ -91,7 +81,7 @@ const htmlTemplate = (payload) => {
   }
 
   if (payload.skills && payload.skills.length > 0) {
-    payload.skills.map((skill) => {
+    payload.skills.map(skill => {
       skillList =
         skillList +
         `
@@ -336,9 +326,7 @@ const htmlTemplate = (payload) => {
                                                       height="100%" valign="top" bgcolor="" role="module-content">
                                                       <div>
 																		  <div style="font-family: inherit; width: 200px; height: 250px; text-align: center;">
-																		 <img alt="avatar" src="${
-                                       payload.avatarUrl
-                                     }" style="max-width: 100%; max-height: 100%; "/> 
+																		 <img alt="avatar" src="${payload.avatarUrl}" style="max-width: 100%; max-height: 100%; "/> 
 																		  </div>
                                                         <div></div>
                                                       </div>
@@ -370,9 +358,7 @@ const htmlTemplate = (payload) => {
                                                       <div>
                                                         <div style="font-family: inherit; text-align: inherit">Nama: <strong>${
                                                           payload.firstName
-                                                        } ${
-    payload.lastName
-  } </strong>
+                                                        } ${payload.lastName} </strong>
                                                         </div>
                                                         <div style="font-family: inherit; text-align: inherit">Usia: <strong>${moment().diff(
                                                           payload.dateOfBirth,
@@ -380,9 +366,7 @@ const htmlTemplate = (payload) => {
                                                           false
                                                         )} tahun </strong>
                                                         </div>
-																		  <div style="font-family: inherit; text-align: inherit">Jenis Kelamin: <strong>${
-                                        payload.gender
-                                      } </strong>
+																		  <div style="font-family: inherit; text-align: inherit">Jenis Kelamin: <strong>${payload.gender} </strong>
 																		  </div>
                                                         <div style="font-family: inherit; text-align: inherit">Email: <strong>${
                                                           payload.email
@@ -470,9 +454,7 @@ const htmlTemplate = (payload) => {
                                     <td style="padding:18px 0px 18px 0px; line-height:22px; text-align:inherit;"
                                       height="100%" valign="top" bgcolor="" role="module-content">
                                       <div>
-                                        <div style="font-family: inherit; text-align: inherit">${
-                                          payload.details
-                                        }
+                                        <div style="font-family: inherit; text-align: inherit">${payload.details}
                                         </div>
                                         <div></div>
                                       </div>
@@ -685,9 +667,7 @@ const htmlTemplate = (payload) => {
                                       </div>
                                     </td>
                                   </tr>
-                                        <a href='http://192.168.1.2:3000/subscription/${
-                                          payload.applicantId
-                                        }'>
+                                        <a href='http://192.168.1.2:3000/subscription/${payload.applicantId}'>
                                         Unsubscribe
                                         </a>
                                 </tbody>
