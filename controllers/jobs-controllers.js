@@ -63,7 +63,7 @@ const getSpecificJob = async (req, res, next) => {
   let foundJob;
   try {
     foundJob = await Job.findById(foundJobId).populate(
-      'companyId',
+      'jobApplicants companyId',
       '-password'
     );
   } catch (err) {
@@ -99,11 +99,13 @@ const createJob = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
-    technicalRequirement,
+    specialRequirement,
     emailRecipient,
     employment,
     benefit,
+    rangeAge,
     slot,
+    jobExperience,
     salary,
     companyId,
     fieldOfWork,
@@ -138,10 +140,12 @@ const createJob = async (req, res, next) => {
     placementLocation: placementLocation.trim(),
     jobDescriptions: jobDescriptions.trim(),
     educationalStage,
-    technicalRequirement: technicalRequirement.trim(),
+    specialRequirement: specialRequirement.trim(),
     emailRecipient: emailRecipient.trim(),
+    rangeAge,
     employment,
     expiredDate: expCalculation.toISOString(),
+    jobExperience,
     createdAt: new Date().toISOString(),
     releasedAt: new Date().toISOString(),
     slot: parsedSlot,
@@ -180,9 +184,11 @@ const saveJobDraft = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
-    technicalRequirement,
+    specialRequirement,
     emailRecipient,
+    rangeAge,
     employment,
+    jobExperience,
     benefit,
     slot,
     salary,
@@ -211,9 +217,11 @@ const saveJobDraft = async (req, res, next) => {
     placementLocation: placementLocation.trim() || '-',
     jobDescriptions: jobDescriptions.trim() || '-',
     educationalStage: educationalStage || '-',
-    technicalRequirement: technicalRequirement.trim() || '-',
+    specialRequirement: specialRequirement.trim() || '-',
     emailRecipient: emailRecipient.trim() || '-',
     employment: employment || 'permanent',
+    rangeAge,
+    jobExperience: jobExperience || '-',
     createdAt: new Date().toISOString(),
     slot: parsedSlot || 0,
     benefit: benefit.trim() || null,
@@ -261,8 +269,9 @@ const releaseJob = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
-    technicalRequirement,
+    specialRequirement,
     emailRecipient,
+    rangeAge,
     employment,
     benefit,
     slot,
@@ -297,9 +306,10 @@ const releaseJob = async (req, res, next) => {
   updatedJob.placementLocation = placementLocation.trim();
   updatedJob.jobDescriptions = jobDescriptions.trim();
   updatedJob.educationalStage = educationalStage;
-  updatedJob.technicalRequirement = technicalRequirement.trim();
+  updatedJob.specialRequirement = specialRequirement.trim();
   updatedJob.emailRecipient = emailRecipient.trim();
   updatedJob.employment = employment;
+  updatedJob.rangeAge = rangeAge;
   updatedJob.slot = parsedSlot;
   updatedJob.benefit = benefit.trim();
   updatedJob.salary = salary.trim();
@@ -336,8 +346,9 @@ const editJobDraft = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
-    technicalRequirement,
+    specialRequirement,
     emailRecipient,
+    rangeAge,
     employment,
     benefit,
     slot,
@@ -381,9 +392,10 @@ const editJobDraft = async (req, res, next) => {
   updatedJob.educationalStage = educationalStage
     ? educationalStage
     : updatedJob.educationalStage;
-  updatedJob.technicalRequirement = technicalRequirement
-    ? technicalRequirement.trim()
-    : updatedJob.technicalRequirement;
+  updatedJob.rangeAge = rangeAge ? rangeAge : updatedJob.rangeAge;
+  updatedJob.specialRequirement = specialRequirement
+    ? specialRequirement.trim()
+    : updatedJob.specialRequirement;
   updatedJob.emailRecipient = emailRecipient
     ? emailRecipient.trim()
     : updatedJob.emailRecipient;
@@ -422,7 +434,7 @@ const updateJob = async (req, res, next) => {
     salary,
     isHidden,
     educationalStage,
-    technicalRequirement,
+    specialRequirement,
     employment,
   } = req.body;
   const jobId = req.params.jobid;
@@ -456,9 +468,9 @@ const updateJob = async (req, res, next) => {
   updatedJob.educationalStage = educationalStage
     ? educationalStage.trim()
     : updatedJob.educationalStage;
-  updatedJob.technicalRequirement = technicalRequirement
-    ? technicalRequirement.trim()
-    : updatedJob.technicalRequirement;
+  updatedJob.specialRequirement = specialRequirement
+    ? specialRequirement.trim()
+    : updatedJob.specialRequirement;
   updatedJob.employment = employment ? employment : updatedJob.employment;
 
   try {

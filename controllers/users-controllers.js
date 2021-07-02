@@ -514,6 +514,9 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.dateOfBirth = data.dateOfBirth
     ? new Date(data.dateOfBirth).toISOString()
     : foundApplicant.dateOfBirth;
+  foundApplicant.salary = data.salary
+    ? data.salary.trim()
+    : foundApplicant.salary;
   foundApplicant.outOfTown = data.outOfTown;
   foundApplicant.workShifts = data.workShifts;
   foundApplicant.autoRemind = data.autoRemind;
@@ -690,7 +693,6 @@ const updateCompanyProfile = async (req, res, next) => {
   }
 
   return res.status(200).json({ foundCompany: foundCompany });
-
 };
 
 const deleteSegment = async (req, res, next) => {
