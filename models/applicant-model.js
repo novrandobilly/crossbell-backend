@@ -22,10 +22,20 @@ const applicantSchema = new Schema({
   dateOfBirth: { type: Date, default: null },
   gender: { type: String, default: null },
   interest: [{ type: String }],
+  salary: { type: Number, default: 0 },
   outOfTown: { type: Boolean, default: false },
   workShifts: { type: Boolean, default: false },
-  autoRemind: { type: Boolean, default: false },
-  autoSend: { type: Boolean, default: false },
+  autoSend: {
+    isAutoSend: { type: Boolean, default: false },
+    jobField: { type: String, default: null },
+    jobIndustry: { type: String, default: null },
+  },
+  autoRemind: {
+    isAutoRemind: { type: Boolean, default: false },
+    jobField: { type: String, default: null },
+    jobIndustry: { type: String, default: null },
+  },
+
   headhunterProgram: { type: Boolean, default: false },
 
   education: [
@@ -40,6 +50,7 @@ const applicantSchema = new Schema({
       IPK: { type: Number },
     },
   ],
+
   experience: [
     {
       prevTitle: { type: String },
@@ -60,6 +71,7 @@ const applicantSchema = new Schema({
       description: { type: String },
     },
   ],
+
   skills: [{ type: String }],
   resume: {
     url: { type: String },

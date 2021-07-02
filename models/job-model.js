@@ -9,11 +9,15 @@ const jobSchema = new Schema({
   placementLocation: { type: String, required: true },
   jobDescriptions: { type: String, required: true },
   educationalStage: { type: String, required: true },
-  technicalRequirement: { type: String, required: true },
+
+  //jadiin spesialRequirement dalam bentuk array require false
+  specialRequirement: { type: String, required: true },
   employment: { type: String, required: true },
   slot: { type: Number, required: true },
+  rangeAge: [{ type: Number, default: [] }],
   fieldOfWork: { type: String, required: true },
   emailRecipient: { type: String, required: true },
+  jobExperience: { type: String, required: true },
   expiredDate: { type: Date, default: null },
   createdAt: { type: Date, required: true },
   releasedAt: { type: Date, default: null },
