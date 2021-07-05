@@ -18,7 +18,6 @@ const updateJobChecker = [check('jobDescriptions').trim().isLength({ min: 5 })];
 
 // =======================ROUTES=======================
 router.get('/', jobsControllers.getAllAvailableJobs);
-router.get('/:jobid', jobsControllers.getSpecificJob);
 router.get('/:companyid/all/jobs', jobsControllers.getJobsInCompany);
 
 router.use(checkAuth);
@@ -29,6 +28,7 @@ router.patch('/draft/:jobid', jobsControllers.editJobDraft);
 router.post('/draft', jobsControllers.saveJobDraft);
 router.patch('/:jobid/release', createJobChecker, jobsControllers.releaseJob);
 router.patch('/:jobid', updateJobChecker, jobsControllers.updateJob);
+router.get('/:jobid', jobsControllers.getSpecificJob);
 
 router.delete('/:jobid', jobsControllers.deleteJob);
 
