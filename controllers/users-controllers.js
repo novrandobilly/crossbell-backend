@@ -411,8 +411,8 @@ const googleLogin = async (req, res, next) => {
 
 const updateApplicantProfile = async (req, res, next) => {
   const applicantId = req.params.applicantid;
-
   const data = req.body;
+
   let foundApplicant;
   try {
     foundApplicant = await Applicant.findOne({ _id: applicantId });
@@ -451,11 +451,12 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.salary = data.salary ? data.salary.trim() : foundApplicant.salary;
   foundApplicant.outOfTown = data.outOfTown;
   foundApplicant.workShifts = data.workShifts;
-  foundApplicant.autoRemind = data.autoRemind;
-  foundApplicant.autoSend = data.autoSend;
   foundApplicant.headhunterProgram = data.headhunterProgram;
   foundApplicant.interest = splitInterest ? splitInterest : foundApplicant.interest;
   foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
+  foundApplicant.autoSend = data.autoSend;
+  foundApplicant.autoRemind = data.autoRemind;
+  foundApplicant.langguages = data.langguages;
 
   if (data.education) {
     if (data.index) {
@@ -478,6 +479,14 @@ const updateApplicantProfile = async (req, res, next) => {
       foundApplicant.certification[data.index] = data.certification;
     } else {
       foundApplicant.certification.push(data.certification);
+    }
+  }
+
+  if (data.organization) {
+    if (data.index) {
+      foundApplicant.organization[data.index] = data.organization;
+    } else {
+      foundApplicant.organization.push(data.organization);
     }
   }
 
