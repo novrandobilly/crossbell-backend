@@ -9,9 +9,6 @@ const jobSchema = new Schema({
   placementLocation: { type: String, required: true },
   jobDescriptions: { type: String, required: true },
   educationalStage: { type: String, required: true },
-
-  //jadiin spesialRequirement dalam bentuk array require false
-  specialRequirement: { type: String, required: true },
   employment: { type: String, required: true },
   slot: { type: Number, required: true },
   rangeAge: [{ type: Number, default: [] }],
@@ -23,6 +20,7 @@ const jobSchema = new Schema({
   releasedAt: { type: Date, default: null },
   salary: { type: String, default: null },
   benefit: { type: String, default: null },
+  specialRequirement: [{ type: String, default: '' }],
   fieldOfWork: [{ type: String }],
   jobApplicants: [
     { type: mongoose.Types.ObjectId, required: true, ref: 'Applicant' },
