@@ -10,10 +10,18 @@ const nodemailer = require('nodemailer');
 const moment = require('moment');
 const { cloudinary } = require('../cloudinary');
 const { OAuth2Client } = require('google-auth-library');
+const Pusher = require('pusher');
 const client = new OAuth2Client('968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com');
 
 const HttpError = require('../models/http-error');
 const mail = require('@sendgrid/mail');
+
+let pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_APP_KEY,
+  secret: process.env.PUSHER_APP_SECRET,
+  cluster: process.env.PUSHER_APP_CLUSTER,
+});
 
 const getFeedback = async (req, res, next) => {
   let foundFeedback;
@@ -195,6 +203,9 @@ const signup = async (req, res, next) => {
       const error = new HttpError('Could not create user.', 500);
       return next(error);
     }
+
+    // pusher.trigger(CHANNEL, EVENT_NAME, DATA, SOCKET_ID)
+    pusher.trigger('notifications', 'company_created', { Company: newCompany.companyName }, req.headers['x-socket-id']);
 
     return res.status(201).json({
       userId: newCompany.id,
