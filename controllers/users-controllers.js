@@ -524,9 +524,11 @@ const updateApplicantProfile = async (req, res, next) => {
     ? splitInterest
     : foundApplicant.interest;
   foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
+  foundApplicant.languages = data.languages
+    ? data.languages
+    : foundApplicant.languages;
   foundApplicant.autoSend = data.autoSend;
   foundApplicant.autoRemind = data.autoRemind;
-  foundApplicant.langguages = data.langguages;
 
   if (data.education) {
     if (data.index) {
