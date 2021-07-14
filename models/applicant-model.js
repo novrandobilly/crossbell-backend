@@ -22,7 +22,6 @@ const applicantSchema = new Schema({
   dateOfBirth: { type: Date, default: null },
   gender: { type: String, default: null },
   interest: [{ type: String }],
-  langguages: [{ type: String }],
   salary: { type: Number, default: 0 },
   outOfTown: { type: Boolean, default: false },
   workShifts: { type: Boolean, default: false },
@@ -80,8 +79,8 @@ const applicantSchema = new Schema({
       description: { type: String },
     },
   ],
-
-  skills: [{ type: String }],
+  languages: [{ langName: { type: String }, rate: { type: Number } }],
+  skills: [{ skillName: { type: String }, rate: { type: Number } }],
   resume: {
     url: { type: String },
     fileName: { type: String },
