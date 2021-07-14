@@ -10,21 +10,25 @@ const nodemailer = require('nodemailer');
 const moment = require('moment');
 const { cloudinary } = require('../cloudinary');
 const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(
-  '968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com'
-);
+const Pusher = require('pusher');
+const client = new OAuth2Client('968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com');
 
 const HttpError = require('../models/http-error');
 const mail = require('@sendgrid/mail');
+
+let pusher = new Pusher({
+  appId: process.env.PUSHER_APP_ID,
+  key: process.env.PUSHER_APP_KEY,
+  secret: process.env.PUSHER_APP_SECRET,
+  cluster: process.env.PUSHER_APP_CLUSTER,
+});
 
 const getFeedback = async (req, res, next) => {
   let foundFeedback;
   try {
     foundFeedback = await Feed.find({}, '-__v');
   } catch (err) {
-    return next(
-      new HttpError('Fetching feedsfailed, please try again later', 500)
-    );
+    return next(new HttpError('Fetching feedsfailed, please try again later', 500));
   }
 
   if (!foundFeedback) {
@@ -37,10 +41,7 @@ const getFeedback = async (req, res, next) => {
 const createFeedback = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError(
-      'Invalid input properties, please check your data',
-      422
-    );
+    const error = new HttpError('Invalid input properties, please check your data', 422);
     return next(error);
   }
 
@@ -58,10 +59,7 @@ const createFeedback = async (req, res, next) => {
     await newFeed.save();
   } catch (err) {
     console.log(err);
-    const error = new HttpError(
-      'Could not create new feed. Please try again later',
-      500
-    );
+    const error = new HttpError('Could not create new feed. Please try again later', 500);
     return next(error);
   }
 
@@ -73,9 +71,7 @@ const getAllApplicant = async (req, res, next) => {
   try {
     foundApplicant = await Applicant.find({}, '-password');
   } catch (err) {
-    return next(
-      new HttpError('Fetching user failed, please try again later', 500)
-    );
+    return next(new HttpError('Fetching user failed, please try again later', 500));
   }
 
   if (!foundApplicant) {
@@ -90,9 +86,7 @@ const getAllCompany = async (req, res, next) => {
   try {
     foundCompany = await Company.find({}, '-password');
   } catch (err) {
-    return next(
-      new HttpError('Fetching user failed, please try again later', 500)
-    );
+    return next(new HttpError('Fetching user failed, please try again later', 500));
   }
 
   if (!foundCompany) {
@@ -108,29 +102,21 @@ const getApplicantDetails = async (req, res, next) => {
   let foundAdmin = await Admin.findById(req.userData.userId, '-password');
 
   if (!foundAdmin && req.userData.userId === !applicantId) {
-    return next(
-      new HttpError('You are unauthorized to access this end point', 401)
-    );
+    return next(new HttpError('You are unauthorized to access this end point', 401));
   }
 
   if (!foundAdmin && req.userData.userId === !applicantId) {
-    return next(
-      new HttpError('You are unauthorized to access this end point', 401)
-    );
+    return next(new HttpError('You are unauthorized to access this end point', 401));
   }
 
   let foundApplicant;
   try {
     foundApplicant = await Applicant.findOne({ _id: applicantId }, '-password');
   } catch (err) {
-    return next(
-      new HttpError('Fetching user failed, please try again later', 500)
-    );
+    return next(new HttpError('Fetching user failed, please try again later', 500));
   }
 
-  res
-    .status(200)
-    .json({ applicant: foundApplicant.toObject({ getters: true }) });
+  res.status(200).json({ applicant: foundApplicant.toObject({ getters: true }) });
 };
 
 const getCompanyDetails = async (req, res, next) => {
@@ -139,9 +125,7 @@ const getCompanyDetails = async (req, res, next) => {
   try {
     foundCompany = await Company.findOne({ _id: companyId }, '-password');
   } catch (err) {
-    return next(
-      new HttpError('Fetching user failed, please try again later', 500)
-    );
+    return next(new HttpError('Fetching user failed, please try again later', 500));
   }
 
   if (!foundCompany) {
@@ -153,10 +137,7 @@ const getCompanyDetails = async (req, res, next) => {
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError(
-      'Invalid inputs properties. Please check your data',
-      422
-    );
+    const error = new HttpError('Invalid inputs properties. Please check your data', 422);
     return next(error);
   }
 
@@ -171,10 +152,7 @@ const signup = async (req, res, next) => {
   }
 
   if (existingApplicant || existingCompany) {
-    const error = new HttpError(
-      'Could not create user. Email already exists.',
-      422
-    );
+    const error = new HttpError('Could not create user. Email already exists.', 422);
     return next(error);
   }
 
@@ -204,10 +182,7 @@ const signup = async (req, res, next) => {
     try {
       await newCompany.save();
     } catch (err) {
-      const error = new HttpError(
-        'Could not create user. Please input a valid value',
-        500
-      );
+      const error = new HttpError('Could not create user. Please input a valid value', 500);
       return next(error);
     }
 
@@ -228,6 +203,9 @@ const signup = async (req, res, next) => {
       const error = new HttpError('Could not create user.', 500);
       return next(error);
     }
+
+    // pusher.trigger(CHANNEL, EVENT_NAME, DATA, SOCKET_ID)
+    pusher.trigger('notifications', 'company_created', { Company: newCompany.companyName }, req.headers['x-socket-id']);
 
     return res.status(201).json({
       userId: newCompany.id,
@@ -293,25 +271,18 @@ const login = async (req, res, next) => {
       foundUser = await Applicant.findOne({ email });
     }
   } catch (err) {
-    return next(
-      new HttpError('Could not logged you in. Please try again later', 500)
-    );
+    return next(new HttpError('Could not logged you in. Please try again later', 500));
   }
 
   if (!foundUser) {
-    return next(
-      new HttpError('Could not identify user. Authentication Failed', 401)
-    );
+    return next(new HttpError('Could not identify user. Authentication Failed', 401));
   }
 
   let isValidPassword = false;
   try {
     isValidPassword = await bcrypt.compare(password, foundUser.password);
   } catch (err) {
-    const error = new HttpError(
-      'Could not identified user, please try again',
-      500
-    );
+    const error = new HttpError('Could not identified user, please try again', 500);
     return next(error);
   }
 
@@ -332,10 +303,7 @@ const login = async (req, res, next) => {
       { expiresIn: '3h' }
     );
   } catch (err) {
-    const error = new HttpError(
-      'Could not generate token, please try again',
-      500
-    );
+    const error = new HttpError('Could not generate token, please try again', 500);
     return next(error);
   }
 
@@ -355,8 +323,7 @@ const googleLogin = async (req, res, next) => {
   try {
     response = await client.verifyIdToken({
       idToken,
-      audience:
-        '968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com',
+      audience: '968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com',
     });
   } catch (err) {
     const error = new HttpError('Could not verified email.', 500);
@@ -376,15 +343,9 @@ const googleLogin = async (req, res, next) => {
     if (!foundUser) {
       let hashedPassword;
       try {
-        hashedPassword = await bcrypt.hash(
-          email + process.env.JWT_SECRET_KEY,
-          12
-        );
+        hashedPassword = await bcrypt.hash(email + process.env.JWT_SECRET_KEY, 12);
       } catch (err) {
-        const error = new HttpError(
-          'Could not create user, please try again',
-          500
-        );
+        const error = new HttpError('Could not create user, please try again', 500);
         return next(error);
       }
 
@@ -441,10 +402,7 @@ const googleLogin = async (req, res, next) => {
           { expiresIn: '3h' }
         );
       } catch (err) {
-        const error = new HttpError(
-          'Could not generate token, please try again',
-          500
-        );
+        const error = new HttpError('Could not generate token, please try again', 500);
         return next(error);
       }
 
@@ -470,10 +428,7 @@ const updateApplicantProfile = async (req, res, next) => {
   try {
     foundApplicant = await Applicant.findOne({ _id: applicantId });
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Please try again later',
-      500
-    );
+    const error = new HttpError('Something went wrong. Please try again later', 500);
     return next(error);
   }
 
@@ -492,37 +447,23 @@ const updateApplicantProfile = async (req, res, next) => {
         fileName: req.file.filename,
       }
     : foundApplicant.picture;
-  foundApplicant.firstName = data.firstName
-    ? data.firstName.trim()
-    : foundApplicant.firstName;
-  foundApplicant.lastName = data.lastName
-    ? data.lastName.trim()
-    : foundApplicant.lastName;
+  foundApplicant.firstName = data.firstName ? data.firstName.trim() : foundApplicant.firstName;
+  foundApplicant.lastName = data.lastName ? data.lastName.trim() : foundApplicant.lastName;
   foundApplicant.email = data.email ? data.email.trim() : foundApplicant.email;
-  foundApplicant.headline = data.headline
-    ? data.headline.trim()
-    : foundApplicant.headline;
-  foundApplicant.address = data.address
-    ? data.address.trim()
-    : foundApplicant.address;
+  foundApplicant.headline = data.headline ? data.headline.trim() : foundApplicant.headline;
+  foundApplicant.address = data.address ? data.address.trim() : foundApplicant.address;
   foundApplicant.city = data.city ? data.city.trim() : foundApplicant.city;
   foundApplicant.state = data.state ? data.state.trim() : foundApplicant.state;
   foundApplicant.zip = data.zip ? data.zip.trim() : foundApplicant.zip;
   foundApplicant.phone = data.phone ? data.phone.trim() : foundApplicant.phone;
   foundApplicant.gender = data.gender ? data.gender : foundApplicant.gender;
   foundApplicant.details = data.details ? data.details : foundApplicant.details;
-  foundApplicant.dateOfBirth = data.dateOfBirth
-    ? new Date(data.dateOfBirth).toISOString()
-    : foundApplicant.dateOfBirth;
-  foundApplicant.salary = data.salary
-    ? data.salary.trim()
-    : foundApplicant.salary;
+  foundApplicant.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : foundApplicant.dateOfBirth;
+  foundApplicant.salary = data.salary ? data.salary.trim() : foundApplicant.salary;
   foundApplicant.outOfTown = data.outOfTown;
   foundApplicant.workShifts = data.workShifts;
   foundApplicant.headhunterProgram = data.headhunterProgram;
-  foundApplicant.interest = splitInterest
-    ? splitInterest
-    : foundApplicant.interest;
+  foundApplicant.interest = splitInterest ? splitInterest : foundApplicant.interest;
   foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
   foundApplicant.languages = data.languages
     ? data.languages
@@ -578,9 +519,7 @@ const updateApplicantResume = async (req, res, next) => {
   try {
     foundApplicant = await Applicant.findById(applicantId);
   } catch (err) {
-    return next(
-      new HttpError('Retreiving applicant error. Please try again later', 500)
-    );
+    return next(new HttpError('Retreiving applicant error. Please try again later', 500));
   }
 
   if (!foundApplicant) {
@@ -620,33 +559,22 @@ const updateCompanyProfile = async (req, res, next) => {
       email: data.email,
       _id: { $ne: companyId },
     });
-    if (!foundCompany)
-      foundCompany = await Applicant.findOne({ email: data.email });
-    if (!foundCompany)
-      foundCompany = await Admin.findOne({ email: data.email });
+    if (!foundCompany) foundCompany = await Applicant.findOne({ email: data.email });
+    if (!foundCompany) foundCompany = await Admin.findOne({ email: data.email });
   } catch (err) {
-    const error = new HttpError(
-      'Failed checking email. Please try again later',
-      500
-    );
+    const error = new HttpError('Failed checking email. Please try again later', 500);
     return next(error);
   }
 
   if (foundCompany) {
-    const error = new HttpError(
-      'Email already exist. Please use another email',
-      500
-    );
+    const error = new HttpError('Email already exist. Please use another email', 500);
     return next(error);
   }
 
   try {
     foundCompany = await Company.findOne({ _id: companyId });
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Please try again later',
-      500
-    );
+    const error = new HttpError('Something went wrong. Please try again later', 500);
     return next(error);
   }
 
@@ -660,41 +588,19 @@ const updateCompanyProfile = async (req, res, next) => {
         fileName: req.file.filename,
       }
     : foundCompany.logo;
-  foundCompany.companyName = data.companyName
-    ? data.companyName.trim()
-    : foundCompany.companyName;
+  foundCompany.companyName = data.companyName ? data.companyName.trim() : foundCompany.companyName;
   foundCompany.email = data.email ? data.email.trim() : foundCompany.email;
-  foundCompany.picName = data.picName
-    ? data.picName.trim()
-    : foundCompany.picName;
-  foundCompany.picJobTitle = data.picJobTitle
-    ? data.picJobTitle.trim()
-    : foundCompany.picJobTitle;
-  foundCompany.picEmail = data.picEmail
-    ? data.picEmail.trim()
-    : foundCompany.picEmail;
-  foundCompany.picOfficePhone = data.picOfficePhone
-    ? data.picOfficePhone.trim()
-    : foundCompany.picOfficePhone;
-  foundCompany.picPhone = data.picPhone
-    ? data.picPhone.trim()
-    : foundCompany.picPhone;
-  foundCompany.address = data.address
-    ? data.address.trim()
-    : foundCompany.address;
-  foundCompany.industry = data.industry
-    ? data.industry.trim()
-    : foundCompany.industry;
-  foundCompany.emailRecipient = data.emailRecipient
-    ? data.emailRecipient.trim()
-    : foundCompany.emailRecipient;
-  foundCompany.website = data.website
-    ? data.website.trim()
-    : foundCompany.website;
+  foundCompany.picName = data.picName ? data.picName.trim() : foundCompany.picName;
+  foundCompany.picJobTitle = data.picJobTitle ? data.picJobTitle.trim() : foundCompany.picJobTitle;
+  foundCompany.picEmail = data.picEmail ? data.picEmail.trim() : foundCompany.picEmail;
+  foundCompany.picOfficePhone = data.picOfficePhone ? data.picOfficePhone.trim() : foundCompany.picOfficePhone;
+  foundCompany.picPhone = data.picPhone ? data.picPhone.trim() : foundCompany.picPhone;
+  foundCompany.address = data.address ? data.address.trim() : foundCompany.address;
+  foundCompany.industry = data.industry ? data.industry.trim() : foundCompany.industry;
+  foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient.trim() : foundCompany.emailRecipient;
+  foundCompany.website = data.website ? data.website.trim() : foundCompany.website;
   foundCompany.NPWP = data.NPWP ? data.NPWP.trim() : foundCompany.NPWP;
-  foundCompany.briefDescriptions = data.briefDescriptions
-    ? data.briefDescriptions.trim()
-    : foundCompany.briefDescriptions;
+  foundCompany.briefDescriptions = data.briefDescriptions ? data.briefDescriptions.trim() : foundCompany.briefDescriptions;
 
   try {
     await foundCompany.save();
@@ -713,10 +619,7 @@ const deleteSegment = async (req, res, next) => {
   try {
     foundApplicant = await Applicant.findById(applicantId);
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Cannot delete the feed',
-      500
-    );
+    const error = new HttpError('Something went wrong. Cannot delete the feed', 500);
     return next(error);
   }
 
@@ -725,19 +628,14 @@ const deleteSegment = async (req, res, next) => {
     return next(error);
   }
 
-  const filteredSegment = foundApplicant[segment].filter(
-    (el) => el._id.toString() !== elementId
-  );
+  const filteredSegment = foundApplicant[segment].filter(el => el._id.toString() !== elementId);
   foundApplicant[segment] = filteredSegment;
 
   try {
     await foundApplicant.save();
   } catch (err) {
     console.log(err);
-    const error = new HttpError(
-      'Something went wrong. Cannot delete the segment at the moment',
-      500
-    );
+    const error = new HttpError('Something went wrong. Cannot delete the segment at the moment', 500);
     return next(error);
   }
 
@@ -754,18 +652,12 @@ const forgotPwd = async (req, res, next) => {
       foundUser = await Company.findOne({ email: userEmail });
     }
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Cannot retreive any users',
-      500
-    );
+    const error = new HttpError('Something went wrong. Cannot retreive any users', 500);
     return next(error);
   }
 
   if (!foundUser) {
-    const error = new HttpError(
-      'There is no user with that email, please try again',
-      404
-    );
+    const error = new HttpError('There is no user with that email, please try again', 404);
     return next(error);
   }
 
@@ -832,18 +724,12 @@ const checkResetToken = async (req, res, next) => {
       });
     }
   } catch (err) {
-    const error = new HttpError(
-      'Retreiveng user failed, please try again later',
-      500
-    );
+    const error = new HttpError('Retreiveng user failed, please try again later', 500);
     return next(error);
   }
 
   if (!foundUser) {
-    const error = new HttpError(
-      'Password reset token invalid or has expired',
-      500
-    );
+    const error = new HttpError('Password reset token invalid or has expired', 500);
     return next(error);
   }
 
@@ -868,18 +754,12 @@ const resetPwd = async (req, res, next) => {
       });
     }
   } catch (err) {
-    const error = new HttpError(
-      'Retreiveng user failed, please try again later',
-      500
-    );
+    const error = new HttpError('Retreiveng user failed, please try again later', 500);
     return next(error);
   }
 
   if (!foundUser) {
-    const error = new HttpError(
-      'Password reset token invalid or has expired',
-      500
-    );
+    const error = new HttpError('Password reset token invalid or has expired', 500);
     return next(error);
   }
 
@@ -888,10 +768,7 @@ const resetPwd = async (req, res, next) => {
     try {
       hashedPassword = await bcrypt.hash(newPassword, 12);
     } catch (err) {
-      const error = new HttpError(
-        'Could not change password, please try again',
-        500
-      );
+      const error = new HttpError('Could not change password, please try again', 500);
       return next(error);
     }
     foundUser.password = hashedPassword;
@@ -901,10 +778,7 @@ const resetPwd = async (req, res, next) => {
     try {
       await foundUser.save();
     } catch (err) {
-      const error = new HttpError(
-        'Could not save new password. Please input a valid value',
-        500
-      );
+      const error = new HttpError('Could not save new password. Please input a valid value', 500);
       return next(error);
     }
 
@@ -920,10 +794,7 @@ const resetPwd = async (req, res, next) => {
         { expiresIn: '3h' }
       );
     } catch (err) {
-      const error = new HttpError(
-        'Could not generate token, please try again',
-        500
-      );
+      const error = new HttpError('Could not generate token, please try again', 500);
       return next(error);
     }
     res.status(200).json({
@@ -953,18 +824,11 @@ const getApplicantAppliedJobs = async (req, res, next) => {
       },
     });
   } catch (err) {
-    return next(
-      new HttpError(
-        'Fetching applicant & jobs applied data failed. Please try again',
-        500
-      )
-    );
+    return next(new HttpError('Fetching applicant & jobs applied data failed. Please try again', 500));
   }
 
   res.status(200).json({
-    Jobs: foundApplicant.jobsApplied.map((job) =>
-      job.toObject({ getters: true })
-    ),
+    Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })),
   });
 };
 
