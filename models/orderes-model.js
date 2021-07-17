@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
 const orderesSchema = new Schema({
-  companyId: { type: mongoose.Types.ObjectId, required: true, ref: "Company" },
+  companyId: { type: mongoose.Types.ObjectId, required: true, ref: 'Company' },
   positionLevel: { type: String, required: true },
   mainTask: { type: String, required: true },
   responsibility: { type: String, required: true },
@@ -15,7 +15,7 @@ const orderesSchema = new Schema({
   experience: { type: String, required: true },
   expertise: { type: String, required: true },
   specification: { type: String },
-  status: { type: String, required: true, default: "Open" },
+  status: { type: String, required: true, default: 'Open' },
   createdAt: { type: Date, required: true },
   candidates: [
     {
@@ -23,9 +23,9 @@ const orderesSchema = new Schema({
       candidateEmail: { type: String },
       candidateContact: { type: String },
       note: { type: String },
-      status: { type: String, default: "Open" },
+      status: { type: String, default: 'Open' },
     },
   ],
 });
 
-module.exports = mongoose.model("Orderes", orderesSchema);
+module.exports = mongoose.model('Orderes', orderesSchema);

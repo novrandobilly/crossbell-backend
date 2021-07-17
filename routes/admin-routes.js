@@ -1,7 +1,7 @@
 const express = require('express');
 const { check } = require('express-validator');
 const adminControllers = require('../controllers/admin-controllers');
-const { adminAvatar } = require('../middleware/file-upload');
+const { adminAvatar, orderPicture } = require('../middleware/file-upload');
 
 const router = express.Router();
 const checkAuth = require('../middleware/check-auth');
@@ -53,6 +53,11 @@ router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
+router.patch(
+  '/:orderid/approve/reg',
+  orderPicture,
+  adminControllers.updateOrderReg
+);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
 
 router.get('/order/promo', adminControllers.getPromo);
