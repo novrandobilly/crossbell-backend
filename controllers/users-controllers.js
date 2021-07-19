@@ -199,7 +199,6 @@ const signup = async (req, res, next) => {
         admin.notifications = notifications;
         admin.save();
       }
-      console.log(foundAdmins);
     } catch (err) {
       const error = new HttpError('Could not find any admin', 500);
       console.log(err);
