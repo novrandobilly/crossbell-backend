@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
+const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const Schema = mongoose.Schema;
 
@@ -19,8 +19,17 @@ const adminSchema = new Schema({
   phoneNumber: { type: String, required: true },
   role: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
+  notifications: [
+    {
+      identifier: { type: String },
+      name: { type: String },
+      date: { type: Date, default: new Date() },
+      isOpened: { type: Boolean, default: false },
+      message: { type: String },
+    },
+  ],
 });
 
 adminSchema.plugin(uniqueValidator);
 
-module.exports = mongoose.model("Admin", adminSchema);
+module.exports = mongoose.model('Admin', adminSchema);
