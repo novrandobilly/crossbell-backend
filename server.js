@@ -36,6 +36,7 @@ schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec);
 schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec);
 schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo);
 cronControllers.createPromo();
+cronControllers.notificationCleanUp();
 
 app.use((req, res, next) => {
   throw new HttpError('Could not find the requested route', 404);
