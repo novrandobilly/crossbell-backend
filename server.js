@@ -32,11 +32,11 @@ app.use('/api/jobs', jobsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/alphaomega', adminRoutes);
 
-schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec);
-schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec);
-schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo);
+schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec); //Every Day at 15.00 autoRemind
+schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec); //Every Day at 14.00 autoSend
+schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo); //Every Monday at 00.00 refresh promo
+schedule.scheduleJob('0 0 * * *', cronControllers.notificationCleanUp()); //Every Day at 00.00 clean notification
 cronControllers.createPromo();
-cronControllers.notificationCleanUp();
 
 app.use((req, res, next) => {
   throw new HttpError('Could not find the requested route', 404);
