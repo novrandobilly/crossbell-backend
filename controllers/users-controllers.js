@@ -165,6 +165,7 @@ const signup = async (req, res, next) => {
   }
 
   if (isCompany) {
+    // COMPANY SIGN UP
     const { companyName } = req.body;
 
     const newCompany = new Company({
@@ -179,13 +180,42 @@ const signup = async (req, res, next) => {
       isActive: false,
     });
 
+    // pusher.trigger(CHANNEL, EVENT_NAME, DATA, SOCKET_ID)
+    pusher.trigger('notifications', 'company_created', { Company: newCompany.companyName }, req.headers['x-socket-id']);
+
+    // ADMIN NOTIFICATION
+    let foundAdmins;
+    try {
+      foundAdmins = await Admin.find();
+      for (const admin of foundAdmins) {
+        let newNotification = {
+          identifier: newCompany.id,
+          name: newCompany.companyName,
+          date: new Date(),
+          isOpened: false,
+          message: `Perusahaan ${newCompany.companyName} telah terdaftar dan menunggu verifikasi`,
+        };
+        let notifications = [...admin.notifications, newNotification];
+        admin.notifications = notifications;
+        admin.save();
+      }
+      console.log(foundAdmins);
+    } catch (err) {
+      const error = new HttpError('Could not find any admin', 500);
+      console.log(err);
+      return next(error);
+    }
+
+    // SAVING COMPANY
     try {
       await newCompany.save();
     } catch (err) {
       const error = new HttpError('Could not create user. Please input a valid value', 500);
+      console.log(err);
       return next(error);
     }
 
+    // SEND JWT TOKEN TO FRONT END FOR PERSISTANT SIGN IN
     let token;
     try {
       token = jwt.sign(
@@ -204,9 +234,7 @@ const signup = async (req, res, next) => {
       return next(error);
     }
 
-    // pusher.trigger(CHANNEL, EVENT_NAME, DATA, SOCKET_ID)
-    pusher.trigger('notifications', 'company_created', { Company: newCompany.companyName }, req.headers['x-socket-id']);
-
+    // SEND RESPONSE TO CLIENT SIDE
     return res.status(201).json({
       userId: newCompany.id,
       email: newCompany.email,
@@ -216,6 +244,7 @@ const signup = async (req, res, next) => {
       token,
     });
   } else {
+    // APPLICANT SIGN UP
     const { firstName, lastName } = req.body;
     const newApplicant = new Applicant({
       firstName: firstName.trim(),
@@ -465,9 +494,7 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.headhunterProgram = data.headhunterProgram;
   foundApplicant.interest = splitInterest ? splitInterest : foundApplicant.interest;
   foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
-  foundApplicant.languages = data.languages
-    ? data.languages
-    : foundApplicant.languages;
+  foundApplicant.languages = data.languages ? data.languages : foundApplicant.languages;
   foundApplicant.autoSend = data.autoSend;
   foundApplicant.autoRemind = data.autoRemind;
 
