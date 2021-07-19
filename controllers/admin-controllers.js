@@ -439,6 +439,41 @@ const updateAdminProfile = async (req, res, next) => {
   return res.status(200).json({ foundAdmin: foundAdmin });
 };
 
+const updateOrderReg = async (req, res, next) => {
+  const data = req.body;
+  const orderId = req.params.orderid;
+  console.log(req.data);
+
+  // let foundOrder;
+
+  // try {
+  //   foundOrder = await Orderreg.findOne({ _id: orderId });
+  // } catch (err) {
+  //   const error = new HttpError(
+  //     'Something went wrong. Please try again later',
+  //     500
+  //   );
+  //   return next(error);
+  // }
+
+  // foundOrder.payment.file = {
+  //       url: req.file.path,
+  //       fileName: req.file.filename,
+  //     }
+  // foundOrder.payment.paymentDate =  data.paymentDate
+  // foundOrder.payment.paymentTime =  data.paymentTime
+  // foundOrder.payment.nominal =  data.nominal.trim()
+
+  // try {
+  //   await foundOrder.save();
+  // } catch (err) {
+  //   const error = new HttpError(err.message, 500);
+  //   return next(error);
+  // }
+
+  // return res.status(200).json({ foundOrder: foundOrder });
+};
+
 //============================REGULER ORDER==================================================
 
 const getWholeOrderREG = async (req, res, next) => {
@@ -1331,6 +1366,7 @@ exports.getWholeOrderREG = getWholeOrderREG;
 exports.createOrderReg = createOrderReg;
 exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;
+exports.updateOrderReg = updateOrderReg;
 
 exports.getPromo = getPromo;
 exports.updatePromo = updatePromo;

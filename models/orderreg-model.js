@@ -14,6 +14,12 @@ const orderregSchema = new Schema({
   pricePerSlot: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
   promo: { type: Number, default: 0 },
+  payment: {
+    paymentDate: { type: Date },
+    paymentTime: { type: String },
+    nominal: { type: Number },
+    file: { url: { type: String }, fileName: { type: String } },
+  },
 });
 
 module.exports = mongoose.model('Orderreg', orderregSchema);
