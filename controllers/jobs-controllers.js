@@ -140,7 +140,7 @@ const createJob = async (req, res, next) => {
     placementLocation: placementLocation.trim(),
     jobDescriptions: jobDescriptions.trim(),
     educationalStage,
-    specialRequirement: specialRequirement.trim(),
+    specialRequirement: specialRequirement,
     emailRecipient: emailRecipient.trim(),
     rangeAge,
     employment,
@@ -217,7 +217,7 @@ const saveJobDraft = async (req, res, next) => {
     placementLocation: placementLocation.trim() || '-',
     jobDescriptions: jobDescriptions.trim() || '-',
     educationalStage: educationalStage || '-',
-    specialRequirement: specialRequirement.trim() || '-',
+    specialRequirement: specialRequirement || '-',
     emailRecipient: emailRecipient.trim() || '-',
     employment: employment || 'permanent',
     rangeAge,
@@ -306,7 +306,7 @@ const releaseJob = async (req, res, next) => {
   updatedJob.placementLocation = placementLocation.trim();
   updatedJob.jobDescriptions = jobDescriptions.trim();
   updatedJob.educationalStage = educationalStage;
-  updatedJob.specialRequirement = specialRequirement.trim();
+  updatedJob.specialRequirement = specialRequirement;
   updatedJob.emailRecipient = emailRecipient.trim();
   updatedJob.employment = employment;
   updatedJob.rangeAge = rangeAge;
@@ -394,7 +394,7 @@ const editJobDraft = async (req, res, next) => {
     : updatedJob.educationalStage;
   updatedJob.rangeAge = rangeAge ? rangeAge : updatedJob.rangeAge;
   updatedJob.specialRequirement = specialRequirement
-    ? specialRequirement.trim()
+    ? specialRequirement
     : updatedJob.specialRequirement;
   updatedJob.emailRecipient = emailRecipient
     ? emailRecipient.trim()
@@ -469,7 +469,7 @@ const updateJob = async (req, res, next) => {
     ? educationalStage.trim()
     : updatedJob.educationalStage;
   updatedJob.specialRequirement = specialRequirement
-    ? specialRequirement.trim()
+    ? specialRequirement
     : updatedJob.specialRequirement;
   updatedJob.employment = employment ? employment : updatedJob.employment;
 
