@@ -87,7 +87,6 @@ const applicantSchema = new Schema({
   },
   status: { type: Boolean, default: true },
   jobsApplied: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Job' }],
-  jobsReminded: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Job' }],
   isCompany: { type: Boolean, default: false },
   resetPasswordToken: { type: String },
   resetPasswordExpire: { type: Date },
