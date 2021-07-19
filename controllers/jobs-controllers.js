@@ -340,8 +340,14 @@ const editJobDraft = async (req, res, next) => {
   updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions.trim() : updatedJob.jobDescriptions;
   updatedJob.educationalStage = educationalStage ? educationalStage : updatedJob.educationalStage;
   updatedJob.rangeAge = rangeAge ? rangeAge : updatedJob.rangeAge;
-  updatedJob.specialRequirement = specialRequirement ? specialRequirement : updatedJob.specialRequirement;
-  updatedJob.emailRecipient = emailRecipient ? emailRecipient.trim() : updatedJob.emailRecipient;
+
+  updatedJob.specialRequirement = specialRequirement
+    ? specialRequirement
+    : updatedJob.specialRequirement;
+  updatedJob.emailRecipient = emailRecipient
+    ? emailRecipient.trim()
+    : updatedJob.emailRecipient;
+
   updatedJob.employment = employment ? employment : updatedJob.employment;
   (updatedJob.createdAt = new Date().toISOString()), (updatedJob.slot = parsedSlot ? parsedSlot : updatedJob.slot);
   updatedJob.benefit = benefit ? benefit.trim() : updatedJob.benefit;
@@ -389,8 +395,14 @@ const updateJob = async (req, res, next) => {
   updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions.trim() : updatedJob.jobDescriptions;
   updatedJob.isHidden = isHidden;
   updatedJob.salary = salary ? salary.trim() : updatedJob.salary;
-  updatedJob.educationalStage = educationalStage ? educationalStage.trim() : updatedJob.educationalStage;
-  updatedJob.specialRequirement = specialRequirement ? specialRequirement : updatedJob.specialRequirement;
+
+  updatedJob.educationalStage = educationalStage
+    ? educationalStage.trim()
+    : updatedJob.educationalStage;
+  updatedJob.specialRequirement = specialRequirement
+    ? specialRequirement
+    : updatedJob.specialRequirement;
+
   updatedJob.employment = employment ? employment : updatedJob.employment;
 
   try {
