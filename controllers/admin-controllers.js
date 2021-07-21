@@ -367,36 +367,53 @@ const updateAdminProfile = async (req, res, next) => {
 const updateOrderReg = async (req, res, next) => {
   const data = req.body;
   const orderId = req.params.orderid;
-  console.log(req.data);
+  let foundOrder, foundCompany;
 
-  // let foundOrder;
+  try {
+    foundOrder = await Orderreg.findOne({ _id: orderId });
+  } catch (err) {
+    const error = new HttpError('Something went wrong. Please try again later', 500);
+    return next(error);
+  }
+  try {
+    foundCompany = await Company.findById(foundOrder.companyId);
+  } catch (err) {
+    return next(new HttpError('Fetching Company failed. Please try again', 404));
+  }
+  if (!foundOrder) {
+    return next(new HttpError('Could not find order with such id.', 404));
+  }
+  if (!foundCompany) {
+    return next(new HttpError('Could not find company with such id.', 404));
+  }
 
-  // try {
-  //   foundOrder = await Orderreg.findOne({ _id: orderId });
-  // } catch (err) {
-  //   const error = new HttpError(
-  //     'Something went wrong. Please try again later',
-  //     500
-  //   );
-  //   return next(error);
-  // }
+  if (!foundOrder.payment.file.url) {
+    foundOrder.payment.file = {
+      url: req.file.path,
+      fileName: req.file.filename,
+    };
+    foundOrder.payment.paymentDate = data.paymentDate;
+    foundOrder.payment.paymentTime = data.paymentTime;
+    foundOrder.payment.nominal = data.nominal.trim();
+    foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
+    foundOrder.status = 'Paid';
+    foundOrder.approvedAt = new Date().toISOString();
+    try {
+      const sess = await mongoose.startSession();
+      sess.startTransaction();
+      await foundOrder.save({ session: sess });
+      await foundCompany.save({ session: sess });
+      await sess.commitTransaction();
+    } catch (err) {
+      const error = new HttpError(err.message, 500);
+      return next(error);
+    }
 
-  // foundOrder.payment.file = {
-  //       url: req.file.path,
-  //       fileName: req.file.filename,
-  //     }
-  // foundOrder.payment.paymentDate =  data.paymentDate
-  // foundOrder.payment.paymentTime =  data.paymentTime
-  // foundOrder.payment.nominal =  data.nominal.trim()
+    return res.status(200).json({ foundOrder });
+  }
 
-  // try {
-  //   await foundOrder.save();
-  // } catch (err) {
-  //   const error = new HttpError(err.message, 500);
-  //   return next(error);
-  // }
-
-  // return res.status(200).json({ foundOrder: foundOrder });
+  await cloudinary.uploader.destroy(req.file.filename);
+  return res.status(500).json({ message: 'Payment approval has been submitted' });
 };
 
 //============================REGULER ORDER==================================================
