@@ -1,7 +1,7 @@
 const express = require('express');
 const { check } = require('express-validator');
 const adminControllers = require('../controllers/admin-controllers');
-const { adminAvatar, orderPicture } = require('../middleware/file-upload');
+const { adminAvatar, orderRegPicture } = require('../middleware/file-upload');
 
 const router = express.Router();
 const checkAuth = require('../middleware/check-auth');
@@ -25,11 +25,7 @@ router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
-router.patch(
-  '/:adminid/profile',
-  adminAvatar,
-  adminControllers.updateAdminProfile
-);
+router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
 
 router.post('/order/bc', adminControllers.createOrderBC);
@@ -43,21 +39,14 @@ router.get('/order/es', adminControllers.getWholeOrderES);
 router.get('/:companyid/order/es', adminControllers.getCompanyOrderES);
 router.get('/order/es/:orderid', adminControllers.getOneOrderES);
 router.post('/order/es/addcandidate', adminControllers.addCandidateES);
-router.post(
-  '/order/es/updatecandidate',
-  adminControllers.updateCandidateStatusES
-);
+router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusES);
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
-router.patch(
-  '/:orderid/approve/reg',
-  orderPicture,
-  adminControllers.updateOrderReg
-);
+router.patch('/:orderid/approve/reg', orderRegPicture, adminControllers.updateOrderReg);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
 
 router.get('/order/promo', adminControllers.getPromo);

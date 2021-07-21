@@ -30,10 +30,10 @@ const adminStorage = new CloudinaryStorage({
   },
 });
 
-const orderStorage = new CloudinaryStorage({
+const orderRegStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'crossbell-order',
+    folder: 'crossbell-order-reguler',
     allowed_formats: ['jpg', 'jpeg', 'png'],
   },
 });
@@ -52,4 +52,5 @@ module.exports = {
   companyStorage,
   adminStorage,
   resumeStorage,
+  orderRegStorage,
 };

@@ -1,12 +1,6 @@
 const multer = require('multer');
 const HttpError = require('../models/http-error');
-const {
-  applicantStorage,
-  companyStorage,
-  adminStorage,
-  resumeStorage,
-  orderStorage,
-} = require('../cloudinary');
+const { applicantStorage, companyStorage, adminStorage, resumeStorage, orderRegStorage } = require('../cloudinary');
 const applicantUpload = multer({
   storage: applicantStorage,
   limits: { fileSize: 500000 },
@@ -20,8 +14,8 @@ const adminUpload = multer({
   limits: { fileSize: 500000 },
 });
 
-const orderUpload = multer({
-  storage: orderStorage,
+const orderRegUpload = multer({
+  storage: orderRegStorage,
   limits: { fileSize: 500000 },
 });
 
@@ -33,7 +27,7 @@ const resumeUpload = multer({
 const applicantAvatar = (req, res, next) => {
   const uploadProcess = applicantUpload.single('picture');
 
-  uploadProcess(req, res, (err) => {
+  uploadProcess(req, res, err => {
     if (err instanceof multer.MulterError) {
       return next(new HttpError(err, 500));
     } else if (err) {
@@ -46,7 +40,7 @@ const applicantAvatar = (req, res, next) => {
 const companyAvatar = (req, res, next) => {
   const uploadProcess = companyUpload.single('logo');
 
-  uploadProcess(req, res, (err) => {
+  uploadProcess(req, res, err => {
     if (err instanceof multer.MulterError) {
       return next(new HttpError(err, 500));
     } else if (err) {
@@ -59,7 +53,7 @@ const companyAvatar = (req, res, next) => {
 const adminAvatar = (req, res, next) => {
   const uploadProcess = adminUpload.single('picture');
 
-  uploadProcess(req, res, (err) => {
+  uploadProcess(req, res, err => {
     if (err instanceof multer.MulterError) {
       return next(new HttpError(err, 500));
     } else if (err) {
@@ -69,10 +63,10 @@ const adminAvatar = (req, res, next) => {
   });
 };
 
-const orderPicture = (req, res, next) => {
-  const uploadProcess = orderUpload.single('order');
+const orderRegPicture = (req, res, next) => {
+  const uploadProcess = orderRegUpload.single('payment-reguler');
 
-  uploadProcess(req, res, (err) => {
+  uploadProcess(req, res, err => {
     if (err instanceof multer.MulterError) {
       return next(new HttpError(err, 500));
     } else if (err) {
@@ -85,7 +79,7 @@ const orderPicture = (req, res, next) => {
 const applicantResume = (req, res, next) => {
   const uploadProcess = resumeUpload.single('resume');
 
-  uploadProcess(req, res, (err) => {
+  uploadProcess(req, res, err => {
     if (err instanceof multer.MulterError) {
       return next(new HttpError(err, 500));
     } else if (err) {
@@ -100,5 +94,5 @@ module.exports = {
   companyAvatar,
   adminAvatar,
   applicantResume,
-  orderPicture,
+  orderRegPicture,
 };
