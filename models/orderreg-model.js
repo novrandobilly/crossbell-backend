@@ -14,6 +14,7 @@ const orderregSchema = new Schema({
   pricePerSlot: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
   promo: { type: Number, default: 0 },
+  PPH: { type: Boolean, default: false },
   payment: {
     paymentDate: { type: Date },
     paymentTime: { type: String },
