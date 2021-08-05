@@ -819,6 +819,7 @@ const createOrderBC = async (req, res, next) => {
     emailRecipient,
     IPK,
     school,
+    PPH,
   } = req.body;
 
   let foundCompany;
@@ -884,6 +885,7 @@ const createOrderBC = async (req, res, next) => {
     IPK,
     school,
     jobFunction,
+    PPH,
     status: 'Pending',
     createdAt: new Date().toISOString(),
     dueDate: dueDateCalculation.toISOString(),
