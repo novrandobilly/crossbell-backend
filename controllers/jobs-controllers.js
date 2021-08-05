@@ -17,7 +17,10 @@ const getAllAvailableJobs = async (req, res, next) => {
       expiredDate: { $gte: new Date() },
     }).populate('companyId', '-password');
   } catch (err) {
-    const error = new HttpError('Fetching available jobs failed. Please try again later.', 500);
+    const error = new HttpError(
+      'Fetching available jobs failed. Please try again later.',
+      500
+    );
     return next(error);
   }
 
@@ -35,16 +38,22 @@ const getJobsInCompany = async (req, res, next) => {
   try {
     foundJob = await Job.find({ companyId: foundCompanyId });
   } catch (err) {
-    const error = new HttpError('Fetching available jobs from company failed, please try again later', 500);
+    const error = new HttpError(
+      'Fetching available jobs from company failed, please try again later',
+      500
+    );
     return next(error);
   }
 
   if (!foundJob || foundJob.length === 0) {
-    const error = new HttpError('Could not find the jobs this company posted yet', 404);
+    const error = new HttpError(
+      'Could not find the jobs this company posted yet',
+      404
+    );
     return next(error);
   }
   res.json({
-    foundJob: foundJob.map(job => job.toObject({ getters: true })),
+    foundJob: foundJob.map((job) => job.toObject({ getters: true })),
   });
 };
 
@@ -53,10 +62,16 @@ const getSpecificJob = async (req, res, next) => {
 
   let foundJob;
   try {
-    foundJob = await Job.findById(foundJobId).populate('jobApplicants companyId', '-password');
+    foundJob = await Job.findById(foundJobId).populate(
+      'jobApplicants companyId',
+      '-password'
+    );
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Fetching specific job failed, please try again later.', 500);
+    const error = new HttpError(
+      'Fetching specific job failed, please try again later.',
+      500
+    );
     return next(error);
   }
 
@@ -71,7 +86,10 @@ const getSpecificJob = async (req, res, next) => {
 const createJob = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError('Invalid input properties, please check your data', 422);
+    const error = new HttpError(
+      'Invalid input properties, please check your data',
+      422
+    );
     // return next(error);
     return next(errors);
   }
@@ -97,7 +115,9 @@ const createJob = async (req, res, next) => {
   try {
     foundCompany = await Company.findById(companyId);
   } catch (err) {
-    return next(new HttpError('Could not find company data. Please try again later', 500));
+    return next(
+      new HttpError('Could not find company data. Please try again later', 500)
+    );
   }
 
   if (!foundCompany) {
@@ -110,7 +130,9 @@ const createJob = async (req, res, next) => {
     return next(new HttpError('Your remaining slot is not sufficient', 401));
   }
 
-  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
+  const expCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot
+  );
 
   const newJob = new Job({
     jobTitle: jobTitle.trim(),
@@ -145,7 +167,10 @@ const createJob = async (req, res, next) => {
     await sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Could not create new job. Please try again later', 500);
+    const error = new HttpError(
+      'Could not create new job. Please try again later',
+      500
+    );
     return next(error);
   }
 
@@ -175,7 +200,9 @@ const saveJobDraft = async (req, res, next) => {
   try {
     foundCompany = await Company.findById(companyId);
   } catch (err) {
-    return next(new HttpError('Could not find company data. Please try again later', 500));
+    return next(
+      new HttpError('Could not find company data. Please try again later', 500)
+    );
   }
   if (!foundCompany) {
     return next(new HttpError('Could not find company with such id.', 404));
@@ -213,7 +240,10 @@ const saveJobDraft = async (req, res, next) => {
     await sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Could not create new job. Please try again later', 500);
+    const error = new HttpError(
+      'Could not create new job. Please try again later',
+      500
+    );
     return next(err);
     // return next(error);
   }
@@ -224,7 +254,10 @@ const saveJobDraft = async (req, res, next) => {
 const releaseJob = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError('Invalid input properties, please check your data', 422);
+    const error = new HttpError(
+      'Invalid input properties, please check your data',
+      422
+    );
     return next(error);
   }
 
@@ -251,7 +284,10 @@ const releaseJob = async (req, res, next) => {
   try {
     updatedJob = await Job.findById(jobId);
   } catch (err) {
-    const error = new HttpError('Something went wrong. Please try again later', 500);
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
     return next(error);
   }
 
@@ -261,7 +297,9 @@ const releaseJob = async (req, res, next) => {
   }
   let parsedSlot = parseInt(slot);
   parsedSlot = parsedSlot / 2;
-  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
+  const expCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot
+  );
 
   updatedJob.jobTitle = jobTitle.trim();
   updatedJob.isHidden = isHidden;
@@ -282,7 +320,10 @@ const releaseJob = async (req, res, next) => {
   try {
     await updatedJob.save();
   } catch (err) {
-    const error = new HttpError('Something went wrong. Cannot save the updates', 500);
+    const error = new HttpError(
+      'Something went wrong. Cannot save the updates',
+      500
+    );
     return next(error);
   }
 
@@ -292,7 +333,10 @@ const releaseJob = async (req, res, next) => {
 const editJobDraft = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError('Invalid input properties, please check your data', 422);
+    const error = new HttpError(
+      'Invalid input properties, please check your data',
+      422
+    );
     return next(error);
   }
 
@@ -320,7 +364,10 @@ const editJobDraft = async (req, res, next) => {
   try {
     updatedJob = await Job.findById(jobId).populate('companyId', '-password');
   } catch (err) {
-    const error = new HttpError('Something went wrong. Please try again later', 500);
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
     return next(error);
   }
 
@@ -336,9 +383,15 @@ const editJobDraft = async (req, res, next) => {
 
   updatedJob.jobTitle = jobTitle ? jobTitle.trim() : updatedJob.jobTitle;
   updatedJob.isHidden = isHidden;
-  updatedJob.placementLocation = placementLocation ? placementLocation.trim() : updatedJob.placementLocation;
-  updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions.trim() : updatedJob.jobDescriptions;
-  updatedJob.educationalStage = educationalStage ? educationalStage : updatedJob.educationalStage;
+  updatedJob.placementLocation = placementLocation
+    ? placementLocation.trim()
+    : updatedJob.placementLocation;
+  updatedJob.jobDescriptions = jobDescriptions
+    ? jobDescriptions.trim()
+    : updatedJob.jobDescriptions;
+  updatedJob.educationalStage = educationalStage
+    ? educationalStage
+    : updatedJob.educationalStage;
   updatedJob.rangeAge = rangeAge ? rangeAge : updatedJob.rangeAge;
 
   updatedJob.specialRequirement = specialRequirement
@@ -349,7 +402,8 @@ const editJobDraft = async (req, res, next) => {
     : updatedJob.emailRecipient;
 
   updatedJob.employment = employment ? employment : updatedJob.employment;
-  (updatedJob.createdAt = new Date().toISOString()), (updatedJob.slot = parsedSlot ? parsedSlot : updatedJob.slot);
+  (updatedJob.createdAt = new Date().toISOString()),
+    (updatedJob.slot = parsedSlot ? parsedSlot : updatedJob.slot);
   updatedJob.benefit = benefit ? benefit.trim() : updatedJob.benefit;
   updatedJob.salary = salary ? salary.trim() : updatedJob.salary;
   updatedJob.fieldOfWork = fieldOfWork ? fieldOfWork : updatedJob.fieldOfWork;
@@ -357,7 +411,10 @@ const editJobDraft = async (req, res, next) => {
   try {
     await updatedJob.save();
   } catch (err) {
-    const error = new HttpError('Something went wrong. Cannot save the updates', 500);
+    const error = new HttpError(
+      'Something went wrong. Cannot save the updates',
+      500
+    );
     return next(error);
   }
 
@@ -367,18 +424,31 @@ const editJobDraft = async (req, res, next) => {
 const updateJob = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpError('Invalid input properties, please check your data', 422);
+    const error = new HttpError(
+      'Invalid input properties, please check your data',
+      422
+    );
     return next(error);
   }
 
-  const { jobDescriptions, salary, isHidden, educationalStage, specialRequirement, employment } = req.body;
+  const {
+    jobDescriptions,
+    salary,
+    isHidden,
+    educationalStage,
+    specialRequirement,
+    employment,
+  } = req.body;
   const jobId = req.params.jobid;
 
   let updatedJob;
   try {
     updatedJob = await Job.findById(jobId).populate('companyId', '-password');
   } catch (err) {
-    const error = new HttpError('Something went wrong. Please try again later', 500);
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
     return next(error);
   }
 
@@ -392,7 +462,9 @@ const updateJob = async (req, res, next) => {
     return next(error);
   }
 
-  updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions.trim() : updatedJob.jobDescriptions;
+  updatedJob.jobDescriptions = jobDescriptions
+    ? jobDescriptions.trim()
+    : updatedJob.jobDescriptions;
   updatedJob.isHidden = isHidden;
   updatedJob.salary = salary ? salary.trim() : updatedJob.salary;
 
@@ -408,7 +480,10 @@ const updateJob = async (req, res, next) => {
   try {
     await updatedJob.save();
   } catch (err) {
-    const error = new HttpError('Something went wrong. Cannot save the updates', 500);
+    const error = new HttpError(
+      'Something went wrong. Cannot save the updates',
+      500
+    );
     return next(error);
   }
 
@@ -424,14 +499,26 @@ const applyJob = async (req, res, next) => {
     foundJob = await Job.findById(jobId).populate('companyId', '-password');
     foundApplicant = await Applicant.findById(applicantId, '-password');
   } catch (err) {
-    return next(new HttpError('Cannot retrieve for job/applicant ID failed. Please try again later', 500));
+    return next(
+      new HttpError(
+        'Cannot retrieve for job/applicant ID failed. Please try again later',
+        500
+      )
+    );
   }
 
   if (!foundJob || !foundApplicant) {
-    return next(new HttpError('Job/Applicant could not not found. Please try again later', 404));
+    return next(
+      new HttpError(
+        'Job/Applicant could not not found. Please try again later',
+        404
+      )
+    );
   }
 
-  let applicantHasApplied = foundApplicant.jobsApplied.toObject({ getters: true }).some(job => job.toString() === jobId);
+  let applicantHasApplied = foundApplicant.jobsApplied
+    .toObject({ getters: true })
+    .some((job) => job.toString() === jobId);
   if (applicantHasApplied) {
     return next(new HttpError('You have applied to this job', 500));
   }
@@ -439,7 +526,8 @@ const applyJob = async (req, res, next) => {
   const payload = {
     applicantId: applicantId,
     companyName: foundJob.companyId.companyName || '-',
-    avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
+    avatarUrl:
+      foundApplicant.picture.url || 'User has not posted any photo yet',
     firstName: foundApplicant.firstName || '-',
     lastName: foundApplicant.lastName || '-',
     dateOfBirth: foundApplicant.dateOfBirth,
@@ -477,7 +565,9 @@ const applyJob = async (req, res, next) => {
     sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    return next(new HttpError('Applying for job failed. Please try again later', 500));
+    return next(
+      new HttpError('Applying for job failed. Please try again later', 500)
+    );
   }
 
   res.status(200).json({ message: 'Successfully applied to the job' });
@@ -488,9 +578,15 @@ const deleteJob = async (req, res, next) => {
 
   let foundJob;
   try {
-    foundJob = await Job.findById(jobId).populate('companyId jobApplicants', '-password');
+    foundJob = await Job.findById(jobId).populate(
+      'companyId jobApplicants',
+      '-password'
+    );
   } catch (err) {
-    const error = new HttpError('Something went wrong. Cannot delete the jobs', 500);
+    const error = new HttpError(
+      'Something went wrong. Cannot delete the jobs',
+      500
+    );
     return next(error);
   }
 
@@ -509,19 +605,27 @@ const deleteJob = async (req, res, next) => {
     sess.startTransaction();
     await foundJob.remove({ session: sess });
     foundJob.companyId.jobAds.pull(foundJob);
-    foundJob.jobApplicants.map(ap => ap.jobsApplied.pull(foundJob));
+    foundJob.jobApplicants.map((ap) => ap.jobsApplied.pull(foundJob));
     await foundJob.companyId.save({ session: sess });
-    await foundJob.jobApplicants.map(async ap => {
+    await foundJob.jobApplicants.map(async (ap) => {
       try {
         await ap.save({ session: sess });
       } catch (err) {
-        return next(new HttpError('Something went wrong. Cannot delete the jobs on each applicants', 500));
+        return next(
+          new HttpError(
+            'Something went wrong. Cannot delete the jobs on each applicants',
+            500
+          )
+        );
       }
     });
     await sess.commitTransaction();
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Something went wrong. Cannot delete the jobs', 500);
+    const error = new HttpError(
+      'Something went wrong. Cannot delete the jobs',
+      500
+    );
     return next(error);
   }
 
