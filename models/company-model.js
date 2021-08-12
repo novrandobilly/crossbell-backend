@@ -22,6 +22,7 @@ const companySchema = new Schema({
   NPWP: { type: Number, default: null, required: true },
   briefDescriptions: { type: String, default: null },
   slotREG: { type: Number, default: 0 },
+  unusedSlot: [{ type: mongoose.Types.ObjectId, ref: 'Slotreg' }],
   isCompany: { type: Boolean, default: true },
   isActive: { type: Boolean, default: false },
   jobAds: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Job' }],
