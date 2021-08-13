@@ -25,7 +25,11 @@ router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
-router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
+router.patch(
+  '/:adminid/profile',
+  adminAvatar,
+  adminControllers.updateAdminProfile
+);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
 
 router.post('/order/bc', adminControllers.createOrderBC);
@@ -39,19 +43,28 @@ router.get('/order/es', adminControllers.getWholeOrderES);
 router.get('/:companyid/order/es', adminControllers.getCompanyOrderES);
 router.get('/order/es/:orderid', adminControllers.getOneOrderES);
 router.post('/order/es/addcandidate', adminControllers.addCandidateES);
-router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusES);
+router.post(
+  '/order/es/updatecandidate',
+  adminControllers.updateCandidateStatusES
+);
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
-router.patch('/:orderid/approve/reg', orderRegPicture, adminControllers.updateOrderReg);
+router.patch(
+  '/:orderid/approve/reg',
+  orderRegPicture,
+  adminControllers.updateOrderReg
+);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
 
 router.get('/order/promo', adminControllers.getPromo);
 router.patch('/order/promo', adminControllers.updatePromo);
 router.get('/order/:orderid/invoice', adminControllers.getOrderInvoice);
+
+router.get('/slot/reguler', adminControllers.getWholeSlot);
 
 router.get('/applicants', adminControllers.getWholeApplicants);
 router.get('/companies', adminControllers.getWholeCompanies);
