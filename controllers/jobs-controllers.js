@@ -147,21 +147,6 @@ const createJob = async (req, res, next) => {
     return next(error);
   }
 
-  filteredSlot = slotReg
-    .filter((slot) => {
-      return !slot.jobId;
-    })
-    .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
-    .slice(0, slot);
-
-  for (i = 0; i < slot; i++) {
-    updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
-    updatedSlot.jobId = jobId;
-    updatedSlot.slotUsedDate = Date();
-    updatedSlot.status = 'Used';
-    await updatedSlot.save();
-  }
-
   let parsedSlot = parseInt(slot);
   if (foundCompany.slotREG - parsedSlot < 0 || parsedSlot < 1) {
     return next(new HttpError('Your remaining slot is not sufficient', 401));
@@ -209,6 +194,21 @@ const createJob = async (req, res, next) => {
       500
     );
     return next(error);
+  }
+
+  filteredSlot = slotReg
+    .filter((slot) => {
+      return !slot.jobId;
+    })
+    .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
+    .slice(0, parsedSlot);
+
+  for (i = 0; i < parsedSlot; i++) {
+    updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
+    updatedSlot.jobId = newJob._id;
+    updatedSlot.slotUsedDate = Date();
+    updatedSlot.status = 'Used';
+    await updatedSlot.save();
   }
 
   res.status(201).json({ job: newJob.toObject({ getters: true }) });
