@@ -5,9 +5,11 @@ const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
 const Admin = require('../models/admin-model');
 const Orderreg = require('../models/orderreg-model');
+const Slotreg = require('../models/slotreg-model');
 const Orderbc = require('../models/orderbc-model');
 const Orderes = require('../models/orderes-model');
 const Promo = require('../models/promo-model');
+
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -124,7 +126,6 @@ const deleteFeed = async (req, res, next) => {
 
   let foundFeed;
   try {
-    // allFeed = await Feed.find({}, "-__v");
     foundFeed = await Feed.findById(feedId);
   } catch (err) {
     const error = new HttpError(
@@ -451,65 +452,6 @@ const updateAdminProfile = async (req, res, next) => {
   return res.status(200).json({ foundAdmin: foundAdmin });
 };
 
-const updateOrderReg = async (req, res, next) => {
-  const data = req.body;
-  const orderId = req.params.orderid;
-  let foundOrder, foundCompany;
-
-  try {
-    foundOrder = await Orderreg.findOne({ _id: orderId });
-  } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Please try again later',
-      500
-    );
-    return next(error);
-  }
-  try {
-    foundCompany = await Company.findById(foundOrder.companyId);
-  } catch (err) {
-    return next(
-      new HttpError('Fetching Company failed. Please try again', 404)
-    );
-  }
-  if (!foundOrder) {
-    return next(new HttpError('Could not find order with such id.', 404));
-  }
-  if (!foundCompany) {
-    return next(new HttpError('Could not find company with such id.', 404));
-  }
-
-  if (!foundOrder.payment.file.url) {
-    foundOrder.payment.file = {
-      url: req.file.path,
-      fileName: req.file.filename,
-    };
-    foundOrder.payment.paymentDate = data.paymentDate;
-    foundOrder.payment.paymentTime = data.paymentTime;
-    foundOrder.payment.nominal = data.nominal.trim();
-    foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
-    foundOrder.status = 'Paid';
-    foundOrder.approvedAt = new Date().toISOString();
-    try {
-      const sess = await mongoose.startSession();
-      sess.startTransaction();
-      await foundOrder.save({ session: sess });
-      await foundCompany.save({ session: sess });
-      await sess.commitTransaction();
-    } catch (err) {
-      const error = new HttpError(err.message, 500);
-      return next(error);
-    }
-
-    return res.status(200).json({ foundOrder });
-  }
-
-  await cloudinary.uploader.destroy(req.file.filename);
-  return res
-    .status(500)
-    .json({ message: 'Payment approval has been submitted' });
-};
-
 //============================REGULER ORDER==================================================
 
 const getWholeOrderREG = async (req, res, next) => {
@@ -582,8 +524,109 @@ const getOrderInvoice = async (req, res, next) => {
   res.status(200).json({ order: foundOrder.toObject({ getters: true }) });
 };
 
+const updateOrderReg = async (req, res, next) => {
+  const data = req.body;
+  const orderId = req.params.orderid;
+  let foundOrder, foundCompany, i;
+  try {
+    foundOrder = await Orderreg.findOne({ _id: orderId });
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
+    return next(error);
+  }
+
+  try {
+    foundCompany = await Company.findById(foundOrder.companyId);
+  } catch (err) {
+    return next(
+      new HttpError('Fetching Company failed. Please try again', 404)
+    );
+  }
+  if (!foundOrder) {
+    return next(new HttpError('Could not find order with such id.', 404));
+  }
+  if (!foundCompany) {
+    return next(new HttpError('Could not find company with such id.', 404));
+  }
+
+  let expMonth;
+  if (foundOrder.packageName === 'bronze') {
+    expMonth = 30;
+  } else if (foundOrder.packageName === 'Silver') {
+    expMonth = 60;
+  } else if (foundOrder.packageName === 'gold') {
+    expMonth = 120;
+  } else if (foundOrder.packageName === 'platinum') {
+    expMonth = 180;
+  } else {
+    return next(new HttpError('Package Type is not defined.', 404));
+  }
+
+  const expDateCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth
+  );
+  for (i = 0; i < foundOrder.slot; i++) {
+    const newSlot = new Slotreg({
+      slotPaymentDate: new Date().toISOString(),
+      slotExpirationDate: expDateCalculation,
+      orderId: foundOrder._id,
+      companyId: foundOrder.companyId,
+      status: 'Idle',
+      package: foundOrder.packageName,
+      pricePerSlot: foundOrder.pricePerSlot,
+    });
+
+    try {
+      const sess = await mongoose.startSession();
+      sess.startTransaction();
+      await newSlot.save({ session: sess });
+      await sess.commitTransaction();
+      foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
+      await foundCompany.save({ session: sess });
+    } catch (err) {
+      console.log(err);
+      const error = new HttpError(
+        'Could not create new slot. Please try again later',
+        500
+      );
+      return next(error);
+    }
+  }
+
+  if (!foundOrder.payment.file.url) {
+    foundOrder.payment.file = {
+      url: req.file.path,
+      fileName: req.file.filename,
+    };
+    foundOrder.payment.paymentDate = data.paymentDate;
+    foundOrder.payment.paymentTime = data.paymentTime;
+    foundOrder.payment.nominal = data.nominal.trim();
+    foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
+    foundOrder.status = 'Paid';
+    foundOrder.approvedAt = new Date().toISOString();
+    try {
+      const sess = await mongoose.startSession();
+      sess.startTransaction();
+      await foundOrder.save({ session: sess });
+      await foundCompany.save({ session: sess });
+      await sess.commitTransaction();
+    } catch (err) {
+      const error = new HttpError(err.message, 500);
+      return next(error);
+    }
+    return res.status(200).json({ foundOrder });
+  }
+
+  await cloudinary.uploader.destroy(req.file.filename);
+  return res
+    .status(500)
+    .json({ message: 'Payment approval has been submitted' });
+};
+
 const createOrderReg = async (req, res, next) => {
-  const ORIGINAL_PRICE = 500000;
   const { invoiceId, companyId, packageName, slot, PPH } = req.body;
 
   let foundCompany;
@@ -630,13 +673,13 @@ const createOrderReg = async (req, res, next) => {
   const parsedSlot = parseInt(slot);
   let parsedPricePerSlot;
   if (slot <= 1) {
-    parsedPricePerSlot = ORIGINAL_PRICE;
+    parsedPricePerSlot = 600000;
   } else if (slot <= 4) {
-    parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.05;
-  } else if (slot <= 9) {
-    parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.1;
-  } else if (slot > 9) {
-    parsedPricePerSlot = ORIGINAL_PRICE - ORIGINAL_PRICE * 0.15;
+    parsedPricePerSlot = 575000;
+  } else if (slot <= 8) {
+    parsedPricePerSlot = 525000;
+  } else if (slot > 8) {
+    parsedPricePerSlot = 450000;
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
@@ -784,6 +827,7 @@ const getWholeOrderBC = async (req, res, next) => {
 
   res.status(200).json({ orderbc: foundOrder });
 };
+
 const getCompanyOrderBC = async (req, res, next) => {
   const companyId = req.params.companyid;
 
@@ -999,6 +1043,7 @@ const sentApplicantBC = async (req, res, next) => {
 
   const payload = {
     companyName: foundOrder.companyId.companyName || '-',
+    jobTitle: foundOrder.jobFunction || '-',
     avatarUrl:
       foundCandidate.picture.url || 'User has not posted any photo yet',
     firstName: foundCandidate.firstName || '-',
@@ -1392,6 +1437,25 @@ const updatePromo = async (req, res, next) => {
   res.status(201).json({ message: 'Successfully update promo' });
 };
 
+// ================================== Slot ============================================
+
+const getWholeSlot = async (req, res, next) => {
+  let foundSlot;
+  try {
+    foundSlot = await Slotreg.find().populate('companyId', '-password');
+  } catch (err) {
+    return next(
+      new HttpError('Fetching Slot failed, please try again later', 500)
+    );
+  }
+
+  if (!foundSlot) {
+    return next(new HttpError('No Slot at the moment', 404));
+  }
+
+  res.status(200).json({ slotReg: foundSlot });
+};
+
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
@@ -1400,15 +1464,12 @@ exports.getOrderInvoice = getOrderInvoice;
 exports.updateAdminProfile = updateAdminProfile;
 exports.getAdminDetails = getAdminDetails;
 
-exports.getCompanyOrder = getCompanyOrder;
-exports.getWholeOrderREG = getWholeOrderREG;
 exports.createOrderReg = createOrderReg;
 exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;
 exports.updateOrderReg = updateOrderReg;
-
-exports.getPromo = getPromo;
-exports.updatePromo = updatePromo;
+exports.getCompanyOrder = getCompanyOrder;
+exports.getWholeOrderREG = getWholeOrderREG;
 
 exports.getWholeOrderBC = getWholeOrderBC;
 exports.getCompanyOrderBC = getCompanyOrderBC;
@@ -1424,6 +1485,11 @@ exports.getWholeOrderES = getWholeOrderES;
 exports.getOneOrderES = getOneOrderES;
 exports.getCompanyOrderES = getCompanyOrderES;
 exports.deleteCandidateES = deleteCandidateES;
+
+exports.getPromo = getPromo;
+exports.updatePromo = updatePromo;
+
+exports.getWholeSlot = getWholeSlot;
 
 exports.admReg = admReg;
 exports.admSign = admSign;

@@ -6,8 +6,10 @@ const applyJobTemplate = require('../assets/htmlJobApplicationTemplate');
 
 const HttpError = require('../models/http-error');
 const Job = require('../models/job-model');
+const Slotreg = require('../models/slotreg-model');
 const Company = require('../models/company-model');
 const Applicant = require('../models/applicant-model');
+
 const cloudinary = require('cloudinary');
 
 const getAllAvailableJobs = async (req, res, next) => {
@@ -104,13 +106,39 @@ const createJob = async (req, res, next) => {
     return next(new HttpError('Could not find company with such id.', 404));
   }
 
+  try {
+    const res = await Company.findById(companyId, '-password').populate(
+      'unusedSlot'
+    );
+    slotReg = res.unusedSlot;
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching available jobs failed. Please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!slotReg || slotReg.length < 1) {
+    const error = new HttpError(
+      'No slot found, try approve some order first',
+      404
+    );
+    return next(error);
+  }
+
   let parsedSlot = parseInt(slot);
-  parsedSlot = parsedSlot / 2;
   if (foundCompany.slotREG - parsedSlot < 0 || parsedSlot < 1) {
     return next(new HttpError('Your remaining slot is not sufficient', 401));
   }
 
+<<<<<<< HEAD
   const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
+=======
+  const expCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot
+  );
+>>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
 
   const newJob = new Job({
     jobTitle: jobTitle.trim(),
@@ -149,6 +177,21 @@ const createJob = async (req, res, next) => {
     return next(error);
   }
 
+  filteredSlot = slotReg
+    .filter((slot) => {
+      return !slot.jobId;
+    })
+    .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
+    .slice(0, parsedSlot);
+
+  for (i = 0; i < parsedSlot; i++) {
+    updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
+    updatedSlot.jobId = newJob._id;
+    updatedSlot.slotUsedDate = Date();
+    updatedSlot.status = 'Used';
+    await updatedSlot.save();
+  }
+
   res.status(201).json({ job: newJob.toObject({ getters: true }) });
 };
 
@@ -182,7 +225,6 @@ const saveJobDraft = async (req, res, next) => {
   }
 
   let parsedSlot = parseInt(slot);
-  parsedSlot = parsedSlot / 2;
 
   const newJob = new Job({
     jobTitle: jobTitle.trim() || '-',
@@ -229,6 +271,7 @@ const releaseJob = async (req, res, next) => {
   }
 
   const jobId = req.params.jobid;
+  let slotReg, filteredSlot, updatedJob, updatedSlot, i;
 
   const {
     jobTitle,
@@ -247,7 +290,42 @@ const releaseJob = async (req, res, next) => {
     fieldOfWork,
   } = req.body;
 
-  let updatedJob;
+  try {
+    const res = await Company.findById(companyId, '-password').populate(
+      'unusedSlot'
+    );
+    slotReg = res.unusedSlot;
+  } catch (err) {
+    const error = new HttpError(
+      'Fetching available jobs failed. Please try again later.',
+      500
+    );
+    return next(error);
+  }
+
+  if (!slotReg || slotReg.length < 1) {
+    const error = new HttpError(
+      'No slot found, try approve some order first',
+      404
+    );
+    return next(error);
+  }
+
+  filteredSlot = slotReg
+    .filter((slot) => {
+      return !slot.jobId;
+    })
+    .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
+    .slice(0, slot);
+
+  for (i = 0; i < slot; i++) {
+    updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
+    updatedSlot.jobId = jobId;
+    updatedSlot.slotUsedDate = Date();
+    updatedSlot.status = 'Used';
+    await updatedSlot.save();
+  }
+
   try {
     updatedJob = await Job.findById(jobId);
   } catch (err) {
@@ -260,8 +338,14 @@ const releaseJob = async (req, res, next) => {
     return next(error);
   }
   let parsedSlot = parseInt(slot);
+<<<<<<< HEAD
   parsedSlot = parsedSlot / 2;
   const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
+=======
+  const expCalculation = new Date(
+    new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot
+  );
+>>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
 
   updatedJob.jobTitle = jobTitle.trim();
   updatedJob.isHidden = isHidden;
@@ -431,7 +515,13 @@ const applyJob = async (req, res, next) => {
   const payload = {
     applicantId: applicantId,
     companyName: foundJob.companyId.companyName || '-',
+<<<<<<< HEAD
     avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
+=======
+    jobTitle: foundJob.jobTitle || '',
+    avatarUrl:
+      foundApplicant.picture.url || 'User has not posted any photo yet',
+>>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
     firstName: foundApplicant.firstName || '-',
     lastName: foundApplicant.lastName || '-',
     dateOfBirth: foundApplicant.dateOfBirth,

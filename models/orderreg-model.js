@@ -11,6 +11,7 @@ const orderregSchema = new Schema({
   approvedAt: { type: Date, default: null },
   dueDate: { type: Date, required: true },
   slot: { type: Number, required: true },
+  slotId: [{ type: Number, required: true, ref: 'Slotreg' }],
   pricePerSlot: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
   promo: { type: Number, default: 0 },
