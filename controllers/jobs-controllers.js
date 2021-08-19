@@ -107,23 +107,15 @@ const createJob = async (req, res, next) => {
   }
 
   try {
-    const res = await Company.findById(companyId, '-password').populate(
-      'unusedSlot'
-    );
+    const res = await Company.findById(companyId, '-password').populate('unusedSlot');
     slotReg = res.unusedSlot;
   } catch (err) {
-    const error = new HttpError(
-      'Fetching available jobs failed. Please try again later.',
-      500
-    );
+    const error = new HttpError('Fetching available jobs failed. Please try again later.', 500);
     return next(error);
   }
 
   if (!slotReg || slotReg.length < 1) {
-    const error = new HttpError(
-      'No slot found, try approve some order first',
-      404
-    );
+    const error = new HttpError('No slot found, try approve some order first', 404);
     return next(error);
   }
 
@@ -132,13 +124,7 @@ const createJob = async (req, res, next) => {
     return next(new HttpError('Your remaining slot is not sufficient', 401));
   }
 
-<<<<<<< HEAD
-  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
-=======
-  const expCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot
-  );
->>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
+  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot);
 
   const newJob = new Job({
     jobTitle: jobTitle.trim(),
@@ -178,7 +164,7 @@ const createJob = async (req, res, next) => {
   }
 
   filteredSlot = slotReg
-    .filter((slot) => {
+    .filter(slot => {
       return !slot.jobId;
     })
     .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
@@ -291,28 +277,20 @@ const releaseJob = async (req, res, next) => {
   } = req.body;
 
   try {
-    const res = await Company.findById(companyId, '-password').populate(
-      'unusedSlot'
-    );
+    const res = await Company.findById(companyId, '-password').populate('unusedSlot');
     slotReg = res.unusedSlot;
   } catch (err) {
-    const error = new HttpError(
-      'Fetching available jobs failed. Please try again later.',
-      500
-    );
+    const error = new HttpError('Fetching available jobs failed. Please try again later.', 500);
     return next(error);
   }
 
   if (!slotReg || slotReg.length < 1) {
-    const error = new HttpError(
-      'No slot found, try approve some order first',
-      404
-    );
+    const error = new HttpError('No slot found, try approve some order first', 404);
     return next(error);
   }
 
   filteredSlot = slotReg
-    .filter((slot) => {
+    .filter(slot => {
       return !slot.jobId;
     })
     .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
@@ -338,14 +316,7 @@ const releaseJob = async (req, res, next) => {
     return next(error);
   }
   let parsedSlot = parseInt(slot);
-<<<<<<< HEAD
-  parsedSlot = parsedSlot / 2;
-  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14 * parsedSlot);
-=======
-  const expCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot
-  );
->>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
+  const expCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 30 * parsedSlot);
 
   updatedJob.jobTitle = jobTitle.trim();
   updatedJob.isHidden = isHidden;
@@ -515,13 +486,8 @@ const applyJob = async (req, res, next) => {
   const payload = {
     applicantId: applicantId,
     companyName: foundJob.companyId.companyName || '-',
-<<<<<<< HEAD
-    avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
-=======
     jobTitle: foundJob.jobTitle || '',
-    avatarUrl:
-      foundApplicant.picture.url || 'User has not posted any photo yet',
->>>>>>> 66e4e67506b04eb96ce77e7840438654d250d225
+    avatarUrl: foundApplicant.picture.url || 'User has not posted any photo yet',
     firstName: foundApplicant.firstName || '-',
     lastName: foundApplicant.lastName || '-',
     dateOfBirth: foundApplicant.dateOfBirth,
