@@ -39,7 +39,9 @@ const getWholeApplicants = async (req, res, next) => {
 const getWholeCompanies = async (req, res, next) => {
   let wholeCompanies;
   try {
-    wholeCompanies = await Company.find({}, '-password').populate('jobAds');
+    wholeCompanies = await Company.find({}, '-password').populate(
+      'jobAds unusedSlot'
+    );
   } catch (err) {
     const error = new HttpError('Fetching data failed. Please try again later', 500);
     return next(error);
