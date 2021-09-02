@@ -9,6 +9,7 @@ const Slotreg = require('../models/slotreg-model');
 const Orderbc = require('../models/orderbc-model');
 const Orderes = require('../models/orderes-model');
 const Promo = require('../models/promo-model');
+const Payment = require('../models/payment-model');
 
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
@@ -550,6 +551,7 @@ const updateOrderReg = async (req, res, next) => {
   if (!foundOrder) {
     return next(new HttpError('Could not find order with such id.', 404));
   }
+
   if (!foundCompany) {
     return next(new HttpError('Could not find company with such id.', 404));
   }
@@ -557,7 +559,7 @@ const updateOrderReg = async (req, res, next) => {
   let expMonth;
   if (foundOrder.packageName === 'bronze') {
     expMonth = 30;
-  } else if (foundOrder.packageName === 'Silver') {
+  } else if (foundOrder.packageName === 'silver') {
     expMonth = 60;
   } else if (foundOrder.packageName === 'gold') {
     expMonth = 120;
@@ -570,6 +572,7 @@ const updateOrderReg = async (req, res, next) => {
   const expDateCalculation = new Date(
     new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth
   );
+
   for (i = 0; i < foundOrder.slot; i++) {
     const newSlot = new Slotreg({
       slotPaymentDate: new Date().toISOString(),
@@ -598,28 +601,18 @@ const updateOrderReg = async (req, res, next) => {
     }
   }
 
-  if (!foundOrder.payment.file.url) {
-    foundOrder.payment.file = {
-      url: req.file.path,
-      fileName: req.file.filename,
-    };
-    foundOrder.payment.paymentDate = data.paymentDate;
-    foundOrder.payment.paymentTime = data.paymentTime;
-    foundOrder.payment.nominal = data.nominal.trim();
-    foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
-    foundOrder.status = 'Paid';
-    foundOrder.approvedAt = new Date().toISOString();
-    try {
-      const sess = await mongoose.startSession();
-      sess.startTransaction();
-      await foundOrder.save({ session: sess });
-      await foundCompany.save({ session: sess });
-      await sess.commitTransaction();
-    } catch (err) {
-      const error = new HttpError(err.message, 500);
-      return next(error);
-    }
-    return res.status(200).json({ foundOrder });
+  foundCompany.slotREG = foundCompany.slotREG + foundOrder.slot;
+  foundOrder.status = 'Paid';
+  foundOrder.approvedAt = new Date().toISOString();
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await foundOrder.save({ session: sess });
+    await foundCompany.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    return next(error);
   }
 
   await cloudinary.uploader.destroy(req.file.filename);
@@ -695,6 +688,7 @@ const createOrderReg = async (req, res, next) => {
     dueDate: dueDateCalculation.toISOString(),
     slot: parsedSlot,
     PPH,
+    payment: [],
     pricePerSlot: parsedPricePerSlot,
     promo: promo[0].promoReg,
     totalPrice:
@@ -730,6 +724,7 @@ const approveOrderReg = async (req, res, next) => {
   } catch (err) {
     return next(new HttpError('Fetching Order failed. Please try again', 404));
   }
+
   try {
     foundCompany = await Company.findById(companyId);
   } catch (err) {
@@ -737,6 +732,7 @@ const approveOrderReg = async (req, res, next) => {
       new HttpError('Fetching Company failed. Please try again', 404)
     );
   }
+
   if (!foundOrder) {
     return next(new HttpError('Could not find order with such id.', 404));
   }
@@ -978,6 +974,7 @@ const approveOrderBC = async (req, res, next) => {
       new HttpError('Fetching Company failed. Please try again', 404)
     );
   }
+
   if (!foundOrder) {
     return next(new HttpError('Could not find order with such id.', 404));
   }
@@ -1458,6 +1455,80 @@ const getWholeSlot = async (req, res, next) => {
   res.status(200).json({ slotReg: foundSlot });
 };
 
+const createPayment = async (req, res, next) => {
+  const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } =
+    req.body;
+
+  // if (file) {
+  //   file = {
+  //     url: req.file.path,
+  //     fileName: req.file.filename,
+  //   };
+  // }
+  // if (orderRegId) {
+  //   orderRegId = orderRegId;
+  // }
+  // if (orderBcId) {
+  //   orderBcId = orderBcId;
+  // }
+
+  const newPayment = new Payment({
+    file,
+    nominal,
+    orderBcId,
+    orderRegId,
+    paymentDate,
+    paymentTime,
+  });
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await newPayment.save({ session: sess });
+    await sess.commitTransaction();
+  } catch (err) {
+    const error = new HttpError(err.message, 500);
+    console.log(err.message);
+    return next(error);
+  }
+
+  let foundOrder;
+  try {
+    foundOrder = await Orderreg.findOne({ _id: orderRegId });
+  } catch (err) {
+    const error = new HttpError(
+      'Something went wrong. Please try again later',
+      500
+    );
+    return next(error);
+  }
+
+  if (!foundOrder) {
+    return next(new HttpError('Could not find order with such id.', 404));
+  }
+
+  // try {
+  //   const sess = await mongoose.startSession();
+  //   sess.startTransaction();
+  //   await newSlot.save({ session: sess });
+  //   await sess.commitTransaction();
+  //   foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
+  //   await foundCompany.save({ session: sess });
+  // } catch (err) {
+  //   console.log(err);
+  //   const error = new HttpError(
+  //     'Could not create new slot. Please try again later',
+  //     500
+  //   );
+  //   return next(error);
+  // }
+
+  await cloudinary.uploader.destroy(req.file.filename);
+  return res
+    .status(500)
+    .json({ message: 'Payment approval has been submitted' });
+};
+
 exports.getWholeApplicants = getWholeApplicants;
 exports.getWholeCompanies = getWholeCompanies;
 exports.getApplicantsFromJob = getApplicantsFromJob;
@@ -1466,6 +1537,7 @@ exports.getOrderInvoice = getOrderInvoice;
 exports.updateAdminProfile = updateAdminProfile;
 exports.getAdminDetails = getAdminDetails;
 
+exports.createPayment = createPayment;
 exports.createOrderReg = createOrderReg;
 exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;

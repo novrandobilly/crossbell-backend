@@ -25,6 +25,7 @@ router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
+router.post('/reg/payment/add', adminControllers.createPayment);
 router.patch(
   '/:adminid/profile',
   adminAvatar,
