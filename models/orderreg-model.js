@@ -16,12 +16,7 @@ const orderregSchema = new Schema({
   totalPrice: { type: Number, required: true },
   promo: { type: Number, default: 0 },
   PPH: { type: Boolean, default: false },
-  payment: {
-    paymentDate: { type: Date },
-    paymentTime: { type: String },
-    nominal: { type: Number },
-    file: { url: { type: String }, fileName: { type: String } },
-  },
+  payment: [{ type: mongoose.Types.ObjectId, ref: 'Payment' }],
 });
 
 module.exports = mongoose.model('Orderreg', orderregSchema);
