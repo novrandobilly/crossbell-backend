@@ -40,9 +40,7 @@ const getWholeApplicants = async (req, res, next) => {
 const getWholeCompanies = async (req, res, next) => {
   let wholeCompanies;
   try {
-    wholeCompanies = await Company.find({}, '-password').populate(
-      'jobAds unusedSlot'
-    );
+    wholeCompanies = await Company.find({}, '-password').populate('jobAds unusedSlot');
   } catch (err) {
     const error = new HttpError('Fetching data failed. Please try again later', 500);
     return next(error);
@@ -470,10 +468,7 @@ const updateOrderReg = async (req, res, next) => {
     return next(new HttpError('Package Type is not defined.', 404));
   }
 
-  const expDateCalculation = new Date(
-    new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth
-  );
-
+  const expDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth);
 
   for (i = 0; i < foundOrder.slot; i++) {
     const newSlot = new Slotreg({
@@ -1218,8 +1213,8 @@ const getWholeSlot = async (req, res, next) => {
 };
 
 const createPayment = async (req, res, next) => {
-  const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } =
-    req.body;
+  const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } = req.body;
+  console.log(req.body);
 
   // if (file) {
   //   file = {
@@ -1258,10 +1253,7 @@ const createPayment = async (req, res, next) => {
   try {
     foundOrder = await Orderreg.findOne({ _id: orderRegId });
   } catch (err) {
-    const error = new HttpError(
-      'Something went wrong. Please try again later',
-      500
-    );
+    const error = new HttpError('Something went wrong. Please try again later', 500);
     return next(error);
   }
 
@@ -1286,9 +1278,7 @@ const createPayment = async (req, res, next) => {
   // }
 
   await cloudinary.uploader.destroy(req.file.filename);
-  return res
-    .status(500)
-    .json({ message: 'Payment approval has been submitted' });
+  return res.status(200).json({ message: 'Payment approval has been submitted' });
 };
 
 exports.getWholeApplicants = getWholeApplicants;
