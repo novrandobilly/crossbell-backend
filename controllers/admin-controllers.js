@@ -1214,7 +1214,6 @@ const getWholeSlot = async (req, res, next) => {
 
 const createPayment = async (req, res, next) => {
   const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } = req.body;
-  console.log(req.body);
 
   // if (file) {
   //   file = {
