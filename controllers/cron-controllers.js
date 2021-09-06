@@ -3,6 +3,8 @@ const Company = require('../models/company-model');
 const Job = require('../models/job-model');
 const Promo = require('../models/promo-model');
 const Admin = require('../models/admin-model');
+const Admin = require('../models/admin-model');
+const SlotReg = require('../models/slotreg-model');
 const HttpError = require('../models/http-error');
 const moment = require('moment');
 const mongoose = require('mongoose');
@@ -224,7 +226,29 @@ const notificationCleanUp = async () => {
   }
 };
 
+const slotExpCheck = async () => {
+  let foundSlotReg = [];
+  try {
+    foundSlotReg = await SlotReg.find();
+  } catch (err) {
+    console.log(err);
+  }
+
+  foundSlotReg.map((slot, i) => {
+    const today = moment();
+    const expirationDate = moment(slot.slotExpirationDate);
+    const expirationDueDate = today.diff(expirationDate, 'days');
+    const result = expirationDueDate < today;
+    if (result) {
+      slot.status = 'Expired';
+      slot.save;
+    }
+    return slot;
+  });
+};
+
 exports.autoRemindExec = autoRemindExec;
 exports.autoSendExec = autoSendExec;
 exports.createPromo = createPromo;
 exports.notificationCleanUp = notificationCleanUp;
+exports.slotExpCheck = slotExpCheck;

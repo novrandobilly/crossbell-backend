@@ -414,7 +414,7 @@ const getOrderInvoice = async (req, res, next) => {
   let foundOrder;
 
   try {
-    foundOrder = await Orderreg.findById(orderId).populate('companyId', '-password');
+    foundOrder = await Orderreg.findById(orderId).populate('companyId payment', '-password');
     if (!foundOrder) {
       foundOrder = await Orderbc.findById(orderId).populate('companyId', '-password');
       if (!foundOrder) {
@@ -1215,21 +1215,11 @@ const getWholeSlot = async (req, res, next) => {
 const createPayment = async (req, res, next) => {
   const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } = req.body;
 
-  // if (file) {
-  //   file = {
-  //     url: req.file.path,
-  //     fileName: req.file.filename,
-  //   };
-  // }
-  // if (orderRegId) {
-  //   orderRegId = orderRegId;
-  // }
-  // if (orderBcId) {
-  //   orderBcId = orderBcId;
-  // }
-
   const newPayment = new Payment({
-    file,
+    file: {
+      url: req.file.path,
+      fileName: req.file.filename,
+    },
     nominal,
     orderBcId,
     orderRegId,
@@ -1244,7 +1234,6 @@ const createPayment = async (req, res, next) => {
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(err.message, 500);
-    console.log(err.message);
     return next(error);
   }
 
@@ -1260,24 +1249,19 @@ const createPayment = async (req, res, next) => {
     return next(new HttpError('Could not find order with such id.', 404));
   }
 
-  // try {
-  //   const sess = await mongoose.startSession();
-  //   sess.startTransaction();
-  //   await newSlot.save({ session: sess });
-  //   await sess.commitTransaction();
-  //   foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
-  //   await foundCompany.save({ session: sess });
-  // } catch (err) {
-  //   console.log(err);
-  //   const error = new HttpError(
-  //     'Could not create new slot. Please try again later',
-  //     500
-  //   );
-  //   return next(error);
-  // }
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await sess.commitTransaction();
+    foundOrder.payment = [...foundOrder.payment, newPayment._id];
+    await foundOrder.save({ session: sess });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError('Could not create new payment. Please try again later', 500);
+    return next(error);
+  }
 
-  await cloudinary.uploader.destroy(req.file.filename);
-  return res.status(200).json({ message: 'Payment approval has been submitted' });
+  return res.status(200).json({ order: foundOrder });
 };
 
 exports.getWholeApplicants = getWholeApplicants;
