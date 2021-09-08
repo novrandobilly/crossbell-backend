@@ -216,17 +216,26 @@ const slotExpCheck = async () => {
     console.log(err);
   }
 
-  foundSlotReg.map((slot, i) => {
+  for (const slot of foundSlotReg) {
     const today = moment();
     const expirationDate = moment(slot.slotExpirationDate);
     const expirationDueDate = today.diff(expirationDate, 'days');
-    const result = expirationDueDate < today;
-    if (result) {
+    if (expirationDueDate < 0) {
       slot.status = 'Expired';
-      slot.save;
+      slot.save();
     }
-    return slot;
-  });
+  }
+
+  // foundSlotReg.map((slot, i) => {
+  //   const today = moment();
+  //   const expirationDate = moment(slot.slotExpirationDate);
+  //   const expirationDueDate = today.diff(expirationDate, 'days');
+  //   if (expirationDueDate < 0) {
+  //     slot.status = 'Expired';
+  //     slot.save();
+  //   }
+  //   return slot;
+  // });
 };
 
 exports.autoRemindExec = autoRemindExec;
