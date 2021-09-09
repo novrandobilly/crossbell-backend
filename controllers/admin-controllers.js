@@ -536,14 +536,14 @@ const createOrderReg = async (req, res, next) => {
     return next(new HttpError('failed fetching promo. Please try again later', 500));
   }
 
-  if (!promo && promo.length < 1) {
-    promo = [
-      {
-        promoReg: 0,
-        promoBC: 0,
-      },
-    ];
-  }
+  // if (!promo && promo.length < 1) {
+  //   promo = [
+  //     {
+  //       promoReg: 0,
+  //       promoBC: 0,
+  //     },
+  //   ];
+  // }
 
   const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
   const parsedSlot = parseInt(slot);
@@ -610,8 +610,13 @@ const approveOrderReg = async (req, res, next) => {
   if (!foundOrder) {
     return next(new HttpError('Could not find order with such id.', 404));
   }
+
   if (!foundCompany) {
     return next(new HttpError('Could not find company with such id.', 404));
+  }
+
+  if (foundOrder.status === 'Paid') {
+    return next(new HttpError('This order have been approved.', 404));
   }
 
   try {
