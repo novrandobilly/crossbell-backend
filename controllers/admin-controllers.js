@@ -481,13 +481,14 @@ const updateOrderReg = async (req, res, next) => {
       pricePerSlot: foundOrder.pricePerSlot,
     });
 
+    foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
     try {
       const sess = await mongoose.startSession();
       sess.startTransaction();
       await newSlot.save({ session: sess });
-      await sess.commitTransaction();
       foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
       await foundCompany.save({ session: sess });
+      await sess.commitTransaction();
     } catch (err) {
       console.log(err);
       const error = new HttpError('Could not create new slot. Please try again later', 500);

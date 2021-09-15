@@ -53,10 +53,10 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(
     //===================================================================PRODUCTION=============================================================================================================
-    `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb-shard-00-00.fiwox.mongodb.net:27017,crossbelldb-shard-00-01.fiwox.mongodb.net:27017,crossbelldb-shard-00-02.fiwox.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-13v3tm-shard-0&authSource=admin&retryWrites=true&w=majority`,
+    // `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@crossbelldb-shard-00-00.fiwox.mongodb.net:27017,crossbelldb-shard-00-01.fiwox.mongodb.net:27017,crossbelldb-shard-00-02.fiwox.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-13v3tm-shard-0&authSource=admin&retryWrites=true&w=majority`,
 
     //===================================================================DEVELOPMENT=============================================================================================================
-    // `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_USER}-shard-00-00.tnw6w.mongodb.net:27017,${process.env.DB_USER}-shard-00-01.tnw6w.mongodb.net:27017,${process.env.DB_USER}-shard-00-02.tnw6w.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=${process.env.DB_USER}-shard-0&authSource=admin&retryWrites=true&w=majority`,
+    `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_USER}-shard-00-00.tnw6w.mongodb.net:27017,${process.env.DB_USER}-shard-00-01.tnw6w.mongodb.net:27017,${process.env.DB_USER}-shard-00-02.tnw6w.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=${process.env.DB_USER}-shard-0&authSource=admin&retryWrites=true&w=majority`,
     // `mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0-shard-00-00.1ncnh.mongodb.net:27017,cluster0-shard-00-01.1ncnh.mongodb.net:27017,cluster0-shard-00-02.1ncnh.mongodb.net:27017/${process.env.DB_NAME}?ssl=true&replicaSet=atlas-99le7k-shard-0&authSource=admin&retryWrites=true&w=majority`,
     // 'mongodb://localhost/crossbelldev',
     {
