@@ -25,11 +25,7 @@ router.post('/admreg', regAdminChecker, adminControllers.admReg);
 router.post('/admsign', adminControllers.admSign);
 router.use(checkAuth);
 
-router.patch(
-  '/:adminid/profile',
-  adminAvatar,
-  adminControllers.updateAdminProfile
-);
+router.patch('/:adminid/profile', adminAvatar, adminControllers.updateAdminProfile);
 router.get('/:adminid/profile', adminControllers.getAdminDetails);
 
 router.post('/order/bc', adminControllers.createOrderBC);
@@ -44,18 +40,11 @@ router.get('/order/es', adminControllers.getWholeOrderES);
 router.get('/:companyid/order/es', adminControllers.getCompanyOrderES);
 router.get('/order/es/:orderid', adminControllers.getOneOrderES);
 router.post('/order/es/addcandidate', adminControllers.addCandidateES);
-router.post(
-  '/order/es/updatecandidate',
-  adminControllers.updateCandidateStatusES
-);
+router.post('/order/es/updatecandidate', adminControllers.updateCandidateStatusES);
 router.post('/order/es/updateorder', adminControllers.updateOrderStatusES);
 router.delete('/order/es/deletecandidate', adminControllers.deleteCandidateES);
 
-router.patch(
-  '/reg/payment/add',
-  orderRegPicture,
-  adminControllers.createPayment
-);
+router.patch('/reg/payment/add', orderRegPicture, adminControllers.createPayment);
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);

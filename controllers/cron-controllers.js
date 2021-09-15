@@ -15,16 +15,10 @@ const applyJobTemplate = require('../assets/htmlJobApplicationTemplate');
 const autoRemindExec = async () => {
   let foundApplicants;
   try {
-    foundApplicants = await Applicant.find(
-      { autoRemind: true },
-      'firstName lastName email autoRemind interest headline jobsReminded'
-    );
+    foundApplicants = await Applicant.find({ autoRemind: true }, 'firstName lastName email autoRemind interest headline jobsReminded');
   } catch (err) {
     console.log(err);
-    return new HttpError(
-      'Could not fetch Applicants. Please try again later',
-      500
-    );
+    return new HttpError('Could not fetch Applicants. Please try again later', 500);
   }
 
   if (!foundApplicants) {
@@ -56,9 +50,7 @@ const autoRemindExec = async () => {
       const emailData = {
         to: app.email,
         from: 'crossbellcorps@gmail.com',
-        subject: `<Crossbell> New Jobs You Might Interested ${moment().format(
-          'LL'
-        )}`,
+        subject: `<Crossbell> New Jobs You Might Interested ${moment().format('LL')}`,
         html: `This email is intended for ${app.firstName} ${app.lastName})
 					<p>Below is a list of new posted job(s) that match your interest</p>
 					<p>Click the link on certain job to see the job's detail</p>
@@ -75,10 +67,7 @@ const autoRemindExec = async () => {
         console.log('Success');
       } catch (err) {
         console.log(err);
-        return new HttpError(
-          'Sending job reminder failed. Please try again later',
-          500
-        );
+        return new HttpError('Sending job reminder failed. Please try again later', 500);
       }
     } else {
       console.log('foundJob is empty');
@@ -92,10 +81,7 @@ const autoSendExec = async () => {
     foundApplicants = await Applicant.find({ autoSend: true }, '-password');
   } catch (err) {
     console.log(err);
-    return new HttpError(
-      'Could not fetch Applicants. Please try again later',
-      500
-    );
+    return new HttpError('Could not fetch Applicants. Please try again later', 500);
   }
 
   for (const app of foundApplicants) {
@@ -156,10 +142,7 @@ const autoSendExec = async () => {
           console.log('success');
         } catch (err) {
           console.log(err);
-          return new HttpError(
-            'Applying for job failed. Please try again later',
-            500
-          );
+          return new HttpError('Applying for job failed. Please try again later', 500);
         }
       }
     } else {
@@ -213,7 +196,7 @@ const notificationCleanUp = async () => {
   }
 
   for (const admin of foundAdmins) {
-    const cleanedUpNotification = admin.notifications.filter((notif) => {
+    const cleanedUpNotification = admin.notifications.filter(notif => {
       const today = moment();
       const notificationDate = moment(notif.date);
       const daySinceNotificationDate = today.diff(notificationDate, 'days');
