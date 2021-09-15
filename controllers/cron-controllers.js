@@ -220,7 +220,7 @@ const slotExpCheck = async () => {
     const today = moment();
     const expirationDate = moment(slot.slotExpirationDate);
     const expirationDueDate = today.diff(expirationDate, 'days');
-    if (expirationDueDate < 0) {
+    if (expirationDueDate > 0) {
       slot.status = 'Expired';
       slot.save();
     }

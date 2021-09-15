@@ -32,6 +32,7 @@ router.post('/order/bc', adminControllers.createOrderBC);
 router.get('/order/bc', adminControllers.getWholeOrderBC);
 router.post('/approve/bc', adminControllers.approveOrderBC);
 router.get('/:companyid/order/bc', adminControllers.getCompanyOrderBC);
+router.patch('/:orderid/approve/bc', adminControllers.updateOrderBC);
 router.post('/order/bc/applicant', adminControllers.sentApplicantBC);
 
 router.post('/order/es', adminControllers.createOrderES);

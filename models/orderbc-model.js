@@ -28,6 +28,7 @@ const orderbcSchema = new Schema({
   amount: { type: Number, required: true },
   applicantSent: [{ type: mongoose.Types.ObjectId, ref: 'Applicant' }],
   PPH: { type: Boolean, default: false },
+  payment: [{ type: mongoose.Types.ObjectId, ref: 'Payment' }],
 });
 
 module.exports = mongoose.model('Orderbc', orderbcSchema);
