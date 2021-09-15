@@ -123,7 +123,7 @@ const getCompanyDetails = async (req, res, next) => {
   const companyId = req.params.companyid;
   let foundCompany;
   try {
-    foundCompany = await Company.findOne({ _id: companyId }, '-password');
+    foundCompany = await Company.findOne({ _id: companyId }, '-password').populate('slotREG');
   } catch (err) {
     return next(new HttpError('Fetching user failed, please try again later', 500));
   }
