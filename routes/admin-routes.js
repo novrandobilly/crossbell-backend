@@ -48,7 +48,7 @@ router.patch('/reg/payment/add', orderRegPicture, adminControllers.createPayment
 router.post('/order/reg', adminControllers.createOrderReg);
 router.get('/order/reg', adminControllers.getWholeOrderREG);
 router.post('/approve/reg', adminControllers.approveOrderReg);
-router.patch('/:orderid/approve/reg', adminControllers.updateOrderReg);
+// router.patch('/:orderid/approve/reg', adminControllers.updateOrderReg);
 router.get('/:companyid/order/reg', adminControllers.getCompanyOrder);
 
 router.get('/order/promo', adminControllers.getPromo);

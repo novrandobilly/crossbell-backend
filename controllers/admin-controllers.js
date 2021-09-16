@@ -42,7 +42,6 @@ const getWholeCompanies = async (req, res, next) => {
   let wholeCompanies;
   try {
     wholeCompanies = await Company.find({}, '-password').populate('jobAds slotREG');
-    console.log(wholeCOmpanies);
   } catch (err) {
     const error = new HttpError('Fetching data failed. Please try again later', 500);
     return next(error);
@@ -433,18 +432,19 @@ const getOrderInvoice = async (req, res, next) => {
   res.status(200).json({ order: foundOrder.toObject({ getters: true }) });
 };
 
-const updateOrderReg = async (req, res, next) => {
-  const orderId = req.params.orderid;
+const approveOrderReg = async (req, res, next) => {
+  // const orderId = req.params.orderid;
+  const { orderId, companyId } = req.body;
   let foundOrder, foundCompany, i;
   try {
     foundOrder = await Orderreg.findOne({ _id: orderId });
   } catch (err) {
-    const error = new HttpError('Something went wrong. Please try again later', 500);
+    const error = new HttpError('Fetching Order failed. Please try again', 500);
     return next(error);
   }
 
   try {
-    foundCompany = await Company.findById(foundOrder.companyId);
+    foundCompany = await Company.findById(companyId);
   } catch (err) {
     return next(new HttpError('Fetching Company failed. Please try again', 404));
   }
@@ -476,18 +476,17 @@ const updateOrderReg = async (req, res, next) => {
       slotPaymentDate: new Date().toISOString(),
       slotExpirationDate: expDateCalculation,
       orderId: foundOrder._id,
-      companyId: foundOrder.companyId,
+      companyId: companyId,
       status: 'Idle',
       package: foundOrder.packageName,
       pricePerSlot: foundOrder.pricePerSlot,
     });
 
-    foundCompany.unusedSlot = [...foundCompany.unusedSlot, newSlot._id];
+    foundCompany.slotREG = [...foundCompany.slotREG, newSlot._id];
     try {
       const sess = await mongoose.startSession();
       sess.startTransaction();
       await newSlot.save({ session: sess });
-      foundCompany.slotREG = [...foundCompany.slotREG, newSlot._id];
       await foundCompany.save({ session: sess });
       await sess.commitTransaction();
     } catch (err) {
@@ -510,8 +509,8 @@ const updateOrderReg = async (req, res, next) => {
     return next(error);
   }
 
-  await cloudinary.uploader.destroy(req.file.filename);
-  return res.status(500).json({ message: 'Payment approval has been submitted' });
+  // await cloudinary.uploader.destroy(req.file.filename);
+  return res.status(200).json({ message: 'Payment approval has been submitted' });
 };
 
 const createOrderReg = async (req, res, next) => {
@@ -561,6 +560,10 @@ const createOrderReg = async (req, res, next) => {
     return next(new HttpError('Package Type is not defined.', 404));
   }
 
+  let originalPrice = parsedSlot * parsedPricePerSlot;
+  let discountPrice = (promo[0].promoReg * parsedSlot * parsedPricePerSlot) / 100;
+  let taxPrice = PPH ? (originalPrice - discountPrice) * 0.02 : 0;
+
   const newOrder = new Orderreg({
     invoiceId,
     companyId,
@@ -573,7 +576,7 @@ const createOrderReg = async (req, res, next) => {
     payment: [],
     pricePerSlot: parsedPricePerSlot,
     promo: promo[0].promoReg,
-    totalPrice: parsedSlot * parsedPricePerSlot - (promo[0].promoReg * parsedSlot * parsedPricePerSlot) / 100,
+    totalPrice: originalPrice - discountPrice - taxPrice,
   });
 
   try {
@@ -592,49 +595,49 @@ const createOrderReg = async (req, res, next) => {
   res.status(201).json({ orderreg: newOrder.toObject({ getters: true }) });
 };
 
-const approveOrderReg = async (req, res, next) => {
-  const { orderId, companyId } = req.body;
+// const approveOrderReg = async (req, res, next) => {
+//   const { orderId, companyId } = req.body;
 
-  let foundOrder, foundCompany;
-  try {
-    foundOrder = await Orderreg.findById(orderId);
-  } catch (err) {
-    return next(new HttpError('Fetching Order failed. Please try again', 404));
-  }
-  try {
-    foundCompany = await Company.findById(companyId);
-  } catch (err) {
-    return next(new HttpError('Fetching Company failed. Please try again', 404));
-  }
+//   let foundOrder, foundCompany;
+//   try {
+//     foundOrder = await Orderreg.findById(orderId);
+//   } catch (err) {
+//     return next(new HttpError('Fetching Order failed. Please try again', 404));
+//   }
+//   try {
+//     foundCompany = await Company.findById(companyId);
+//   } catch (err) {
+//     return next(new HttpError('Fetching Company failed. Please try again', 404));
+//   }
 
-  if (!foundOrder) {
-    return next(new HttpError('Could not find order with such id.', 404));
-  }
+//   if (!foundOrder) {
+//     return next(new HttpError('Could not find order with such id.', 404));
+//   }
 
-  if (!foundCompany) {
-    return next(new HttpError('Could not find company with such id.', 404));
-  }
+//   if (!foundCompany) {
+//     return next(new HttpError('Could not find company with such id.', 404));
+//   }
 
-  if (foundOrder.status === 'Paid') {
-    return next(new HttpError('This order have been approved.', 404));
-  }
+//   if (foundOrder.status === 'Paid') {
+//     return next(new HttpError('This order have been approved.', 404));
+//   }
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    foundOrder.status = 'Paid';
-    foundOrder.approvedAt = new Date().toISOString();
-    await foundOrder.save({ session: sess });
-    await foundCompany.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    console.log(err);
-    const error = new HttpError('Could not approve new Reguler order. Please try again later', 500);
-    return next(error);
-  }
+//   try {
+//     const sess = await mongoose.startSession();
+//     sess.startTransaction();
+//     foundOrder.status = 'Paid';
+//     foundOrder.approvedAt = new Date().toISOString();
+//     await foundOrder.save({ session: sess });
+//     await foundCompany.save({ session: sess });
+//     await sess.commitTransaction();
+//   } catch (err) {
+//     console.log(err);
+//     const error = new HttpError('Could not approve new Reguler order. Please try again later', 500);
+//     return next(error);
+//   }
 
-  res.status(201).json({ message: 'Successfully approve order!' });
-};
+//   res.status(201).json({ message: 'Successfully approve order!' });
+// };
 
 const cancelOrderReg = async (req, res, next) => {
   const { orderId, companyId } = req.body;
@@ -1350,7 +1353,7 @@ exports.createPayment = createPayment;
 exports.createOrderReg = createOrderReg;
 exports.cancelOrderReg = cancelOrderReg;
 exports.approveOrderReg = approveOrderReg;
-exports.updateOrderReg = updateOrderReg;
+// exports.updateOrderReg = updateOrderReg;
 exports.getCompanyOrder = getCompanyOrder;
 exports.getWholeOrderREG = getWholeOrderREG;
 
