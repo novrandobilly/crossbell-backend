@@ -50,10 +50,10 @@ const getWholeCompanies = async (req, res, next) => {
       'jobAds slotREG'
     );
   } catch (err) {
-    const error = new HttpError(
-      'Fetching data failed. Please try again later',
-      500
-    );
+
+    const error = new HttpError(err.message, 500);
+    // const error = new HttpError('Fetching data failed. Please try again later', 500);
+
     return next(error);
   }
 
