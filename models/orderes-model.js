@@ -3,18 +3,13 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const orderesSchema = new Schema({
-  companyId: { type: mongoose.Types.ObjectId, required: true, ref: 'Company' },
-  positionLevel: { type: String, required: true },
-  mainTask: { type: String, required: true },
-  responsibility: { type: String, required: true },
-  salaryRange: {
-    max: { type: String },
-    min: { type: String },
-  },
-  authority: { type: String, required: true },
-  experience: { type: String, required: true },
-  expertise: { type: String, required: true },
-  specification: { type: String },
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  companyName: { type: String, required: true },
+  industry: { type: String, required: true },
+  candidateRequirement: { type: String },
+  specialRequirement: { type: String },
   status: { type: String, required: true, default: 'Open' },
   createdAt: { type: Date, required: true },
   candidates: [
