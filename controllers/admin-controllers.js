@@ -506,7 +506,7 @@ const getOrderInvoice = async (req, res, next) => {
     );
     if (!foundOrder) {
       foundOrder = await Orderbc.findById(orderId).populate(
-        'companyId',
+        'companyId payment',
         '-password'
       );
       if (!foundOrder) {
@@ -713,50 +713,6 @@ const createOrderReg = async (req, res, next) => {
 
   res.status(201).json({ orderreg: newOrder.toObject({ getters: true }) });
 };
-
-// const approveOrderReg = async (req, res, next) => {
-//   const { orderId, companyId } = req.body;
-
-//   let foundOrder, foundCompany;
-//   try {
-//     foundOrder = await Orderreg.findById(orderId);
-//   } catch (err) {
-//     return next(new HttpError('Fetching Order failed. Please try again', 404));
-//   }
-//   try {
-//     foundCompany = await Company.findById(companyId);
-//   } catch (err) {
-//     return next(new HttpError('Fetching Company failed. Please try again', 404));
-//   }
-
-//   if (!foundOrder) {
-//     return next(new HttpError('Could not find order with such id.', 404));
-//   }
-
-//   if (!foundCompany) {
-//     return next(new HttpError('Could not find company with such id.', 404));
-//   }
-
-//   if (foundOrder.status === 'Paid') {
-//     return next(new HttpError('This order have been approved.', 404));
-//   }
-
-//   try {
-//     const sess = await mongoose.startSession();
-//     sess.startTransaction();
-//     foundOrder.status = 'Paid';
-//     foundOrder.approvedAt = new Date().toISOString();
-//     await foundOrder.save({ session: sess });
-//     await foundCompany.save({ session: sess });
-//     await sess.commitTransaction();
-//   } catch (err) {
-//     console.log(err);
-//     const error = new HttpError('Could not approve new Reguler order. Please try again later', 500);
-//     return next(error);
-//   }
-
-//   res.status(201).json({ message: 'Successfully approve order!' });
-// };
 
 const cancelOrderReg = async (req, res, next) => {
   const { orderId, companyId } = req.body;
@@ -1556,7 +1512,12 @@ const createPayment = async (req, res, next) => {
 
   let foundOrder;
   try {
-    foundOrder = await Orderreg.findOne({ _id: orderRegId });
+    if (orderRegId) {
+      foundOrder = await Orderreg.findOne({ _id: orderRegId });
+    }
+    if (orderBcId) {
+      foundOrder = await Orderbc.findOne({ _id: orderId });
+    }
   } catch (err) {
     const error = new HttpError(
       'Something went wrong. Please try again later',
