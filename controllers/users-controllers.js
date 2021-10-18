@@ -225,7 +225,7 @@ const signup = async (req, res, next) => {
         },
         'one_batch_two_batch_penny_and_dime',
         {
-          expiresIn: '3h',
+          expiresIn: '6h',
         }
       );
     } catch (err) {
@@ -272,7 +272,7 @@ const signup = async (req, res, next) => {
         },
         'one_batch_two_batch_penny_and_dime',
         {
-          expiresIn: '3h',
+          expiresIn: '6h',
         }
       );
     } catch (err) {
@@ -328,7 +328,7 @@ const login = async (req, res, next) => {
         isCompany: foundUser.isCompany,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: '3h' }
+      { expiresIn: '6h' }
     );
   } catch (err) {
     const error = new HttpError('Could not generate token, please try again', 500);
@@ -403,7 +403,7 @@ const googleLogin = async (req, res, next) => {
           },
           process.env.JWT_SECRET_KEY,
           {
-            expiresIn: '3h',
+            expiresIn: '6h',
           }
         );
       } catch (err) {
@@ -427,7 +427,7 @@ const googleLogin = async (req, res, next) => {
             isCompany: foundUser.isCompany,
           },
           process.env.JWT_SECRET_KEY,
-          { expiresIn: '3h' }
+          { expiresIn: '6h' }
         );
       } catch (err) {
         const error = new HttpError('Could not generate token, please try again', 500);
@@ -817,7 +817,7 @@ const resetPwd = async (req, res, next) => {
           isCompany: foundUser.isCompany,
         },
         'one_batch_two_batch_penny_and_dime',
-        { expiresIn: '3h' }
+        { expiresIn: '6h' }
       );
     } catch (err) {
       const error = new HttpError('Could not generate token, please try again', 500);
