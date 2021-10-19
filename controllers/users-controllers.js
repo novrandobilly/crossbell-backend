@@ -2,7 +2,7 @@ const { validationResult } = require('express-validator');
 const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
 const Admin = require('../models/admin-model');
-const Feed = require('../models/feedback-model');
+const Feedback = require('../models/feedback-model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -26,7 +26,7 @@ let pusher = new Pusher({
 const getFeedback = async (req, res, next) => {
   let foundFeedback;
   try {
-    foundFeedback = await Feed.find({}, '-__v');
+    foundFeedback = await Feedback.find({}, '-__v');
   } catch (err) {
     return next(new HttpError('Fetching feedsfailed, please try again later', 500));
   }
@@ -45,25 +45,24 @@ const createFeedback = async (req, res, next) => {
     return next(error);
   }
 
-  const { name, email, phone, feed } = req.body;
+  const { name, email, phone, message } = req.body;
 
-  const newFeed = new Feed({
+  const newFeedback = new Feedback({
     name,
     email,
     phone,
-    feed,
+    message,
     createdAt: new Date(),
   });
 
   try {
-    await newFeed.save();
+    await newFeedback.save();
   } catch (err) {
-    console.log(err);
-    const error = new HttpError('Could not create new feed. Please try again later', 500);
+    const error = new HttpError(err, 500);
     return next(error);
   }
 
-  res.status(201).json({ feed: newFeed.toObject({ getters: true }) });
+  res.status(201).json({ feed: newFeedback.toObject({ getters: true }) });
 };
 
 const getAllApplicant = async (req, res, next) => {
@@ -626,7 +625,9 @@ const updateCompanyProfile = async (req, res, next) => {
   foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient.trim() : foundCompany.emailRecipient;
   foundCompany.website = data.website ? data.website.trim() : foundCompany.website;
   foundCompany.NPWP = data.NPWP ? data.NPWP.trim() : foundCompany.NPWP;
-  foundCompany.briefDescriptions = data.briefDescriptions ? data.briefDescriptions.trim() : foundCompany.briefDescriptions;
+  foundCompany.briefDescriptions = data.briefDescriptions
+    ? data.briefDescriptions.trim()
+    : foundCompany.briefDescriptions;
 
   try {
     await foundCompany.save();
