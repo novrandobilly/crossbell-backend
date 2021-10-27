@@ -462,11 +462,6 @@ const updateApplicantProfile = async (req, res, next) => {
   if (req.file && foundApplicant.picture.url) {
     await cloudinary.uploader.destroy(foundApplicant.picture.fileName);
   }
-  let splitInterest = [...foundApplicant.interest];
-
-  if (data && data.interest) {
-    splitInterest = data.interest.split(',');
-  }
 
   foundApplicant.picture = req.file
     ? {
@@ -487,10 +482,10 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.details = data.details ? data.details : foundApplicant.details;
   foundApplicant.dateOfBirth = data.dateOfBirth ? new Date(data.dateOfBirth).toISOString() : foundApplicant.dateOfBirth;
   foundApplicant.salary = data.salary ? data.salary.trim() : foundApplicant.salary;
-  foundApplicant.outOfTown = data.outOfTown;
-  foundApplicant.workShifts = data.workShifts;
+  foundApplicant.outOfTown = data.outOfTown === undefined ? foundApplicant.outOfTown : data.outOfTown;
+  foundApplicant.workShifts = data.workShifts === undefined ? foundApplicant.workShifts : data.workShifts;
   foundApplicant.headhunterProgram = data.headhunterProgram;
-  foundApplicant.interest = splitInterest ? splitInterest : foundApplicant.interest;
+  foundApplicant.interest = data.interest ? [...data.interest] : foundApplicant.interest;
   foundApplicant.skills = data.skills ? data.skills : foundApplicant.skills;
   foundApplicant.languages = data.languages ? data.languages : foundApplicant.languages;
   foundApplicant.autoSend = data.autoSend;
