@@ -8,11 +8,7 @@ const router = express.Router();
 
 //==========================CHECKER==========================
 
-const signupChecker = [
-  check('email').isEmail().normalizeEmail(),
-  check('password').isLength({ min: 6 }),
-];
-
+const signupChecker = [check('email').isEmail().normalizeEmail(), check('password').isLength({ min: 6 })];
 
 //===========================ROUTES===========================
 router.get('/co/:companyid', usersControllers.getCompanyDetails);
@@ -35,5 +31,5 @@ router.patch('/co/:companyid', companyAvatar, usersControllers.updateCompanyProf
 router.patch('/ap/:applicantid', applicantAvatar, usersControllers.updateApplicantProfile);
 router.patch('/ap/:applicantid/resume', applicantResume, usersControllers.updateApplicantResume);
 
-router.delete('/segment', usersControllers.deleteSegment);
+router.delete('/deleteItem', usersControllers.deleteItem);
 module.exports = router;

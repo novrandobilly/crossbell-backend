@@ -491,19 +491,26 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.autoSend = data.autoSend;
   foundApplicant.autoRemind = data.autoRemind;
 
+  const updateSingleItem = ItemCategories => {
+    if (data[ItemCategories].id) {
+      const itemIndex = foundApplicant[ItemCategories].map(item => item.id).indexOf(data[ItemCategories].id);
+      foundApplicant[ItemCategories][itemIndex] = data[ItemCategories];
+      return;
+    }
+    let newItem = {};
+    for (const key in data[ItemCategories]) {
+      if (key !== 'id') newItem = { ...newItem, [key]: data[ItemCategories][key] };
+    }
+    foundApplicant[ItemCategories].push(newItem);
+    return;
+  };
+
+  updateSingleItem('experience');
   if (data.education) {
     if (data.index) {
       foundApplicant.education[data.index] = data.education;
     } else {
       foundApplicant.education.push(data.education);
-    }
-  }
-
-  if (data.experience) {
-    if (data.index) {
-      foundApplicant.experience[data.index] = data.experience;
-    } else {
-      foundApplicant.experience.push(data.experience);
     }
   }
 
@@ -634,8 +641,8 @@ const updateCompanyProfile = async (req, res, next) => {
   return res.status(200).json({ foundCompany: foundCompany });
 };
 
-const deleteSegment = async (req, res, next) => {
-  const { applicantId, segment, index, elementId } = req.body;
+const deleteItem = async (req, res, next) => {
+  const { applicantId, itemCategories, itemId } = req.body;
 
   let foundApplicant;
   try {
@@ -650,18 +657,18 @@ const deleteSegment = async (req, res, next) => {
     return next(error);
   }
 
-  const filteredSegment = foundApplicant[segment].filter(el => el._id.toString() !== elementId);
-  foundApplicant[segment] = filteredSegment;
+  const filteredItemCategories = foundApplicant[itemCategories].filter(item => item._id.toString() !== itemId);
+  foundApplicant[itemCategories] = filteredItemCategories;
 
   try {
     await foundApplicant.save();
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Something went wrong. Cannot delete the segment at the moment', 500);
+    const error = new HttpError('Something went wrong. Cannot delete the item at the moment', 500);
     return next(error);
   }
 
-  res.status(200).json({ message: 'successfully delete segment element!' });
+  res.status(200).json({ message: 'Successfully delete item!' });
 };
 
 const forgotPwd = async (req, res, next) => {
@@ -857,7 +864,7 @@ const getApplicantAppliedJobs = async (req, res, next) => {
 exports.forgotPwd = forgotPwd;
 exports.checkResetToken = checkResetToken;
 exports.resetPwd = resetPwd;
-exports.deleteSegment = deleteSegment;
+exports.deleteItem = deleteItem;
 exports.getAllCompany = getAllCompany;
 exports.getAllApplicant = getAllApplicant;
 exports.getApplicantDetails = getApplicantDetails;
