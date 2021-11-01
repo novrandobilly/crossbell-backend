@@ -507,13 +507,7 @@ const updateApplicantProfile = async (req, res, next) => {
   };
 
   updateSingleItem('experience');
-  if (data.education) {
-    if (data.index) {
-      foundApplicant.education[data.index] = data.education;
-    } else {
-      foundApplicant.education.push(data.education);
-    }
-  }
+  updateSingleItem('education');
 
   if (data.certification) {
     if (data.index) {
