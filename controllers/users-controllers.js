@@ -492,6 +492,7 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.autoRemind = data.autoRemind;
 
   const updateSingleItem = ItemCategories => {
+    if (!data[ItemCategories]) return;
     if (data[ItemCategories].id) {
       const itemIndex = foundApplicant[ItemCategories].map(item => item.id).indexOf(data[ItemCategories].id);
       foundApplicant[ItemCategories][itemIndex] = data[ItemCategories];
