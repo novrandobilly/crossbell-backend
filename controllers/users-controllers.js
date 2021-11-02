@@ -509,14 +509,7 @@ const updateApplicantProfile = async (req, res, next) => {
   updateSingleItem('experience');
   updateSingleItem('education');
   updateSingleItem('organization');
-
-  if (data.certification) {
-    if (data.index) {
-      foundApplicant.certification[data.index] = data.certification;
-    } else {
-      foundApplicant.certification.push(data.certification);
-    }
-  }
+  updateSingleItem('certification');
 
   try {
     await foundApplicant.save();
