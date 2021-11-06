@@ -189,7 +189,7 @@ const admReg = async (req, res, next) => {
       },
       process.env.JWT_SECRET_KEY,
       {
-        expiresIn: '6h',
+        expiresIn: '168h',
       }
     );
   } catch (err) {
@@ -243,7 +243,7 @@ const admSign = async (req, res, next) => {
         isAdmin: foundAdmin.isAdmin,
       },
       process.env.JWT_SECRET_KEY,
-      { expiresIn: '6h' }
+      { expiresIn: '168h' }
     );
   } catch (err) {
     const error = new HttpError('Could not generate token, please try again', 500);
