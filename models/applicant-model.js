@@ -86,7 +86,9 @@ const applicantSchema = new Schema({
     fileName: { type: String },
   },
   status: { type: Boolean, default: true },
-  jobsApplied: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Job' }],
+  jobsApplied: [
+    { jobItem: { type: mongoose.Types.ObjectId, required: true, ref: 'Job' }, appliedDate: { type: Date } },
+  ],
   isCompany: { type: Boolean, default: false },
   resetPasswordToken: { type: String },
   resetPasswordExpire: { type: Date },

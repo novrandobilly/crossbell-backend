@@ -827,7 +827,7 @@ const getApplicantAppliedJobs = async (req, res, next) => {
 
   try {
     foundApplicant = await Applicant.findById(applicantId).populate({
-      path: 'jobsApplied',
+      path: 'jobsApplied.jobItem',
       populate: {
         path: 'companyId',
         model: 'Company',
@@ -836,7 +836,6 @@ const getApplicantAppliedJobs = async (req, res, next) => {
   } catch (err) {
     return next(new HttpError('Fetching applicant & jobs applied data failed. Please try again', 500));
   }
-
   res.status(200).json({
     Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })),
   });

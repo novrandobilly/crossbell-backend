@@ -91,6 +91,7 @@ const getJobsFromApplicant = async (req, res, next) => {
   if (!foundApplicant) {
     return next(new HttpError('Applicant is not found', 404));
   }
+  console.log(foundApplicant.jobsApplied);
 
   res.status(200).json({
     Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })),
