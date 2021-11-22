@@ -294,7 +294,12 @@ const releaseJob = async (req, res, next) => {
     .slice(0, slot);
 
   for (i = 0; i < slot; i++) {
-    updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
+    try {
+      updatedSlot = await Slotreg.findById(filteredSlot[i]._id);
+    } catch (err) {
+      const error = new HttpError(err.message, 400);
+      return next(error);
+    }
     updatedSlot.jobId = jobId;
     updatedSlot.slotUsedDate = Date();
     updatedSlot.status = 'Used';
