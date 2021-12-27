@@ -19,6 +19,7 @@ const adminSchema = new Schema({
   phoneNumber: { type: String, required: true },
   role: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
+  isVerificator: { type: Boolean, default: false },
   notifications: [
     {
       identifier: { type: String },

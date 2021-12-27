@@ -34,7 +34,7 @@ const getWholeApplicants = async (req, res, next) => {
     return next(error);
   }
   res.json({
-    wholeApplicants: wholeApplicants.map(ap => ap.toObject({ getters: true })),
+    wholeApplicants: wholeApplicants.map((ap) => ap.toObject({ getters: true })),
   });
 };
 
@@ -55,7 +55,7 @@ const getWholeCompanies = async (req, res, next) => {
   }
 
   res.json({
-    wholeCompanies: wholeCompanies.map(co => co.toObject({ getters: true })),
+    wholeCompanies: wholeCompanies.map((co) => co.toObject({ getters: true })),
   });
 };
 
@@ -74,7 +74,7 @@ const getApplicantsFromJob = async (req, res, next) => {
   }
 
   res.status(200).json({
-    applicantsApplied: foundJob.jobApplicants.map(ap => ap.toObject({ getters: true })),
+    applicantsApplied: foundJob.jobApplicants.map((ap) => ap.toObject({ getters: true })),
   });
 };
 
@@ -94,7 +94,7 @@ const getJobsFromApplicant = async (req, res, next) => {
   console.log(foundApplicant.jobsApplied);
 
   res.status(200).json({
-    Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })),
+    Jobs: foundApplicant.jobsApplied.map((job) => job.toObject({ getters: true })),
   });
 };
 
@@ -242,6 +242,7 @@ const admSign = async (req, res, next) => {
         userId: foundAdmin.id,
         email: foundAdmin.email,
         isAdmin: foundAdmin.isAdmin,
+        isVerificator: foundAdmin.isVerificator,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: '168h' }
@@ -255,6 +256,8 @@ const admSign = async (req, res, next) => {
     userId: foundAdmin.id,
     email: foundAdmin.email,
     isAdmin: foundAdmin.isAdmin,
+    isVerificator: foundAdmin.isVerificator,
+
     notifications: foundAdmin.notifications,
     token,
   });
@@ -361,7 +364,7 @@ const updateAdminProfile = async (req, res, next) => {
   foundAdmin.role = data.role ? data.role.trim() : foundAdmin.role;
 
   if (data.notificationId) {
-    const test = foundAdmin.notifications.filter(notif => {
+    const test = foundAdmin.notifications.filter((notif) => {
       return notif._id.toString() === data.notificationId;
     });
 
@@ -895,7 +898,7 @@ const sentApplicantBC = async (req, res, next) => {
     return next(new HttpError('Could not find order/candidate with such id.', 404));
   }
 
-  const checkCandidate = foundOrder.applicantSent.some(appId => appId.toString() === applicantId);
+  const checkCandidate = foundOrder.applicantSent.some((appId) => appId.toString() === applicantId);
 
   if (checkCandidate) {
     return next(new HttpError('Applicant with this ID has already been sent.', 401));
@@ -964,7 +967,7 @@ const getWholeOrderES = async (req, res, next) => {
     return next(new HttpError('Could not find any order', 404));
   }
 
-  res.status(200).json({ orders: foundOrder.map(ord => ord.toObject({ getters: true })) });
+  res.status(200).json({ orders: foundOrder.map((ord) => ord.toObject({ getters: true })) });
 };
 
 const getCompanyOrderES = async (req, res, next) => {
@@ -1153,7 +1156,7 @@ const deleteCandidateES = async (req, res, next) => {
     return next(error);
   }
 
-  foundCandidate = foundOrder.candidates.filter(el => el._id.toString() !== candidateESId);
+  foundCandidate = foundOrder.candidates.filter((el) => el._id.toString() !== candidateESId);
 
   if (!foundCandidate) {
     const error = new HttpError('No Candidate found', 404);
