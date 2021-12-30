@@ -10,18 +10,10 @@ const nodemailer = require('nodemailer');
 const moment = require('moment');
 const { cloudinary } = require('../cloudinary');
 const { OAuth2Client } = require('google-auth-library');
-const Pusher = require('pusher');
 const client = new OAuth2Client('968047575665-o4ugi6bco8pp3j4ba10cs55av6cms52c.apps.googleusercontent.com');
 
 const HttpError = require('../models/http-error');
 const mail = require('@sendgrid/mail');
-
-let pusher = new Pusher({
-  appId: process.env.PUSHER_APP_ID,
-  key: process.env.PUSHER_APP_KEY,
-  secret: process.env.PUSHER_APP_SECRET,
-  cluster: process.env.PUSHER_APP_CLUSTER,
-});
 
 const getFeedback = async (req, res, next) => {
   let foundFeedback;
@@ -178,31 +170,6 @@ const signup = async (req, res, next) => {
       isCompany,
       isActive: false,
     });
-
-    // pusher.trigger(CHANNEL, EVENT_NAME, DATA, SOCKET_ID)
-    pusher.trigger('notifications', 'company_created', { Company: newCompany.companyName }, req.headers['x-socket-id']);
-
-    // ADMIN NOTIFICATION
-    let foundAdmins;
-    try {
-      foundAdmins = await Admin.find();
-      for (const admin of foundAdmins) {
-        let newNotification = {
-          identifier: newCompany.id,
-          name: newCompany.companyName,
-          date: new Date(),
-          isOpened: false,
-          message: `Perusahaan ${newCompany.companyName} telah terdaftar dan menunggu verifikasi`,
-        };
-        let notifications = [...admin.notifications, newNotification];
-        admin.notifications = notifications;
-        admin.save();
-      }
-    } catch (err) {
-      const error = new HttpError('Could not find any admin', 500);
-      console.log(err);
-      return next(error);
-    }
 
     // SAVING COMPANY
     try {
@@ -491,10 +458,10 @@ const updateApplicantProfile = async (req, res, next) => {
   foundApplicant.autoSend = data.autoSend;
   foundApplicant.autoRemind = data.autoRemind;
 
-  const updateSingleItem = ItemCategories => {
+  const updateSingleItem = (ItemCategories) => {
     if (!data[ItemCategories]) return;
     if (data[ItemCategories].id) {
-      const itemIndex = foundApplicant[ItemCategories].map(item => item.id).indexOf(data[ItemCategories].id);
+      const itemIndex = foundApplicant[ItemCategories].map((item) => item.id).indexOf(data[ItemCategories].id);
       foundApplicant[ItemCategories][itemIndex] = data[ItemCategories];
       return;
     }
@@ -638,7 +605,7 @@ const deleteItem = async (req, res, next) => {
     return next(error);
   }
 
-  const filteredItemCategories = foundApplicant[itemCategories].filter(item => item._id.toString() !== itemId);
+  const filteredItemCategories = foundApplicant[itemCategories].filter((item) => item._id.toString() !== itemId);
   foundApplicant[itemCategories] = filteredItemCategories;
 
   try {
@@ -837,7 +804,7 @@ const getApplicantAppliedJobs = async (req, res, next) => {
     return next(new HttpError('Fetching applicant & jobs applied data failed. Please try again', 500));
   }
   res.status(200).json({
-    Jobs: foundApplicant.jobsApplied.map(job => job.toObject({ getters: true })),
+    Jobs: foundApplicant.jobsApplied.map((job) => job.toObject({ getters: true })),
   });
 };
 

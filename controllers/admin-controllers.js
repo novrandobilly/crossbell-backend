@@ -168,7 +168,6 @@ const admReg = async (req, res, next) => {
     dateOfBirth,
     address: address.trim(),
     phoneNumber: phoneNumber.trim(),
-    notifications: [],
     role: role.trim(),
     isAdmin: true,
   });
@@ -202,8 +201,6 @@ const admReg = async (req, res, next) => {
     userId: newAdmin._id,
     email: newAdmin.email,
     isAdmin: newAdmin.isAdmin,
-    notifications: newAdmin.notifications,
-
     token,
   });
 };
@@ -258,7 +255,6 @@ const admSign = async (req, res, next) => {
     isAdmin: foundAdmin.isAdmin,
     isVerificator: foundAdmin.isVerificator,
 
-    notifications: foundAdmin.notifications,
     token,
   });
 };
@@ -362,14 +358,6 @@ const updateAdminProfile = async (req, res, next) => {
   foundAdmin.address = data.address ? data.address.trim() : foundAdmin.address;
   foundAdmin.phoneNumber = data.phoneNumber ? data.phoneNumber.trim() : foundAdmin.phoneNumber;
   foundAdmin.role = data.role ? data.role.trim() : foundAdmin.role;
-
-  if (data.notificationId) {
-    const test = foundAdmin.notifications.filter((notif) => {
-      return notif._id.toString() === data.notificationId;
-    });
-
-    test[0].isOpened = true;
-  }
 
   try {
     await foundAdmin.save();
@@ -1261,8 +1249,8 @@ const createPayment = async (req, res, next) => {
 
   const newPayment = new Payment({
     file: {
-      url: req.file.path,
-      fileName: req.file.filename,
+      url: req.file?.path,
+      fileName: req.file?.filename,
     },
     nominal,
     orderBcId,
@@ -1270,6 +1258,19 @@ const createPayment = async (req, res, next) => {
     paymentDate,
     paymentTime,
   });
+
+  let paymentIsValid = true;
+  for (const key in req.body) {
+    paymentIsValid = paymentIsValid && req.body[key];
+  }
+
+  if (!paymentIsValid) {
+    try {
+      await cloudinary.uploader.destroy(req.file?.filename);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   try {
     const sess = await mongoose.startSession();

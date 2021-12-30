@@ -15,7 +15,10 @@ const applyJobTemplate = require('../assets/htmlJobApplicationTemplate');
 const autoRemindExec = async () => {
   let foundApplicants;
   try {
-    foundApplicants = await Applicant.find({ autoRemind: true }, 'firstName lastName email autoRemind interest headline jobsReminded');
+    foundApplicants = await Applicant.find(
+      { autoRemind: true },
+      'firstName lastName email autoRemind interest headline jobsReminded'
+    );
   } catch (err) {
     console.log(err);
     return new HttpError('Could not fetch Applicants. Please try again later', 500);
@@ -187,27 +190,6 @@ const createPromo = async (req, res, next) => {
   }
 };
 
-const notificationCleanUp = async () => {
-  let foundAdmins = [];
-  try {
-    foundAdmins = await Admin.find();
-  } catch (err) {
-    console.log(err);
-  }
-
-  for (const admin of foundAdmins) {
-    const cleanedUpNotification = admin.notifications.filter(notif => {
-      const today = moment();
-      const notificationDate = moment(notif.date);
-      const daySinceNotificationDate = today.diff(notificationDate, 'days');
-      const inTheLastTwoWeeks = daySinceNotificationDate <= 14;
-      return inTheLastTwoWeeks;
-    });
-    admin.notifications = cleanedUpNotification;
-    admin.save();
-  }
-};
-
 const slotExpCheck = async () => {
   let foundSlotReg = [];
   try {
@@ -241,5 +223,4 @@ const slotExpCheck = async () => {
 exports.autoRemindExec = autoRemindExec;
 exports.autoSendExec = autoSendExec;
 exports.createPromo = createPromo;
-exports.notificationCleanUp = notificationCleanUp;
 exports.slotExpCheck = slotExpCheck;

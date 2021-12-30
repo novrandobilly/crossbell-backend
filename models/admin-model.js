@@ -20,15 +20,6 @@ const adminSchema = new Schema({
   role: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
   isVerificator: { type: Boolean, default: false },
-  notifications: [
-    {
-      identifier: { type: String },
-      name: { type: String },
-      date: { type: Date, default: new Date() },
-      isOpened: { type: Boolean, default: false },
-      message: { type: String },
-    },
-  ],
 });
 
 adminSchema.plugin(uniqueValidator);
