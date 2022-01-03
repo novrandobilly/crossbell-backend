@@ -1,12 +1,17 @@
+const mongoose = require('mongoose');
+
 const { validationResult } = require('express-validator');
 const Applicant = require('../models/applicant-model');
 const Company = require('../models/company-model');
 const Admin = require('../models/admin-model');
 const Feedback = require('../models/feedback-model');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+
+const { companyRegistrationNotif } = require('./notification-controller');
 const moment = require('moment');
 const { cloudinary } = require('../cloudinary');
 const { OAuth2Client } = require('google-auth-library');
@@ -173,7 +178,11 @@ const signup = async (req, res, next) => {
 
     // SAVING COMPANY
     try {
-      await newCompany.save();
+      const sess = await mongoose.startSession();
+      sess.startTransaction();
+      await newCompany.save({ session: sess });
+      await companyRegistrationNotif({ companyName: companyName?.trim(), companyId: newCompany._id, sess });
+      await sess.commitTransaction();
     } catch (err) {
       const error = new HttpError('Could not create user. Please input a valid value', 500);
       console.log(err);

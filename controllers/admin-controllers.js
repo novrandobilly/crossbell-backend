@@ -11,6 +11,7 @@ const Orderbc = require('../models/orderbc-model');
 const Orderes = require('../models/orderes-model');
 const Promo = require('../models/promo-model');
 const Payment = require('../models/payment-model');
+const { companyVerifiedNotif, paymentCreatedNotif, paymentApprovedNotif } = require('./notification-controller');
 
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
@@ -278,7 +279,11 @@ const activateCompany = async (req, res, next) => {
   foundCompany.isActive = true;
 
   try {
-    await foundCompany.save();
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await foundCompany.save({ session: sess });
+    await companyVerifiedNotif({ companyName: foundCompany.companyName?.trim(), companyId: foundCompany._id, sess });
+    await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError('Something went wrong. Cannot save the updates', 500);
     return next(error);
@@ -496,6 +501,7 @@ const approveOrderReg = async (req, res, next) => {
     sess.startTransaction();
     await foundOrder.save({ session: sess });
     await foundCompany.save({ session: sess });
+    await paymentApprovedNotif({ companyId: foundCompany._id, orderRegId: orderId, sess });
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(err.message, 500);
@@ -1245,7 +1251,7 @@ const getWholeSlot = async (req, res, next) => {
 };
 
 const createPayment = async (req, res, next) => {
-  const { file, nominal, orderBcId, orderRegId, paymentDate, paymentTime } = req.body;
+  const { nominal, orderBcId, orderRegId, paymentDate, paymentTime } = req.body;
 
   const newPayment = new Payment({
     file: {
@@ -1272,42 +1278,41 @@ const createPayment = async (req, res, next) => {
     }
   }
 
-  try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await newPayment.save({ session: sess });
-    await sess.commitTransaction();
-  } catch (err) {
-    const error = new HttpError(err.message, 500);
-    return next(error);
-  }
-
   let foundOrder;
   try {
     if (orderRegId) {
-      foundOrder = await Orderreg.findOne({ _id: orderRegId });
+      foundOrder = await Orderreg.findOne({ _id: orderRegId }).populate('companyId', '-password');
     }
     if (orderBcId) {
-      foundOrder = await Orderbc.findOne({ _id: orderId });
+      foundOrder = await Orderbc.findOne({ _id: orderId }).populate('companyId', '-password');
     }
   } catch (err) {
     const error = new HttpError('Something went wrong. Please try again later', 500);
     return next(error);
   }
-
   if (!foundOrder) {
     return next(new HttpError('Could not find order with such id.', 404));
   }
+  companyName = foundOrder.companyId.companyName;
+  companyId = foundOrder.companyId._id;
+  foundOrder.payment = [...foundOrder.payment, newPayment._id];
 
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await sess.commitTransaction();
-    foundOrder.payment = [...foundOrder.payment, newPayment._id];
+    await newPayment.save({ session: sess });
+    await paymentCreatedNotif({
+      companyName,
+      companyId,
+      orderRegId,
+      orderBcId,
+      sess,
+      paymentId: newPayment._id,
+    });
     await foundOrder.save({ session: sess });
+    await sess.commitTransaction();
   } catch (err) {
-    console.log(err);
-    const error = new HttpError('Could not create new payment. Please try again later', 500);
+    const error = new HttpError(err.message, 500);
     return next(error);
   }
 

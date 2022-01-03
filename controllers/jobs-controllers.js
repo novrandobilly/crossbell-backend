@@ -9,8 +9,7 @@ const Job = require('../models/job-model');
 const Slotreg = require('../models/slotreg-model');
 const Company = require('../models/company-model');
 const Applicant = require('../models/applicant-model');
-
-const cloudinary = require('cloudinary');
+const { applicantAppliedNotif } = require('./notification-controller');
 
 const getAllAvailableJobs = async (req, res, next) => {
   let availableJobs;
@@ -45,7 +44,7 @@ const getJobsInCompany = async (req, res, next) => {
     return next(error);
   }
   res.json({
-    foundJob: foundJob.map(job => job.toObject({ getters: true })),
+    foundJob: foundJob.map((job) => job.toObject({ getters: true })),
   });
 };
 
@@ -161,7 +160,7 @@ const createJob = async (req, res, next) => {
   }
 
   filteredSlot = slotReg
-    .filter(slot => {
+    .filter((slot) => {
       return !slot.jobId;
     })
     .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
@@ -287,7 +286,7 @@ const releaseJob = async (req, res, next) => {
   }
 
   filteredSlot = slotReg
-    .filter(slot => {
+    .filter((slot) => {
       return !slot.jobId;
     })
     .sort((a, b) => a.slotExpirationDate - b.slotExpirationDate)
@@ -482,7 +481,7 @@ const applyJob = async (req, res, next) => {
 
   let applicantHasApplied = foundApplicant.jobsApplied
     .toObject({ getters: true })
-    .some(job => job.toString() === jobId);
+    .some((job) => job.toString() === jobId);
   if (applicantHasApplied) {
     return next(new HttpError('You have applied to this job', 500));
   }
@@ -528,9 +527,17 @@ const applyJob = async (req, res, next) => {
     sess.startTransaction();
     foundJob.jobApplicants.push(foundApplicant);
     foundApplicant.jobsApplied.push(jobApplied);
+
     await foundJob.save({ session: sess });
     await foundApplicant.save({ session: sess });
     await sgMail.send(emailData);
+    await applicantAppliedNotif({
+      firstName: foundApplicant.firstName,
+      lastName: foundApplicant.lastName,
+      jobTitle: foundJob.jobTitle,
+      jobId: foundJob._id,
+      sess,
+    });
     sess.commitTransaction();
   } catch (err) {
     console.log(err);
@@ -566,9 +573,9 @@ const deleteJob = async (req, res, next) => {
     sess.startTransaction();
     await foundJob.remove({ session: sess });
     foundJob.companyId.jobAds.pull(foundJob);
-    foundJob.jobApplicants.map(ap => ap.jobsApplied.pull(foundJob));
+    foundJob.jobApplicants.map((ap) => ap.jobsApplied.pull(foundJob));
     await foundJob.companyId.save({ session: sess });
-    await foundJob.jobApplicants.map(async ap => {
+    await foundJob.jobApplicants.map(async (ap) => {
       try {
         await ap.save({ session: sess });
       } catch (err) {
