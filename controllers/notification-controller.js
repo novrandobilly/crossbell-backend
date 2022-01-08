@@ -4,12 +4,13 @@ const HttpError = require('../models/http-error');
 const companyRegistrationNotif = async ({ companyName, companyId, sess }) => {
   const newNotif = new Notification({
     header: 'New Company Registration',
-    content: `A company name ${companyName} has registered.`,
+    content: `A company called ${companyName} has registered.`,
     payload: {
       companyId: [companyId],
     },
     notifType: 'ADM',
-    dateCreated: new Date().toISOString(),
+    action: 'Please check for verifications on Company List Tab',
+    dateCreated: new Date(),
     isOpened: [],
   });
   try {
@@ -17,7 +18,7 @@ const companyRegistrationNotif = async ({ companyName, companyId, sess }) => {
   } catch (err) {
     console.log(err);
     const error = new HttpError(err.message, 500);
-    return next(error);
+    return error;
   }
 };
 
@@ -28,7 +29,7 @@ const companyVerifiedNotif = async ({ companyName, companyId, sess }) => {
     notifType: 'COM',
     ownerId: companyId,
     ownerModel: 'Company',
-    dateCreated: new Date().toISOString(),
+    dateCreated: new Date(),
     isOpened: [],
   });
   try {
@@ -36,7 +37,7 @@ const companyVerifiedNotif = async ({ companyName, companyId, sess }) => {
   } catch (err) {
     console.log(err);
     const error = new HttpError(err.message, 500);
-    return next(error);
+    return error;
   }
 };
 
@@ -47,13 +48,14 @@ const paymentCreatedNotif = async ({ companyName, orderRegId, orderBcId, sess, p
       orderRegId ? `Reguler ${orderRegId}` : `Bulk Candidates ${orderBcId}`
     } was just added.`,
     notifType: 'ADM',
+    action: 'Please check the payment and approve it.',
     payload: {
       companyId: [companyId],
       orderRegId: [orderRegId && orderRegId],
       orderBcId: [orderBcId && orderBcId],
       paymentId: [paymentId],
     },
-    dateCreated: new Date().toISOString(),
+    dateCreated: new Date(),
     isOpened: [],
   });
   try {
@@ -61,7 +63,7 @@ const paymentCreatedNotif = async ({ companyName, orderRegId, orderBcId, sess, p
   } catch (err) {
     console.log(err);
     const error = new HttpError(err.message, 500);
-    return next(error);
+    return error;
   }
 };
 
@@ -72,7 +74,7 @@ const paymentApprovedNotif = async ({ companyId, orderRegId, orderBcId, sess }) 
     notifType: 'COM',
     ownerId: companyId,
     ownerModel: 'Company',
-    dateCreated: new Date().toISOString(),
+    dateCreated: new Date(),
     isOpened: [],
   });
   try {
@@ -80,7 +82,7 @@ const paymentApprovedNotif = async ({ companyId, orderRegId, orderBcId, sess }) 
   } catch (err) {
     console.log(err);
     const error = new HttpError(err.message, 500);
-    return next(error);
+    return error;
   }
 };
 
@@ -94,7 +96,7 @@ const applicantAppliedNotif = async (firstName, lastName, jobTitle, jobId, sess)
     },
     ownerId: companyId,
     ownerModel: 'Company',
-    dateCreated: new Date().toISOString(),
+    dateCreated: new Date(),
     isOpened: [],
   });
 
@@ -103,8 +105,106 @@ const applicantAppliedNotif = async (firstName, lastName, jobTitle, jobId, sess)
   } catch (err) {
     console.log(err);
     const error = new HttpError(err.message, 500);
+    return error;
+  }
+};
+
+const cleanUpNotification = async () => {
+  const expiredDate = new Date(new Date().setDate(new Date().getDate() - 90));
+  try {
+    await Notification.deleteMany({ dateCreated: { $lte: expiredDate } });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
+    return error;
+  }
+};
+
+const getAdminNotification = async (req, res, next) => {
+  const adminId = req.params.adminid;
+  let foundNotifications;
+  try {
+    foundNotifications = await Notification.find({ notifType: 'ADM' });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
     return next(error);
   }
+
+  if (!foundNotifications || foundNotifications.length <= 0) {
+    const error = new HttpError("There aren' any notification", 404);
+    return next(error);
+  }
+
+  const filteredNotifications = foundNotifications.filter((notif) => {
+    if (notif.ownerId && notif.ownerId?.toString() !== adminId?.toString()) {
+      return false;
+    }
+    return true;
+  });
+
+  res.json({
+    notifications: filteredNotifications.map((notif) => notif.toObject({ getters: true })),
+  });
+};
+
+const getCompanyNotification = async (req, res, next) => {
+  const companyId = req.params.companyid;
+  let foundNotifications;
+  try {
+    foundNotifications = await Notification.find({ notifType: 'COM' });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
+    return next(error);
+  }
+
+  if (!foundNotifications || foundNotifications.length <= 0) {
+    const error = new HttpError("There aren' any notification", 404);
+    return next(error);
+  }
+
+  const filteredNotifications = foundNotifications.filter((notif) => {
+    if (notif.ownerId && notif.ownerId?.toString() !== companyId?.toString()) {
+      return false;
+    }
+    return true;
+  });
+
+  res.json({
+    notifications: filteredNotifications.map((notif) => notif.toObject({ getters: true })),
+  });
+};
+
+const readNotification = async (req, res, next) => {
+  const { notificationId, userId } = req.body;
+  let foundNotification;
+
+  try {
+    foundNotification = await Notification.findById(notificationId);
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
+    return next(error);
+  }
+
+  if (!foundNotification) {
+    const error = new HttpError('Notification not found', 500);
+    return next(error);
+  }
+
+  foundNotification.isOpened = [...foundNotification.isOpened, userId];
+
+  try {
+    await foundNotification.save();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
+    return next(error);
+  }
+  res.json({
+    message: 'Marked as read',
+  });
 };
 
 exports.companyRegistrationNotif = companyRegistrationNotif;
@@ -112,3 +212,7 @@ exports.companyVerifiedNotif = companyVerifiedNotif;
 exports.paymentCreatedNotif = paymentCreatedNotif;
 exports.paymentApprovedNotif = paymentApprovedNotif;
 exports.applicantAppliedNotif = applicantAppliedNotif;
+exports.cleanUpNotification = cleanUpNotification;
+exports.getAdminNotification = getAdminNotification;
+exports.readNotification = readNotification;
+exports.getCompanyNotification = getCompanyNotification;

@@ -3,6 +3,7 @@ const { check } = require('express-validator');
 const { applicantAvatar, companyAvatar, applicantResume } = require('../middleware/file-upload');
 const checkAuth = require('../middleware/check-auth');
 const usersControllers = require('../controllers/users-controllers');
+const notificationControllers = require('../controllers/notification-controller');
 
 const router = express.Router();
 
@@ -24,9 +25,11 @@ router.use(checkAuth);
 router.get('/ap/:applicantid', usersControllers.getApplicantDetails);
 router.get('/ap', usersControllers.getAllApplicant);
 router.get('/co', usersControllers.getAllCompany);
+router.get('/co/:companyid/notifications', notificationControllers.getCompanyNotification);
 router.get('/ap/:applicantid/jobs', usersControllers.getApplicantAppliedJobs);
 router.get('/feedback', usersControllers.getFeedback);
 
+router.patch('/co/notifications', notificationControllers.readNotification);
 router.patch('/co/:companyid', companyAvatar, usersControllers.updateCompanyProfile);
 router.patch('/ap/:applicantid', applicantAvatar, usersControllers.updateApplicantProfile);
 router.patch('/ap/:applicantid/resume', applicantResume, usersControllers.updateApplicantResume);

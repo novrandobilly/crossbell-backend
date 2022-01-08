@@ -16,6 +16,7 @@ const notificationSchema = new Schema({
     orderEsId: [{ type: mongoose.Types.ObjectId, ref: 'Orderes' }],
     paymentId: [{ type: mongoose.Types.ObjectId, ref: 'Payment' }],
   },
+  action: { type: String },
   notifType: { type: String, enum: ['APP', 'COM', 'ADM'] },
   ownerId: { type: mongoose.Types.ObjectId, refPath: 'ownerModel' },
   ownerModel: { type: String, enum: ['Applicant', 'Company', 'Admin'] },

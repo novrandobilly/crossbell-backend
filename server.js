@@ -12,6 +12,7 @@ const usersRoutes = require('./routes/users-routes');
 const adminRoutes = require('./routes/admin-routes');
 
 const cronControllers = require('./controllers/cron-controllers');
+const { cleanUpNotification } = require('./controllers/notification-controller');
 const HttpError = require('./models/http-error');
 
 const app = express();
@@ -36,6 +37,7 @@ schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec); //Every Day 
 schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec); //Every Day at 14.00 autoSend
 schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo); //Every Monday at 00.00 refresh promo
 schedule.scheduleJob('0 0 * * *', cronControllers.slotExpCheck()); //Every Day at 00.00 check slot expiration date
+schedule.scheduleJob('0 1 * * *', cleanUpNotification()); //Every Day at 01.00 check notification expiration date
 cronControllers.createPromo();
 
 app.use((req, res, next) => {
