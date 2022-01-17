@@ -86,7 +86,7 @@ const paymentApprovedNotif = async ({ companyId, orderRegId, orderBcId, sess }) 
   }
 };
 
-const applicantAppliedNotif = async (firstName, lastName, jobTitle, jobId, sess) => {
+const applicantAppliedNotif = async ({ firstName, lastName, jobTitle, jobId, sess, companyId }) => {
   const newNotif = new Notification({
     header: 'Candidate Applied',
     content: `Candidate ${firstName} ${lastName || ''} has applied for job ${jobTitle}`,

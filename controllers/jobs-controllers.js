@@ -503,6 +503,7 @@ const applyJob = async (req, res, next) => {
     details: foundApplicant.details || '-',
     experience: foundApplicant.experience,
     education: foundApplicant.education,
+    organization: foundApplicant.organization,
     certification: foundApplicant.certification,
     skills: foundApplicant.skills,
     resume: foundApplicant.resume.url || '',
@@ -537,6 +538,7 @@ const applyJob = async (req, res, next) => {
       jobTitle: foundJob.jobTitle,
       jobId: foundJob._id,
       sess,
+      companyId: foundJob.companyId?._id,
     });
     sess.commitTransaction();
   } catch (err) {
