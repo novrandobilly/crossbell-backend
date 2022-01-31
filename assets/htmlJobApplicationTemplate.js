@@ -6,7 +6,7 @@ const htmlTemplate = (payload) => {
   let educationList = '';
   let certificationList = '';
   let skillList = '';
-  let organizationList;
+  let organizationList = '';
 
   if (payload.experience && payload.experience.length > 0) {
     payload.experience
@@ -78,7 +78,6 @@ const htmlTemplate = (payload) => {
         organizationList =
           organizationList +
           `
-
           <div class="organization-item" style="margin-bottom: 15px; padding-left: 20px;">
           <h3 style="margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Periode: ${moment(
             org.startDate
@@ -236,7 +235,7 @@ const htmlTemplate = (payload) => {
     </div>
     <div class="organizations" style="margin-bottom: 20px;">
       <h2 style="margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #f79f35;">Pengalaman Keorganisasian</h2>
-      ${organizationList}
+      ${(organizationList = '')}
     </div>
     <div class="certifications" style="margin-bottom: 20px;">
       <h2 style="margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #f79f35;">Sertifikasi</h2>
