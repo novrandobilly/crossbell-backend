@@ -163,19 +163,28 @@ const createPromo = async (req, res, next) => {
   }
 
   if (foundPromo[0] && foundPromo.length === 1) {
-    if (!foundPromo[0].promoReg) {
-      foundPromo[0].promoReg = 0;
+    if (!foundPromo[0].REG) {
+      foundPromo[0].REG.promoName = 'NO_PROMO';
+      foundPromo[0].REG.discount = 0;
       await foundPromo[0].save();
-    } else if (!foundPromo[0].promoBC) {
-      foundPromo[0].promoBC = 0;
+    }
+    if (!foundPromo[0].BC) {
+      foundPromo[0].BC.promoName = 'NO_PROMO';
+      foundPromo[0].BC.discount = 0;
       await foundPromo[0].save();
     }
   }
 
   if (foundPromo.length < 1) {
     foundPromo = new Promo({
-      promoReg: 0,
-      promoBC: 0,
+      REG: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
+      BC: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
     });
     await foundPromo.save();
   }
@@ -183,8 +192,14 @@ const createPromo = async (req, res, next) => {
   if (foundPromo.length > 1) {
     await Promo.deleteMany({});
     foundPromo = new Promo({
-      promoReg: 0,
-      promoBC: 0,
+      REG: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
+      BC: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
     });
     await foundPromo.save();
   }

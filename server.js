@@ -35,9 +35,9 @@ app.use('/api/alphaomega', adminRoutes);
 
 schedule.scheduleJob('0 15 * * *', cronControllers.autoRemindExec); //Every Day at 15.00 autoRemind
 schedule.scheduleJob('0 14 * * *', cronControllers.autoSendExec); //Every Day at 14.00 autoSend
-schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo); //Every Monday at 00.00 refresh promo
 schedule.scheduleJob('0 0 * * *', cronControllers.slotExpCheck()); //Every Day at 00.00 check slot expiration date
 schedule.scheduleJob('0 1 * * *', cleanUpNotification()); //Every Day at 01.00 check notification expiration date
+schedule.scheduleJob('0 0 * * 1', cronControllers.createPromo); //Every Monday at 00.00 refresh promo
 cronControllers.createPromo();
 
 app.use((req, res, next) => {

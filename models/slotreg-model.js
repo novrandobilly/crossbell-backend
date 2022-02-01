@@ -12,6 +12,7 @@ const slotregSchema = new Schema({
   status: { type: String, default: 'Idle' },
   package: { type: String },
   pricePerSlot: { type: Number },
+  promo: { type: String },
 });
 
 module.exports = mongoose.model('Slotreg', slotregSchema);

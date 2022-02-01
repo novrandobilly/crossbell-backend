@@ -12,6 +12,8 @@ const Orderes = require('../models/orderes-model');
 const Promo = require('../models/promo-model');
 const Payment = require('../models/payment-model');
 const { companyVerifiedNotif, paymentCreatedNotif, paymentApprovedNotif } = require('./notification-controller');
+const { promoType } = require('../assets/promoType');
+const { pricingREG } = require('../assets/pricing');
 
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
@@ -456,18 +458,25 @@ const approveOrderReg = async (req, res, next) => {
 
   let expMonth;
   if (foundOrder.packageName === 'bronze') {
-    expMonth = 30;
+    expMonth = pricingREG?.BRONZE.daysValidity;
   } else if (foundOrder.packageName === 'silver') {
-    expMonth = 60;
+    expMonth = pricingREG?.SILVER.daysValidity;
   } else if (foundOrder.packageName === 'gold') {
-    expMonth = 120;
+    expMonth = pricingREG?.GOLD.daysValidity;
   } else if (foundOrder.packageName === 'platinum') {
-    expMonth = 180;
+    expMonth = pricingREG?.PLATINUM.daysValidity;
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
 
-  const expDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth);
+  let expDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * expMonth);
+
+  // ====================================SOFT LAUNCH PROMO LOGIC====================================
+  // ==================================== Will only valid until May 31st, 2022 =====================
+
+  if (foundOrder.promo?.promoName === 'SOFT_LAUNCH') expDateCalculation = new Date(2022, 4, 31, 0, 0, 0, 0);
+
+  // ===============================================================================================
 
   for (i = 0; i < foundOrder.slot; i++) {
     const newSlot = new Slotreg({
@@ -478,6 +487,7 @@ const approveOrderReg = async (req, res, next) => {
       status: 'Idle',
       package: foundOrder.packageName,
       pricePerSlot: foundOrder.pricePerSlot,
+      promo: foundOrder.promo.promoName || 'NO_PROMO',
     });
 
     foundCompany.slotREG = [...foundCompany.slotREG, newSlot._id];
@@ -535,32 +545,23 @@ const createOrderReg = async (req, res, next) => {
     return next(new HttpError('failed fetching promo. Please try again later', 500));
   }
 
-  // if (!promo && promo.length < 1) {
-  //   promo = [
-  //     {
-  //       promoReg: 0,
-  //       promoBC: 0,
-  //     },
-  //   ];
-  // }
-
   const dueDateCalculation = new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 14);
   const parsedSlot = parseInt(slot);
   let parsedPricePerSlot;
   if (slot <= 1) {
-    parsedPricePerSlot = 600000;
+    parsedPricePerSlot = pricingREG.BRONZE?.price;
   } else if (slot <= 4) {
-    parsedPricePerSlot = 575000;
+    parsedPricePerSlot = pricingREG.SILVER?.price;
   } else if (slot <= 8) {
-    parsedPricePerSlot = 525000;
+    parsedPricePerSlot = pricingREG.GOLD?.price;
   } else if (slot > 8) {
-    parsedPricePerSlot = 450000;
+    parsedPricePerSlot = pricingREG.PLATINUM?.price;
   } else {
     return next(new HttpError('Package Type is not defined.', 404));
   }
 
   let originalPrice = parsedSlot * parsedPricePerSlot;
-  let discountPrice = (promo[0].promoReg * parsedSlot * parsedPricePerSlot) / 100;
+  let discountPrice = (promo[0].REG.discount * parsedSlot * parsedPricePerSlot) / 100;
   let taxPrice = PPH ? (originalPrice - discountPrice) * 0.02 : 0;
 
   const newOrder = new Orderreg({
@@ -574,7 +575,7 @@ const createOrderReg = async (req, res, next) => {
     PPH,
     payment: [],
     pricePerSlot: parsedPricePerSlot,
-    promo: promo[0].promoReg,
+    promo: promo[0].REG,
     totalPrice: originalPrice - discountPrice - taxPrice,
   });
 
@@ -1195,11 +1196,11 @@ const getPromo = async (req, res, next) => {
     await foundPromo.save();
   }
 
-  res.status(200).json({ promo: foundPromo });
+  res.status(200).json({ activePromo: foundPromo[0], listPromo: [...promoType] });
 };
 
 const updatePromo = async (req, res, next) => {
-  const { promoReg, promoBC } = req.body;
+  const { REG, BC } = req.body;
 
   let foundPromo;
   try {
@@ -1208,29 +1209,32 @@ const updatePromo = async (req, res, next) => {
     return next(new HttpError('Fetching Promo failed. Please try again', 404));
   }
 
-  if (!foundPromo) {
-    foundPromo[0] = new Promo({
-      promoReg: promoReg ? promoReg : 0,
-      promoBC: promoBC ? promoBC : 0,
+  if (!foundPromo.length === 1) {
+    foundPromo = new Promo({
+      REG: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
+      BC: {
+        promoName: 'NO_PROMO',
+        discount: 0,
+      },
     });
     await foundPromo[0].save();
   } else {
-    foundPromo[0].promoReg = promoReg ? promoReg : foundPromo[0].promoReg;
-    foundPromo[0].promoBC = promoBC ? promoBC : foundPromo[0].promoBC;
+    foundPromo[0].REG = REG;
+    foundPromo[0].BC = BC;
   }
 
   try {
-    const sess = await mongoose.startSession();
-    sess.startTransaction();
-    await foundPromo[0].save({ session: sess });
-    await sess.commitTransaction();
+    await foundPromo[0].save();
   } catch (err) {
     console.log(err);
-    const error = new HttpError('Something happened while saving, please try again in a few minutes', 500);
+    const error = new HttpError('Something wrong happened while saving, please try again in a few minutes', 500);
     return next(error);
   }
 
-  res.status(201).json({ message: 'Successfully update promo' });
+  res.status(201).json({ message: 'Successfully update promo', activePromo: foundPromo[0], listPromo: [...promoType] });
 };
 
 // ================================== Slot ============================================

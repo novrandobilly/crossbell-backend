@@ -14,7 +14,10 @@ const orderregSchema = new Schema({
   slotId: [{ type: Number, required: true, ref: 'Slotreg' }],
   pricePerSlot: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
-  promo: { type: Number, default: 0 },
+  promo: {
+    promoName: { type: String },
+    discount: { type: Number, default: 0 },
+  },
   PPH: { type: Boolean, default: false },
   payment: [{ type: mongoose.Types.ObjectId, ref: 'Payment' }],
 });

@@ -12,7 +12,10 @@ const orderbcSchema = new Schema({
   dueDate: { type: Date, required: true },
   price: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
-  promo: { type: Number, default: 0 },
+  promo: {
+    promoName: { type: String },
+    discount: { type: Number, default: 0 },
+  },
   education: [{ type: String, required: true }],
   gender: { type: String, required: true },
   location: { type: Boolean, required: true, default: false },
