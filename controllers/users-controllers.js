@@ -137,7 +137,7 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  const { email, password, NPWP, isCompany } = req.body;
+  const { email, password, isCompany } = req.body;
   let existingApplicant, existingCompany;
   try {
     existingApplicant = await Applicant.findOne({ email: email });
@@ -167,13 +167,12 @@ const signup = async (req, res, next) => {
     const newCompany = new Company({
       companyName: companyName.trim(),
       email,
-      NPWP: NPWP.trim(),
+      NPWP: null,
       password: hashedPassword,
       logo: null,
       briefDescriptions: null,
       jobAds: [],
       isCompany,
-      isActive: false,
     });
 
     // SAVING COMPANY
@@ -212,7 +211,6 @@ const signup = async (req, res, next) => {
     return res.status(201).json({
       userId: newCompany.id,
       email: newCompany.email,
-      NPWP: newCompany.NPWP,
       isCompany: newCompany.isCompany,
       isActive: newCompany.isActive,
       token,
@@ -582,7 +580,7 @@ const updateCompanyProfile = async (req, res, next) => {
   foundCompany.address = data.address ? data.address.trim() : foundCompany.address;
   foundCompany.industry = data.industry ? data.industry.trim() : foundCompany.industry;
   foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient.trim() : foundCompany.emailRecipient;
-  foundCompany.website = data.website ? data.website.trim() : foundCompany.website;
+  foundCompany.website = data.website === '' ? '' : data.website ? data.website.trim() : foundCompany.website;
   foundCompany.NPWP = data.NPWP ? data.NPWP.trim() : foundCompany.NPWP;
   foundCompany.briefDescriptions = data.briefDescriptions
     ? data.briefDescriptions.trim()
