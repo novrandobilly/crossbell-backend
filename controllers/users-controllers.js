@@ -564,6 +564,11 @@ const updateCompanyProfile = async (req, res, next) => {
     await cloudinary.uploader.destroy(foundCompany.logo.fileName);
   }
 
+  let arrayIndustry = [];
+  if (data.industry?.length) {
+    arrayIndustry = data.industry.split(',').filter((item, index) => index < 4 && index > -1);
+  }
+
   foundCompany.logo = req.file
     ? {
         url: req.file.path,
@@ -578,7 +583,7 @@ const updateCompanyProfile = async (req, res, next) => {
   foundCompany.picOfficePhone = data.picOfficePhone ? data.picOfficePhone.trim() : foundCompany.picOfficePhone;
   foundCompany.picPhone = data.picPhone ? data.picPhone.trim() : foundCompany.picPhone;
   foundCompany.address = data.address ? data.address.trim() : foundCompany.address;
-  foundCompany.industry = data.industry ? data.industry.trim() : foundCompany.industry;
+  foundCompany.industry = data.industry?.length ? arrayIndustry : foundCompany.industry;
   foundCompany.emailRecipient = data.emailRecipient ? data.emailRecipient.trim() : foundCompany.emailRecipient;
   foundCompany.website = data.website === '' ? '' : data.website ? data.website.trim() : foundCompany.website;
   foundCompany.NPWP = data.NPWP ? data.NPWP.trim() : foundCompany.NPWP;
