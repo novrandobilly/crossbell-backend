@@ -11,7 +11,12 @@ const Orderbc = require('../models/orderbc-model');
 const Orderes = require('../models/orderes-model');
 const Promo = require('../models/promo-model');
 const Payment = require('../models/payment-model');
-const { companyVerifiedNotif, paymentCreatedNotif, paymentApprovedNotif } = require('./notification-controller');
+const {
+  companyVerifiedNotif,
+  paymentCreatedNotif,
+  paymentApprovedNotif,
+  orderCreatedNotif,
+} = require('./notification-controller');
 const { promoType } = require('../assets/promoType');
 const { pricingREG } = require('../assets/pricing');
 
@@ -506,12 +511,31 @@ const approveOrderReg = async (req, res, next) => {
 
   foundOrder.status = 'Paid';
   foundOrder.approvedAt = new Date().toISOString();
+
+  const emailData = {
+    to: foundCompany.email,
+
+    from: 'crossbellcorps@gmail.com',
+    subject: `Crossbell - Order Reguler Disetujui`,
+    html: `
+
+    <h3>Selamat! Order Reguler anda telah disetujui</h3>
+
+    <p>Order Reguler atas nama perusahaan ${foundCompany.companyName} sebanyak ${foundOrder.slot} slot telah disetujui.</p>
+    <p>Silahkan klik <a href='https://crossbell.id/' >disini</a> untuk melihat dan menggunakan slot dalam pemasangan iklan lowongan pekerjaan</p>
+    <br/>
+    <p>Mohon diperhatikan agar slot digunakan sebelum masa kadaluarsa habis</p>
+   
+		`,
+  };
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
     await foundOrder.save({ session: sess });
     await foundCompany.save({ session: sess });
     await paymentApprovedNotif({ companyId: foundCompany._id, orderRegId: orderId, sess });
+    await sgMail.send(emailData);
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(err.message, 500);
@@ -585,6 +609,7 @@ const createOrderReg = async (req, res, next) => {
     await newOrder.save({ session: sess });
     foundCompany.orderREG.push(newOrder);
     await foundCompany.save({ session: sess });
+    await orderCreatedNotif({ companyName: foundCompany.companyName, sess, slotNumber: parsedSlot, packageName });
     await sess.commitTransaction();
   } catch (err) {
     console.log(err);

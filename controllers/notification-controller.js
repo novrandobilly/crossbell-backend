@@ -41,6 +41,25 @@ const companyVerifiedNotif = async ({ companyName, companyId, sess }) => {
   }
 };
 
+const orderCreatedNotif = async ({ companyName, sess, slotNumber, packageName }) => {
+  const newNotif = new Notification({
+    header: 'Order Reguler Created',
+    content: `New order reguler from ${companyName} has been created for ${slotNumber} slot (${packageName} package)`,
+    notifType: 'ADM',
+    action: 'Please check the order',
+    dateCreated: new Date(),
+    isOpened: [],
+  });
+
+  try {
+    await newNotif.save({ session: sess && sess });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(err.message, 500);
+    return error;
+  }
+};
+
 const paymentCreatedNotif = async ({ companyName, orderRegId, orderBcId, sess, paymentId, companyId }) => {
   const newNotif = new Notification({
     header: `Payment Created`,
@@ -216,3 +235,4 @@ exports.cleanUpNotification = cleanUpNotification;
 exports.getAdminNotification = getAdminNotification;
 exports.readNotification = readNotification;
 exports.getCompanyNotification = getCompanyNotification;
+exports.orderCreatedNotif = orderCreatedNotif;
