@@ -81,6 +81,7 @@ const createJob = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
+    major,
     specialRequirement,
     emailRecipient,
     employment,
@@ -131,6 +132,7 @@ const createJob = async (req, res, next) => {
     placementLocation: placementLocation.trim(),
     jobDescriptions: jobDescriptions.trim(),
     educationalStage,
+    major,
     employment,
     slot: parsedSlot,
     rangeAge,
@@ -184,6 +186,7 @@ const saveJobDraft = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
+    major,
     specialRequirement,
     emailRecipient,
     rangeAge,
@@ -214,6 +217,7 @@ const saveJobDraft = async (req, res, next) => {
     placementLocation: placementLocation.trim() || '-',
     jobDescriptions: jobDescriptions.trim() || '-',
     educationalStage: educationalStage || '-',
+    major: major || [],
     specialRequirement: specialRequirement || '-',
     emailRecipient: emailRecipient.trim() || '-',
     employment: employment || 'permanent',
@@ -261,6 +265,7 @@ const releaseJob = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
+    major,
     specialRequirement,
     emailRecipient,
     rangeAge,
@@ -324,6 +329,7 @@ const releaseJob = async (req, res, next) => {
   updatedJob.placementLocation = placementLocation.trim();
   updatedJob.jobDescriptions = jobDescriptions.trim();
   updatedJob.educationalStage = educationalStage;
+  updatedJob.major = major;
   updatedJob.specialRequirement = specialRequirement;
   updatedJob.emailRecipient = emailRecipient.trim();
   updatedJob.employment = employment;
@@ -358,6 +364,7 @@ const editJobDraft = async (req, res, next) => {
     placementLocation,
     jobDescriptions,
     educationalStage,
+    major,
     specialRequirement,
     emailRecipient,
     rangeAge,
@@ -395,13 +402,15 @@ const editJobDraft = async (req, res, next) => {
   updatedJob.placementLocation = placementLocation ? placementLocation.trim() : updatedJob.placementLocation;
   updatedJob.jobDescriptions = jobDescriptions ? jobDescriptions.trim() : updatedJob.jobDescriptions;
   updatedJob.educationalStage = educationalStage ? educationalStage : updatedJob.educationalStage;
+  updatedJob.major = major.length ? major : updatedJob.major;
   updatedJob.rangeAge = rangeAge ? rangeAge : updatedJob.rangeAge;
 
   updatedJob.specialRequirement = specialRequirement ? specialRequirement : updatedJob.specialRequirement;
   updatedJob.emailRecipient = emailRecipient ? emailRecipient.trim() : updatedJob.emailRecipient;
 
   updatedJob.employment = employment ? employment : updatedJob.employment;
-  (updatedJob.createdAt = new Date().toISOString()), (updatedJob.slot = parsedSlot ? parsedSlot : updatedJob.slot);
+  updatedJob.createdAt = new Date().toISOString();
+  updatedJob.slot = parsedSlot ? parsedSlot : updatedJob.slot;
   updatedJob.benefit = benefit ? benefit.trim() : updatedJob.benefit;
   updatedJob.salary = salary ? salary.trim() : updatedJob.salary;
   updatedJob.fieldOfWork = fieldOfWork ? fieldOfWork : updatedJob.fieldOfWork;

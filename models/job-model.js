@@ -9,6 +9,7 @@ const jobSchema = new Schema({
   placementLocation: { type: String, required: true },
   jobDescriptions: { type: String, required: true },
   educationalStage: { type: String, required: true },
+  major: [{ type: String }],
   employment: { type: String, required: true },
   slot: { type: Number, required: true },
   rangeAge: [{ type: Number, default: [] }],
@@ -21,9 +22,7 @@ const jobSchema = new Schema({
   benefit: { type: String, default: null },
   specialRequirement: [{ type: String, default: '' }],
   fieldOfWork: [{ type: String }],
-  jobApplicants: [
-    { type: mongoose.Types.ObjectId, required: true, ref: 'Applicant' },
-  ],
+  jobApplicants: [{ type: mongoose.Types.ObjectId, required: true, ref: 'Applicant' }],
 });
 
 module.exports = mongoose.model('Job', jobSchema);

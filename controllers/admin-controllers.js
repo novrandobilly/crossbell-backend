@@ -522,7 +522,7 @@ const approveOrderReg = async (req, res, next) => {
     <h3>Selamat! Order Reguler anda telah disetujui</h3>
 
     <p>Order Reguler atas nama perusahaan ${foundCompany.companyName} sebanyak ${foundOrder.slot} slot telah disetujui.</p>
-    <p>Silahkan klik <a href='https://crossbell.id/' >disini</a> untuk melihat dan menggunakan slot dalam pemasangan iklan lowongan pekerjaan</p>
+    <p>Silahkan klik <a href='https://crossbell.id/'>disini</a> untuk melihat dan menggunakan slot dalam pemasangan iklan lowongan pekerjaan</p>
     <br/>
     <p>Mohon diperhatikan agar slot digunakan sebelum masa kadaluarsa habis</p>
    
