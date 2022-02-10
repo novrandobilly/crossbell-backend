@@ -26,15 +26,15 @@ const applicantSchema = new Schema({
   outOfTown: { type: Boolean, default: false },
   workShifts: { type: Boolean, default: false },
   headhunterProgram: { type: Boolean, default: false },
-  autoSend: {
-    isAutoSend: { type: Boolean, default: false },
-    jobField: { type: String, default: '' },
-    jobIndustry: { type: String, default: '' },
-  },
   autoRemind: {
     isAutoRemind: { type: Boolean, default: false },
-    jobField: { type: String, default: '' },
-    jobIndustry: { type: String, default: '' },
+    jobField: [{ type: String }],
+    maxSalary: { type: String },
+    minSalary: { type: String },
+  },
+  autoSend: {
+    isAutoSend: { type: Boolean, default: false },
+    jobField: [{ type: String }],
   },
 
   education: [
