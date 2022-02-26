@@ -80,7 +80,7 @@ const applicantSchema = new Schema({
     },
   ],
   languages: [{ langName: { type: String }, rate: { type: Number } }],
-  skills: [{ skillName: { type: String }, rate: { type: Number } }],
+  skills: [{ skillName: { type: String }, rate: { type: String } }],
   resume: {
     url: { type: String },
     fileName: { type: String },
